@@ -60,7 +60,7 @@ function sourceRectangleToCoverObjectPositionPercent(
         panY: Math.min(100, Math.max(0, panY)),
     };
 }
-export { sourceRectangleToCoverObjectPositionPercent as sourceRectToCoverObjectPositionPercent };
+export { sourceRectangleToCoverObjectPositionPercent };
 
 function clampSourceRectangleToImage({
     sourceX,
@@ -227,7 +227,7 @@ function computeCropSourceRectangle(viewport) {
         imageHeight: viewport.imageHeight,
     });
 }
-export { computeCropSourceRectangle as computeCropSourceRect };
+export { computeCropSourceRectangle };
 
 /**
  * Returns output image dimensions derived from the target crop aspect ratio.
@@ -295,7 +295,7 @@ export function computeContainImageBounds({
  *   sourceHeight: number,
  * }}
  * @example
- * const sourceRect = computeMaxAspectSourceRect({
+ * const sourceRect = computeMaxAspectSourceRectangle({
  *   imageWidth: 2400,
  *   imageHeight: 1600,
  *   aspectRatio: 3,
@@ -333,7 +333,7 @@ function computeMaxAspectSourceRectangle({
         imageHeight: safeImageHeight,
     });
 }
-export { computeMaxAspectSourceRectangle as computeMaxAspectSourceRect };
+export { computeMaxAspectSourceRectangle };
 
 /**
  * Creates a centered initial crop selection inside image bounds.
@@ -627,7 +627,7 @@ function computeCropSourceRectangleFromSelection({
         imageHeight: safeImageHeight,
     });
 }
-export { computeCropSourceRectangleFromSelection as computeCropSourceRectFromSelection };
+export { computeCropSourceRectangleFromSelection };
 
 /**
  * Composes a crop selection into an absolute source rectangle when the
@@ -679,7 +679,7 @@ function composeCropSourceRectangle({
         sourceHeight: nestedSourceRectangle.sourceHeight,
     };
 }
-export { composeCropSourceRectangle as composeCropSourceRect };
+export { composeCropSourceRectangle };
 
 /**
  * Pans an existing source rectangle inside image bounds without changing zoom.
@@ -747,7 +747,7 @@ function panCropSourceRectangle({
         ),
     };
 }
-export { panCropSourceRectangle as panCropSourceRect };
+export { panCropSourceRectangle };
 
 export const BANNER_FULL_HEIGHT_ASPECT_RATIO = 3;
 export const BANNER_HALF_HEIGHT_ASPECT_RATIO =

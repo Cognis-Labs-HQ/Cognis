@@ -1,12 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    cp as copyPath,
-    mkdir,
-    mkdtemp,
-    rm as removePath,
-    writeFile,
-} from "node:fs/promises";
+import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -23,12 +17,10 @@ test("gateway host retains bootstrap and completion resources across disable and
     const directory = await mkdtemp(
         path.join(tmpdir(), "cognis-gateway-lifecycle-"),
     );
-    testContext.after(() =>
-        removePath(directory, { recursive: true, force: true }),
-    );
+    testContext.after(() => rm(directory, { recursive: true, force: true }));
     const gatewayRoot = path.join(directory, "example");
     await mkdir(gatewayRoot);
-    await copyPath(
+    await cp(
         new URL("./fixtures/gateway-lifecycle/bootstrap.ts", import.meta.url),
         path.join(gatewayRoot, "bootstrap.ts"),
     );

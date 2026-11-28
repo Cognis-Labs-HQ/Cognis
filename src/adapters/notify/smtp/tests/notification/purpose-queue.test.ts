@@ -16,8 +16,8 @@ for (const deliveryDelay of [0, 500]) {
         let first = true;
         const primary = new SmtpNotificationQueue(
             new SmtpRateLimiter(250),
-            async (milliseconds) => {
-                context.mock.timers.tick(milliseconds);
+            async (ms) => {
+                context.mock.timers.tick(ms);
             },
             async (payload) => {
                 if (first) {
@@ -30,8 +30,8 @@ for (const deliveryDelay of [0, 500]) {
         );
         const independent = new SmtpNotificationQueue(
             new SmtpRateLimiter(250),
-            async (milliseconds) => {
-                context.mock.timers.tick(milliseconds);
+            async (ms) => {
+                context.mock.timers.tick(ms);
             },
             async (payload) => {
                 sent.push({ purpose: payload.purpose, at: Date.now() });

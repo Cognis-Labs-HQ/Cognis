@@ -1,7 +1,7 @@
 import { createShareAdapterHost } from "./adapter-host.js";
 import assert from "node:assert/strict";
 import { mkdtemp, readFile } from "node:fs/promises";
-import operatingSystem from "node:os";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { CoreShareGateway } from "../gateway/index.js";
@@ -79,9 +79,7 @@ test("share gateway discovers Link and User method adapters", async (testContext
 test("share gateway tolerates an absent adapter directory", async (testContext) => {
     const host = createShareAdapterHost(testContext);
     const gateway = createGateway();
-    const temporary = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "share-adapters-"),
-    );
+    const temporary = await mkdtemp(path.join(os.tmpdir(), "share-adapters-"));
     await host.discover(gateway, path.join(temporary, "missing"));
     assert.deepEqual(gateway.listAdapters(), []);
 });

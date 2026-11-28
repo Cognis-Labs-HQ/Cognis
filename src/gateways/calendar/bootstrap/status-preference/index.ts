@@ -21,26 +21,26 @@ export function createStatusPreferenceRoutes({
 }: StatusPreferenceRouteOptions) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname !== "/api/v1/calendar/status-preference") {
             return false;
         }
-        const claims = ctx.requireAuth(request, response, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
-        if (request.method === "GET") {
+        if (req.method === "GET") {
             const prevented = (await getPreference(claims.sub)) === "true";
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { prevented } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { prevented } }));
             return true;
         }
-        if (request.method === "PUT") {
-            const body = await readJson(request);
+        if (req.method === "PUT") {
+            const body = await readJson(req);
             if (typeof body.prevented !== "boolean") {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_preference",
@@ -52,8 +52,8 @@ export function createStatusPreferenceRoutes({
             }
             const saved = await setPreference(claims.sub, body.prevented);
             if (!saved) {
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "preferences_unavailable",
@@ -69,8 +69,8 @@ export function createStatusPreferenceRoutes({
                 accountId: claims.sub,
                 prevented: body.prevented,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved } }));
             return true;
         }
         return false;

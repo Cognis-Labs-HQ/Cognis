@@ -6,7 +6,7 @@
 
 ### アーキテクチャ
 
-`src/adapters/file/quota/index.ts` の `DbFileQuotaStore` は、4つのテーブルに対して `FileQuotaStore` 契約（`src/gateways/files/reuse/quota-store-contract.ts`）を実装します:
+`src/adapters/file/quota/index.ts` の `DatabaseFileQuotaStore` は、4つのテーブルに対して `FileQuotaStore` 契約（`src/gateways/files/reuse/quota-store-contract.ts`）を実装します:
 
 | テーブル                        | 目的                                                 |
 | ------------------------------- | ---------------------------------------------------- |
@@ -36,7 +36,7 @@
 - アカウント作成時（`provisionUser`）に現在のデフォルトをユーザーごとのオーバーライド行にスナップショットし、ユーザーのクォータが後の管理者による変更に伴って変動するのではなく、登録時に適用されていたものを反映するようにする。
 - 管理者がプロビジョニング後にユーザーの名前空間ごとまたはグローバルクォータを編集できるようにする。
 
-責任範囲外: 使用状況の会計（ファイルゲートウェイの `DbFileObjectStore` が行う）またはクォータの実施（ファイルゲートウェイの `NamespaceFileService` が、すべての書き込みの前に使用状況をこれらの値と比較する）。
+責任範囲外: 使用状況の会計（ファイルゲートウェイの `DatabaseFileObjectStore` が行う）またはクォータの実施（ファイルゲートウェイの `NamespaceFileService` が、すべての書き込みの前に使用状況をこれらの値と比較する）。
 
 ### 遅延スキーマ初期化
 

@@ -64,7 +64,7 @@ for (const usageFails of [false, true]) {
             {
                 HTMLButtonElement: Button,
                 console: {
-                    error: (...argumentsList) => logs.push(argumentsList),
+                    error: (...args) => logs.push(args),
                 },
             },
         );

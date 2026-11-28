@@ -6,7 +6,7 @@ Antarmuka publik dan aturan operasional Akun Lokal.
 
 ### Arsitektur
 
-`DbLocalAccountStore` di `src/adapters/auth/local/store.ts` adalah satu-satunya lapisan persistensi untuk akun pengguna lokal.
+`DatabaseLocalAccountStore` di `src/adapters/auth/local/store.ts` adalah satu-satunya lapisan persistensi untuk akun pengguna lokal.
 
 ## Konfigurasi
 
@@ -27,7 +27,7 @@ Adapter autentikasi lokal adalah penyimpan kredensial bawaan untuk Cognis. Adapt
 - Menyimpan dan memverifikasi kredensial yang dikelola secara lokal menggunakan `crypto.scrypt`.
 - Menyediakan `register()` untuk pembuatan akun.
 - Menyediakan `updateLastLogin()` untuk melacak waktu login terakhir.
-- Menyediakan `DbLocalAccountStore` sebagai implementasi `LocalAccountStore`.
+- Menyediakan `DatabaseLocalAccountStore` sebagai implementasi `LocalAccountStore`.
 
 ### Hashing Kata Sandi
 

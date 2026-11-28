@@ -2,7 +2,7 @@ import {
     ensureBooleanAcknowledgement,
     ensureUserExists,
     mergePayloadFields,
-    requireArgs as requireArgumentsList,
+    requireArgumentsList,
 } from "./command-utils.ts";
 import {
     formatBoolean,

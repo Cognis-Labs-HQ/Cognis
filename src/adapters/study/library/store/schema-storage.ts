@@ -9,8 +9,8 @@ function schemaKey(id: string, version: number): string {
         .digest("hex");
 }
 
-export async function ensureSchemaParts(database: DbExecutor): Promise<void> {
-    await database.ensureTable({
+export async function ensureSchemaParts(db: DbExecutor): Promise<void> {
+    await db.ensureTable({
         name: "study_library_schema_parts",
         columns: [
             { name: "schema_key", type: "text", notNull: true },
@@ -22,11 +22,11 @@ export async function ensureSchemaParts(database: DbExecutor): Promise<void> {
 }
 
 export async function readSchemaJson(
-    database: DbExecutor,
+    db: DbExecutor,
     id: string,
     version: number,
 ): Promise<string | null> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "study_library_schemas",
         columns: ["schema_json", { col: "parts.schema_part", as: "part" }],
@@ -57,14 +57,14 @@ export async function readSchemaJson(
 
 /** The caller owns the transaction with schema registration or pack reconciliation. */
 export async function writeSchemaJson(
-    database: DbExecutor,
+    db: DbExecutor,
     schema: LibrarySchema,
     replace: boolean,
 ): Promise<void> {
     const key = schemaKey(schema.id, schema.version);
     const parts = textChunks(JSON.stringify(schema), 60_000);
     const values = { schema_key: key, schema_json: parts.next().value! };
-    await database.executeCommand(
+    await db.executeCommand(
         replace
             ? {
                   option: "UPDATE",
@@ -85,14 +85,14 @@ export async function writeSchemaJson(
                   },
               },
     );
-    await database.executeCommand({
+    await db.executeCommand({
         option: "DELETE",
         table: "study_library_schema_parts",
         where: [{ column: "schema_key", value: key }],
     });
     let position = 1;
     for (const schemaPart of parts) {
-        await database.executeCommand({
+        await db.executeCommand({
             option: "INSERT",
             table: "study_library_schema_parts",
             values: { schema_key: key, position, schema_part: schemaPart },

@@ -1,5 +1,5 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import { basename, join, relative, resolve, sep as separator } from "node:path";
+import { basename, join, relative, resolve, sep } from "node:path";
 
 const DEFAULT_DOCUMENT_LANGUAGE = "en";
 const CHANGELOG_DOCUMENTS_DIRECTORY = resolve(
@@ -222,7 +222,7 @@ export async function loadReleaseChangelogEntries(
                 const relativeDirectory = relative(
                     discoveryRoot,
                     filePath,
-                ).replaceAll(separator, "/");
+                ).replaceAll(sep, "/");
                 const modulePrefix = relativeDirectory.split("/")[0] ?? "";
                 const nextSourceName =
                     entry.name === "changelog" && modulePrefix

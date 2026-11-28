@@ -60,14 +60,13 @@ function fixture(
     const ctx = {
         ...host,
         capabilities,
-        extendFlow: (flow, stage, metadata, handler) => {
-            host.extendFlow(flow, stage, metadata, handler);
-            hooks.push([flow, stage, metadata.id]);
+        extendFlow: (flow, stage, meta, handler) => {
+            host.extendFlow(flow, stage, meta, handler);
+            hooks.push([flow, stage, meta.id]);
         },
     };
     testContext.after(() => {
-        for (const argumentsList of hooks.reverse())
-            host.removeFlowHook(...argumentsList);
+        for (const args of hooks.reverse()) host.removeFlowHook(...args);
     });
     let unlocked = false;
     let revoke;
@@ -151,8 +150,7 @@ function fixture(
             "/static/reuse/escape-html.js": { escapeHtml },
             "/static/reuse/ui-ctx.js": { uiCtx: ctx },
             "/static/reuse/toast.js": {
-                showToast: (...argumentsList) =>
-                    calls.toasts.push(argumentsList),
+                showToast: (...args) => calls.toasts.push(args),
             },
         },
         globals,

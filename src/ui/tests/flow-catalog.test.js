@@ -18,125 +18,121 @@ const SHARE_HOOKS_PATH = resolve(
 );
 
 test("flow-contracts.js declares authenticate-session with the required stages", () => {
-    const sourceText = readFileSync(FLOW_REGISTRY_PATH, "utf8");
+    const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /["']authenticate-session["']\s*:/,
         "flow-contracts.js must declare the authenticate-session flow",
     );
     assert.match(
-        sourceText,
+        src,
         /validate-stored-token/,
         "authenticate-session must include validate-stored-token stage",
     );
     assert.match(
-        sourceText,
+        src,
         /apply-alternate-auth/,
         "authenticate-session must include apply-alternate-auth stage",
     );
     assert.match(
-        sourceText,
+        src,
         /enforce-setup-requirements/,
         "authenticate-session must include enforce-setup-requirements stage",
     );
     assert.match(
-        sourceText,
+        src,
         /resolve-session/,
         "authenticate-session must include resolve-session stage",
     );
 });
 
 test("flow-contracts.js declares navigate-to with the required stages", () => {
-    const sourceText = readFileSync(FLOW_REGISTRY_PATH, "utf8");
+    const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /["']navigate-to["']\s*:/,
         "flow-contracts.js must declare the navigate-to flow",
     );
     assert.match(
-        sourceText,
+        src,
         /resolve-route/,
         "navigate-to must include resolve-route stage",
     );
     assert.match(
-        sourceText,
+        src,
         /prepare-assets/,
         "navigate-to must include prepare-assets stage",
     );
     assert.match(
-        sourceText,
+        src,
         /mount-page/,
         "navigate-to must include mount-page stage",
     );
 });
 
 test("flow-contracts.js declares load-page with the required stages", () => {
-    const sourceText = readFileSync(FLOW_REGISTRY_PATH, "utf8");
+    const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /["']load-page["']\s*:/,
         "flow-contracts.js must declare the load-page flow",
     );
     assert.match(
-        sourceText,
+        src,
         /authenticate/,
         "load-page must include authenticate stage",
     );
-    assert.match(
-        sourceText,
-        /mount-page/,
-        "load-page must include mount-page stage",
-    );
+    assert.match(src, /mount-page/, "load-page must include mount-page stage");
 });
 
 test("flow-contracts.js declares the post-login account setup flow", () => {
-    const sourceText = readFileSync(FLOW_REGISTRY_PATH, "utf8");
+    const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /["']complete-login["']\s*:\s*Object\.freeze\(\["setup-account-services"\]\)/,
     );
 });
 
 test("flow-contracts.js declares search with component and settings index stages", () => {
-    const sourceText = readFileSync(FLOW_REGISTRY_PATH, "utf8");
-    assert.match(sourceText, /search\s*:\s*Object\.freeze/);
-    assert.match(sourceText, /visible-indexes/);
-    assert.match(sourceText, /component-indexes/);
-    assert.match(sourceText, /settings-index/);
+    const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
+    assert.match(src, /search\s*:\s*Object\.freeze/);
+    assert.match(src, /visible-indexes/);
+    assert.match(src, /component-indexes/);
+    assert.match(src, /settings-index/);
 });
 
 test("page-flow-catalog.js imports flow-registry.js to delegate flow registration", () => {
-    const sourceText = readFileSync(CATALOG_PATH, "utf8");
+    const src = readFileSync(CATALOG_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /import ["']\.\/flow-registry\.js["']/,
         "page-flow-catalog.js must import flow-registry.js to ensure flows are registered before hook files run",
     );
     assert.doesNotMatch(
-        sourceText,
+        src,
         /registerFlow\(/,
         "page-flow-catalog.js must not register flows itself — that belongs in flow-registry.js",
     );
 });
 
 test("page-flow-catalog.js imports the auth gateway session-flow-hooks", () => {
-    const sourceText = readFileSync(CATALOG_PATH, "utf8");
+    const src = readFileSync(CATALOG_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /import ["']\/static\/gateways\/auth\/session-flow-hooks\.js["']/,
         "page-flow-catalog.js must import auth session-flow-hooks.js to register its stage handlers",
     );
 });
 
 test("auth session-flow-hooks.js imports flow-registry.js before extending flows", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /import ["']\/static\/reuse\/flow-registry\.js["']/,
         "auth session-flow-hooks.js must import flow-registry.js so flows are registered before extendFlow is called, regardless of load order",
     );
-    const registryImportIndex = sourceText.indexOf("flow-registry.js");
-    const firstExtendIndex = sourceText.indexOf("extendFlow(");
+    const registryImportIndex = src.indexOf("flow-registry.js");
+    const firstExtendIndex = src.indexOf("extendFlow(");
     assert.ok(
         registryImportIndex < firstExtendIndex,
         "flow-registry.js import must appear before the first extendFlow() call in auth session-flow-hooks.js",
@@ -156,9 +152,9 @@ test("auth session bootstrap loads the required keyring before page authenticati
 });
 
 test("auth session-flow-hooks.js registers a validate-stored-token hook", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /extendFlow\(\s*["']authenticate-session["'],\s*["']validate-stored-token["']/,
         "auth session-flow-hooks.js must register a validate-stored-token hook on authenticate-session",
     );
@@ -171,24 +167,24 @@ test("deleted-account session handling clears its keyring and preserves the serv
 });
 
 test("auth defers stored-account validation for alternate guest sessions", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
-    assert.match(sourceText, /capabilities\.get\("session:isGuest"\)/);
-    assert.match(sourceText, /if \(usesAlternateSession\)/);
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    assert.match(src, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(src, /if \(usesAlternateSession\)/);
 });
 
 test("auth session-flow-hooks.js registers an enforce-setup-requirements hook", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /extendFlow\(\s*["']authenticate-session["'],\s*["']enforce-setup-requirements["']/,
         "auth session-flow-hooks.js must register an enforce-setup-requirements hook",
     );
 });
 
 test("auth session-flow-hooks.js registers a resolve-session hook", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /extendFlow\(\s*["']authenticate-session["'],\s*["']resolve-session["']/,
         "auth session-flow-hooks.js must register a resolve-session hook",
     );
@@ -200,67 +196,64 @@ test("auth session result preserves an alternate share failure reason", () => {
 });
 
 test("auth session-flow-hooks.js registers load-page hooks for authenticate and mount-page", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /extendFlow\(\s*["']load-page["'],\s*["']authenticate["']/,
         "auth session-flow-hooks.js must register a load-page authenticate hook",
     );
     assert.match(
-        sourceText,
+        src,
         /extendFlow\(\s*["']load-page["'],\s*["']mount-page["']/,
         "auth session-flow-hooks.js must register a load-page mount-page hook",
     );
 });
 
 test("auth session-flow-hooks.js redirects to /settings#security when TFA setup is required", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /\/settings#security/,
         "auth session-flow-hooks.js must redirect users who require TFA setup to /settings#security",
     );
 });
 
 test("auth session-flow-hooks.js exports invalidateAuthSetupCache", () => {
-    const sourceText = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /export function invalidateAuthSetupCache\(/,
         "auth session-flow-hooks.js must export invalidateAuthSetupCache for use after settings changes",
     );
 });
 
 test("share session-flow-hooks.js imports page-flow-catalog.js to ensure flows are pre-registered", () => {
-    const sourceText = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    const src = readFileSync(SHARE_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /import ["']\/static\/reuse\/page-flow-catalog\.js["']/,
         "share session-flow-hooks.js must import page-flow-catalog.js to guarantee flow registration before its hooks run",
     );
 });
 
 test("share session-flow-hooks.js registers an apply-alternate-auth hook on authenticate-session", () => {
-    const sourceText = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    const src = readFileSync(SHARE_HOOKS_PATH, "utf8");
     assert.match(
-        sourceText,
+        src,
         /extendFlow\(\s*["']authenticate-session["'],\s*["']apply-alternate-auth["']/,
         "share session-flow-hooks.js must register an apply-alternate-auth hook on authenticate-session",
     );
 });
 
 test("share session-flow-hooks.js defaults guest share chrome to hidden", () => {
-    const sourceText = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    const src = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    assert.match(src, /SHARE_GUEST_PAGE_DEFAULTS[\s\S]*showNavbar:\s*false/);
     assert.match(
-        sourceText,
-        /SHARE_GUEST_PAGE_DEFAULTS[\s\S]*showNavbar:\s*false/,
-    );
-    assert.match(
-        sourceText,
+        src,
         /SHARE_GUEST_PAGE_DEFAULTS[\s\S]*showShareControls:\s*false/,
     );
     assert.match(
-        sourceText,
+        src,
         /page:\s*\{[\s\S]*\.\.\.SHARE_GUEST_PAGE_DEFAULTS[\s\S]*\.\.\.\(shareData\.page \?\? \{\}\)/,
     );
 });

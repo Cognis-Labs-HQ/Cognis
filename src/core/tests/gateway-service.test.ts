@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
-import operatingSystem from "node:os";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import {
@@ -10,9 +10,7 @@ import {
 } from "../services/gateway-service.js";
 
 test("gateway bootstrap ignores infrastructure directories without manifests", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-gateways-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
     await mkdir(path.join(gatewaysRoot, "reuse"), { recursive: true });
     await writeFile(
@@ -34,9 +32,7 @@ test("gateway bootstrap ignores infrastructure directories without manifests", a
 });
 
 test("gateway bootstrap derives hasAdapters from adapter parent manifests", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-gateways-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
     const adaptersRoot = path.join(root, "adapters");
     const gatewayRoot = path.join(gatewaysRoot, "example");
@@ -69,9 +65,7 @@ test("gateway bootstrap derives hasAdapters from adapter parent manifests", asyn
 });
 
 test("gateway bootstrap preserves UUIDs for gateways without dependencies", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-gateways-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
     const gatewayRoot = path.join(gatewaysRoot, "database");
     const gatewayUuid = "5711a248-4ac9-5d44-98b5-b99bd4c6d722";
@@ -103,9 +97,7 @@ test("gateway bootstrap preserves UUIDs for gateways without dependencies", asyn
 });
 
 test("gateway bootstrap reports the root error when a required gateway fails", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-gateways-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
     const gatewayRoot = path.join(gatewaysRoot, "db");
     const logMessages: Array<{
@@ -131,8 +123,8 @@ test("gateway bootstrap reports the root error when a required gateway fails", a
                 gatewayRegistry: registry,
                 capabilities: new CapabilityStore(),
                 flow: {} as never,
-                log: (level, message, metadata) => {
-                    logMessages.push({ level, message, meta: metadata });
+                log: (level, message, meta) => {
+                    logMessages.push({ level, message, meta: meta });
                 },
             }),
         /Required gateway "db" failed during bootstrap: password authentication failed for user cognis/,
@@ -153,9 +145,7 @@ test("gateway bootstrap reports the root error when a required gateway fails", a
 });
 
 test("logging capability replaces the bootstrap logger for later gateways", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-gateways-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
     const loggingRoot = path.join(gatewaysRoot, "logging");
     const exampleRoot = path.join(gatewaysRoot, "example");
@@ -203,9 +193,7 @@ test("logging capability replaces the bootstrap logger for later gateways", asyn
 });
 
 test("gateway bootstrap initializes declared dependencies first", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-gateways-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
     const gatewayUuids = {
         logging: "592c26c3-40f4-51b6-b503-9c9ce134c523",

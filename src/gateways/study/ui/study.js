@@ -27,11 +27,11 @@ import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import {
-    bindStudySubNavigation as bindStudyNestedNavigation,
-    clearStudySubNavCache as clearStudyNestedNavigationCache,
-    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
+    bindStudyNestedNavigation,
+    clearStudyNestedNavigationCache,
+    loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    renderStudySubNavigation as renderStudyNestedNavigation,
+    renderStudyNestedNavigation,
 } from "/static/gateways/study/sub-navigation.js";
 import {
     resolveLanguageLabel,

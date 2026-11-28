@@ -154,31 +154,31 @@ export function createProfileRoutes(
     const ctx = resolveRouteContext(routeContext);
     const flowApi = ctx.flow;
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const claims = ctx.getAuthClaims(request);
+        const claims = ctx.getAuthClaims(req);
         const logMetadata = {
             component: "api-profile",
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
             accountId: claims?.sub,
         };
 
         if (
             url.pathname === "/api/v1/social/profile/ping" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (isGatewayEnabled && !isGatewayEnabled()) {
                 log?.(
                     "warn",
                     "Profile ping failed because the gateway is disabled.",
                     logMetadata,
                 );
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "gateway_disabled",
@@ -189,16 +189,13 @@ export function createProfileRoutes(
                 return true;
             }
             log?.("debug", "Profile ping succeeded.", logMetadata);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { available: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { available: true } }));
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/social/profile" &&
-            request.method === "GET"
-        ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
+        if (url.pathname === "/api/v1/social/profile" && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "user")) return true;
             let profile = await profileStore.getProfile(claims!.sub);
             if (!profile) {
                 profile = await profileStore.createProfile(
@@ -216,8 +213,8 @@ export function createProfileRoutes(
                 );
             }
             if (!profile) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -236,8 +233,8 @@ export function createProfileRoutes(
                 ...logMetadata,
                 targetAccountId: profile.accountId,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: profileResponse(
                         profile,
@@ -252,10 +249,10 @@ export function createProfileRoutes(
 
         if (
             url.pathname === "/api/v1/social/profile" &&
-            request.method === "PATCH"
+            req.method === "PATCH"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
-            const body = await readJson(request);
+            if (!ctx.requireAuth(req, res, "user")) return true;
+            const body = await readJson(req);
             const updates: Parameters<typeof profileStore.updateProfile>[1] =
                 {};
             if ("bio" in body)
@@ -280,10 +277,10 @@ export function createProfileRoutes(
                             visibility,
                         },
                     );
-                    response.writeHead(400, {
+                    res.writeHead(400, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "bad_request",
@@ -302,10 +299,10 @@ export function createProfileRoutes(
                     (visibility === "hidden" || visibility === "private")
                 ) {
                     const role = claims!.role;
-                    response.writeHead(409, {
+                    res.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: `${role}_visibility_incompatible`,
@@ -338,24 +335,24 @@ export function createProfileRoutes(
                 ...logMetadata,
                 changedFields: Object.keys(updates),
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: updated }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: updated }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/profile/avatar" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
                     "Avatar upload failed because file storage is unavailable.",
                     logMetadata,
                 );
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "file_storage_unavailable",
@@ -365,7 +362,7 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const mime = (request.headers["content-type"] ?? "")
+            const mime = (req.headers["content-type"] ?? "")
                 .split(";")[0]
                 .trim()
                 .toLowerCase();
@@ -378,8 +375,8 @@ export function createProfileRoutes(
                         mime,
                     },
                 );
-                response.writeHead(415, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(415, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unsupported_media_type",
@@ -389,7 +386,7 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const body = await readRawBody(request);
+            const body = await readRawBody(req);
             let updated: AccountProfile | null | undefined;
             let storedKey: string | undefined;
             if (flowApi.exists("upload-profile-media")) {
@@ -405,10 +402,10 @@ export function createProfileRoutes(
                         "persist-media",
                     );
                 if (persistResult?.reason === "profile_not_found") {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -462,10 +459,10 @@ export function createProfileRoutes(
                     },
                 );
                 if (!result) {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -490,8 +487,8 @@ export function createProfileRoutes(
                 sizeBytes: body.length,
                 avatarKey: storedKey ?? null,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         avatarKey: storedKey ?? null,
@@ -504,17 +501,17 @@ export function createProfileRoutes(
 
         if (
             url.pathname === "/api/v1/social/profile/avatar" &&
-            request.method === "DELETE"
+            req.method === "DELETE"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
                     "Avatar deletion failed because file storage is unavailable.",
                     logMetadata,
                 );
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "file_storage_unavailable",
@@ -536,10 +533,10 @@ export function createProfileRoutes(
                         "persist-removal",
                     );
                 if (persistResult?.reason === "profile_not_found") {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -588,24 +585,24 @@ export function createProfileRoutes(
                 ...logMetadata,
                 avatarKey: profile?.avatarKey ?? null,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { removed: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { removed: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/profile/banner" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
                     "Banner upload failed because file storage is unavailable.",
                     logMetadata,
                 );
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "file_storage_unavailable",
@@ -615,7 +612,7 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const mime = (request.headers["content-type"] ?? "")
+            const mime = (req.headers["content-type"] ?? "")
                 .split(";")[0]
                 .trim()
                 .toLowerCase();
@@ -628,8 +625,8 @@ export function createProfileRoutes(
                         mime,
                     },
                 );
-                response.writeHead(415, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(415, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unsupported_media_type",
@@ -639,7 +636,7 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const body = await readRawBody(request);
+            const body = await readRawBody(req);
             let updated: AccountProfile | null | undefined;
             let storedKey: string | undefined;
             if (flowApi.exists("upload-profile-media")) {
@@ -655,10 +652,10 @@ export function createProfileRoutes(
                         "persist-media",
                     );
                 if (persistResult?.reason === "profile_not_found") {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -712,10 +709,10 @@ export function createProfileRoutes(
                     },
                 );
                 if (!result) {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -734,8 +731,8 @@ export function createProfileRoutes(
                 sizeBytes: body.length,
                 bannerKey: storedKey ?? null,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         bannerKey: storedKey ?? null,
@@ -748,17 +745,17 @@ export function createProfileRoutes(
 
         if (
             url.pathname === "/api/v1/social/profile/banner" &&
-            request.method === "DELETE"
+            req.method === "DELETE"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
                     "Banner deletion failed because file storage is unavailable.",
                     logMetadata,
                 );
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "file_storage_unavailable",
@@ -780,10 +777,10 @@ export function createProfileRoutes(
                         "persist-removal",
                     );
                 if (persistResult?.reason === "profile_not_found") {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -824,16 +821,16 @@ export function createProfileRoutes(
                 ...logMetadata,
                 bannerKey: profile?.bannerKey ?? null,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { removed: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { removed: true } }));
             return true;
         }
 
         const publicProfileMatch = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/profile$/,
         );
-        if (publicProfileMatch && request.method === "GET") {
-            if (!ctx.requireAuth(request, response, "user")) return true;
+        if (publicProfileMatch && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "user")) return true;
             const handle = decodeURIComponent(publicProfileMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
@@ -841,8 +838,8 @@ export function createProfileRoutes(
                     ...logMetadata,
                     targetHandle: handle,
                 });
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -861,8 +858,8 @@ export function createProfileRoutes(
                     targetHandle: handle,
                     targetAccountId: target.accountId,
                 });
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -888,8 +885,8 @@ export function createProfileRoutes(
                         targetAccountId: target.accountId,
                     },
                 );
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -919,8 +916,8 @@ export function createProfileRoutes(
                 targetAccountId: target.accountId,
                 showDetails,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: showDetails
                         ? profileResponse(

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { isDeepStrictEqual } from "node:util";
-import { setTimeout as delay } from "node:timers/promises";
+import { setTimeout } from "node:timers/promises";
 import { skip } from "./reuse/browser.js";
 import {
     startEditorFixture,
@@ -232,7 +232,7 @@ for (const mode of ["grid", "nested"]) {
                             (event) => event.method === "Page.loadEventFired",
                         );
                 for (let attempt = 0; attempt < 400 && !loaded(); attempt++)
-                    await delay(25);
+                    await setTimeout(25);
                 assert.ok(
                     loaded(),
                     "The replacement document has loaded before querying its execution context",

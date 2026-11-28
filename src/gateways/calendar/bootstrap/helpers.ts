@@ -213,21 +213,21 @@ export function buildIcsAttachmentFilename(eventTitle: string): string {
 }
 
 export function sendJson(
-    response: ServerResponse,
+    res: ServerResponse,
     statusCode: number,
     payload: unknown,
 ): void {
-    response.writeHead(statusCode, { "content-type": "application/json" });
-    response.end(JSON.stringify(payload));
+    res.writeHead(statusCode, { "content-type": "application/json" });
+    res.end(JSON.stringify(payload));
 }
 
 export function sendCalendarError(
-    response: ServerResponse,
+    res: ServerResponse,
     code: string,
     message: string,
     statusCode: number,
 ): void {
-    sendJson(response, statusCode, {
+    sendJson(res, statusCode, {
         error: {
             code,
             message,
@@ -740,7 +740,7 @@ function resolveEventMetadata(
         responseOptions: ["accepted", "tentative", "declined"],
     };
 }
-export { resolveEventMetadata as resolveEventMeta };
+export { resolveEventMetadata };
 
 export function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "calendar_error";

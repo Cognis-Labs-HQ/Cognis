@@ -1,11 +1,5 @@
 import type { BootstrapLog } from "@cognis/core";
-import {
-    readFile,
-    mkdir,
-    writeFile,
-    rename,
-    rm as removePath,
-} from "node:fs/promises";
+import { readFile, mkdir, writeFile, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
@@ -48,7 +42,7 @@ export function createComponentState(
                     });
                     await rename(temporary, filename);
                 } finally {
-                    await removePath(temporary, { force: true });
+                    await rm(temporary, { force: true });
                 }
             });
             pending = next.catch((error) => {

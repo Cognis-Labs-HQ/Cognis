@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm as removePath, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -30,7 +30,7 @@ for (const elapsed of [11_000, 120_001]) {
             if (previousRoot === undefined)
                 delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
             else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousRoot;
-            await removePath(modulesRoot, { recursive: true, force: true });
+            await rm(modulesRoot, { recursive: true, force: true });
         });
         let enter!: () => void;
         let finish!: () => void;

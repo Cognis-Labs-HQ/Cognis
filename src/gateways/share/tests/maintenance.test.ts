@@ -38,7 +38,7 @@ test("share maintenance coalesces passes, stops after failures and resumes on th
                         },
                     },
                 ],
-                (...argumentsList) => logs.push(argumentsList),
+                (...args) => logs.push(args),
                 900_000,
             ),
     );

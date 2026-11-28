@@ -6,7 +6,7 @@ import type {
     StudyAdapterBootstrapCtx,
 } from "../../../gateways/study/gateway.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { DbClassesStore as DatabaseClassesStore } from "./store/index.js";
+import { DatabaseClassesStore } from "./store/index.js";
 import type { ClassesRouteOptions } from "./routes/index.js";
 import { createClassesRoutes } from "./routes/index.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
@@ -41,34 +41,30 @@ function createClassesPageRoute(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        currentRequest: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (currentRequest.method && currentRequest.method !== "GET")
-            return false;
+        if (req.method && req.method !== "GET") return false;
         if (!isAdapterEnabled()) return false;
         if (url.pathname !== "/classes") return false;
-        const session = ctx.getCookieSession(currentRequest);
+        const session = ctx.getCookieSession(req);
         if (!session) {
-            response.writeHead(302, { location: "/login" });
-            response.end();
+            res.writeHead(302, { location: "/login" });
+            res.end();
             return true;
         }
         if (!ctx.hasMinRole(session.role, "teacher")) {
-            response.writeHead(302, { location: "/dashboard" });
-            response.end();
+            res.writeHead(302, { location: "/dashboard" });
+            res.end();
             return true;
         }
-        ctx.setPageSecurityHeaders(response);
-        const html = await import("node:fs/promises").then((fileSystem) =>
-            fileSystem.readFile(
-                path.join(ADAPTER_UI_ROOT, "index.html"),
-                "utf8",
-            ),
+        ctx.setPageSecurityHeaders(res);
+        const html = await import("node:fs/promises").then((fs) =>
+            fs.readFile(path.join(ADAPTER_UI_ROOT, "index.html"), "utf8"),
         );
-        response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        response.end(html);
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
         return true;
     };
 }
@@ -82,34 +78,30 @@ function createMyClassesPageRoute(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        currentRequest: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (currentRequest.method && currentRequest.method !== "GET")
-            return false;
+        if (req.method && req.method !== "GET") return false;
         if (!isAdapterEnabled()) return false;
         if (url.pathname !== "/my-classes") return false;
-        const session = ctx.getCookieSession(currentRequest);
+        const session = ctx.getCookieSession(req);
         if (!session) {
-            response.writeHead(302, { location: "/login" });
-            response.end();
+            res.writeHead(302, { location: "/login" });
+            res.end();
             return true;
         }
         if (session.role === "teacher") {
-            response.writeHead(302, { location: "/classes" });
-            response.end();
+            res.writeHead(302, { location: "/classes" });
+            res.end();
             return true;
         }
-        ctx.setPageSecurityHeaders(response);
-        const html = await import("node:fs/promises").then((fileSystem) =>
-            fileSystem.readFile(
-                path.join(ADAPTER_UI_ROOT, "my-classes.html"),
-                "utf8",
-            ),
+        ctx.setPageSecurityHeaders(res);
+        const html = await import("node:fs/promises").then((fs) =>
+            fs.readFile(path.join(ADAPTER_UI_ROOT, "my-classes.html"), "utf8"),
         );
-        response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        response.end(html);
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
         return true;
     };
 }

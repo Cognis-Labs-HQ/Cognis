@@ -1,7 +1,6 @@
 import { mergeElementConfig } from "../../reuse/element-registry.js";
 
-const sleep = (milliseconds) =>
-    new Promise((resolve) => setTimeout(resolve, milliseconds));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function runDemoPuppeteer({
     state,

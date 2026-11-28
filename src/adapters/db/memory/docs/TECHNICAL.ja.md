@@ -8,7 +8,7 @@ SQL を実行せず呼び出しを記録する、永続化しないテスト用�
 
 ## 設定
 
-テスト内でインスタンスを作成します。canHandleDbProvider や createDbExecutor は公開せず、DB_TYPE=memory では標準ローダーに接続されません。
+テスト内でインスタンスを作成します。canHandleDatabaseProvider や createDatabaseExecutor は公開せず、DB_TYPE=memory では標準ローダーに接続されません。
 
 ## 動作
 

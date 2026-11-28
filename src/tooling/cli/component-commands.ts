@@ -1,5 +1,5 @@
 import { registerComponentOperations } from "./components/commands.ts";
-import { requireArgs as requireArgumentsList } from "./command-utils.ts";
+import { requireArgumentsList } from "./command-utils.ts";
 import { renderStructuredSummary, renderComponentsList } from "./formatters.ts";
 import { apiGet, apiPost, apiPut } from "./http.ts";
 import { register } from "./registry.ts";

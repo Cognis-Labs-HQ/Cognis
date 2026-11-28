@@ -1,10 +1,8 @@
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { LibraryLocation } from "./types.js";
 
-export async function ensureEntryStateSchema(
-    database: DbExecutor,
-): Promise<void> {
-    await database.ensureTable({
+export async function ensureEntryStateSchema(db: DbExecutor): Promise<void> {
+    await db.ensureTable({
         name: "study_library_viewed_entries",
         columns: [
             { name: "account_id", type: "text", notNull: true },
@@ -21,10 +19,10 @@ export async function ensureEntryStateSchema(
 }
 
 export async function viewedEntryIds(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
 ): Promise<string[]> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "study_library_viewed_entries",
         where: [{ column: "account_id", value: accountId }],
@@ -33,11 +31,11 @@ export async function viewedEntryIds(
 }
 
 export async function markEntriesViewed(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
     entryIds: readonly string[],
 ): Promise<void> {
-    await database.transaction(async (transactionDatabase) => {
+    await db.transaction(async (transactionDatabase) => {
         for (const entryId of entryIds) {
             await transactionDatabase.executeCommand({
                 option: "INSERT",
@@ -58,11 +56,11 @@ export async function markEntriesViewed(
 }
 
 export async function moveEntry(
-    database: DbExecutor,
+    db: DbExecutor,
     id: string,
     destination: LibraryLocation,
 ): Promise<void> {
-    await database.executeCommand({
+    await db.executeCommand({
         option: "UPDATE",
         table: "study_library_entries",
         set: {

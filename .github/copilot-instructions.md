@@ -557,9 +557,9 @@ Tests outside `src/core` must assume any gateway, adapter, or module outside the
 
 Prefer fully qualified database table names instead of aliases. When an alias is necessary, it must preserve the complete, descriptive table name; never shorten table names to initials, abbreviations, or single-letter aliases such as `a`, `i`, or `c`.
 
-Variable names, import bindings, function/class and runtime enum/namespace bindings, signature parameter labels and private members must use descriptive words. Do not use clipped forms such as `req`, `res`, `msg`, `prefs`, `dbExec`, `orig` or `tgtRow`, including inside camel-case names or constants. The shared glossary is `src/tooling/reuse/ambiguous-name-words.json`.
+Variable names, import bindings, function/class and runtime enum/namespace bindings, signature parameter labels and private members must describe their role. Reject opaque shorthand such as `ft`, `gs`, `tgtRow`, `orig` and numbered placeholders. Conventional developer vocabulary such as `args`, `db`, LDAP `dn`, HTTP `req`/`res`, `env`, `opts` and `params` is meaningful and must not be mechanically expanded. The shared glossary `src/tooling/reuse/ambiguous-name-words.json` defines the complete accepted vocabulary and rejected abbreviations, including compound names and constants.
 
-The only short binding exceptions are:
+Other short binding exceptions are:
 
 - `_` — an unused, unexported binding. Consuming its value or storing it as a parameter property is forbidden.
 - `id` — a unique identifier.
@@ -569,9 +569,9 @@ Use descriptive coordinate and dimension locals such as `horizontalCoordinate`, 
 
 Established contract vocabulary (`ctx`, `log`, `i18n`), protocol terms and product names retain their meaning. Do not expand MariaDB or IndexedDB into a different product name. Match complete identifier words rather than substrings.
 
-The syntax-tree detector in `src/tooling/reuse/ambiguous-names.js` checks bindings independently of line breaks, exports, declaration order and type annotations. `src/ui/tests/ambiguous-names.test.js` scans all JavaScript and TypeScript under `src`, including gateways, tooling, tests and fixtures, without baselines or file-specific exceptions. Parse failures fail validation. The detector cases cover rejected forms, legitimate vocabulary, counter roles and ignored bindings.
+The syntax-tree detector in `src/tooling/reuse/ambiguous-names.js` checks bindings independently of line breaks, exports, declaration order and type annotations. `src/ui/tests/ambiguous-names.test.js` scans all JavaScript and TypeScript under `src`, including gateways, tooling, tests and fixtures, without baselines or file-specific exceptions. Parse failures fail validation. Regression cases cover rejected shorthand, conventional vocabulary, counter roles, ignored bindings and naming-only export aliases.
 
-Preserve existing public property/payload keys, import targets and exported API labels when renaming implementation bindings. Use explicit destructuring/import/export aliases at those boundaries; do not add compatibility wrappers or duplicate API names. Public data keys, literal text, generic type parameters and type-only import identities are not local variable bindings. Signature parameter labels and private members still require descriptive names.
+When renaming an owned API, update its declaration, exports, imports and every caller to one canonical name. Never expand an implementation name only to export it under the compressed name, or import the compressed name under the expanded name. Naming-only aliases fail validation. Retain canonical third-party API names rather than creating mechanical expansion aliases. Preserve public property/payload keys; destructuring may separate a stable data key from a descriptive local. Public data keys, literal text, generic type parameters and type-only import identities are not local variable bindings.
 
 ### Module cohesion
 

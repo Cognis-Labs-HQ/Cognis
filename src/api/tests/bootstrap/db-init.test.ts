@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    resolveDbProviderDir as resolveDatabaseProviderDirectory,
+    resolveDatabaseProviderDirectory,
     initializeDatabaseSchema,
 } from "../../bootstrap/db-init.js";
 import path from "node:path";
@@ -29,15 +29,15 @@ function makeMockExecutor() {
         calls,
         mockSelectRows(
             sql: string,
-            parameters: unknown[],
+            params: unknown[],
             result: { id: string }[],
         ) {
-            const key = `${sql.trim()}${JSON.stringify(parameters)}`;
+            const key = `${sql.trim()}${JSON.stringify(params)}`;
             mockedRows.set(key, result);
         },
-        async execute(sql: string, parameters: unknown[] = []) {
-            calls.push({ sql: sql.trim(), params: parameters });
-            const key = `${sql.trim()}${JSON.stringify(parameters)}`;
+        async execute(sql: string, params: unknown[] = []) {
+            calls.push({ sql: sql.trim(), params: params });
+            const key = `${sql.trim()}${JSON.stringify(params)}`;
             if (mockedRows.has(key)) {
                 return { rows: mockedRows.get(key) };
             }

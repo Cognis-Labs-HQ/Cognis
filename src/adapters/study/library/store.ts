@@ -107,12 +107,12 @@ export class LibraryStore {
     }
 
     private async upsert(
-        databaseExecutor: DbExecutor,
+        db: DbExecutor,
         table: string,
         conflictTarget: string[],
         values: Record<string, unknown>,
     ): Promise<void> {
-        await databaseExecutor.executeCommand({
+        await db.executeCommand({
             option: "INSERT",
             table,
             values,
@@ -140,9 +140,9 @@ export class LibraryStore {
     }
 
     async saveSchema(schema: LibrarySchema): Promise<void> {
-        await this.activeDatabase.transaction(async (databaseExecutor) => {
+        await this.activeDatabase.transaction(async (db) => {
             const existing = await readSchemaJson(
-                databaseExecutor,
+                db,
                 schema.id,
                 schema.version,
             );
@@ -151,7 +151,7 @@ export class LibraryStore {
                     throw new Error("schema_version_conflict");
                 return;
             }
-            await writeSchemaJson(databaseExecutor, schema, false);
+            await writeSchemaJson(db, schema, false);
         });
     }
 
@@ -174,8 +174,8 @@ export class LibraryStore {
             if (String(existing.rows[0].digest) !== digest)
                 throw new Error("content_pack_version_conflict");
         }
-        await this.activeDatabase.transaction(async (databaseExecutor) => {
-            const blacklist = await databaseExecutor.executeCommand({
+        await this.activeDatabase.transaction(async (db) => {
+            const blacklist = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_content_hash_blacklist",
                 columns: ["content_hash"],
@@ -199,7 +199,7 @@ export class LibraryStore {
                     return [[record.id, { canonicalId, contentHash }] as const];
                 }),
             );
-            const previousEntries = await databaseExecutor.executeCommand({
+            const previousEntries = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_entries",
                 columns: ["id", "provider_modified"],
@@ -229,13 +229,13 @@ export class LibraryStore {
                 ).filter((id): id is string => id !== null),
             ).size;
             const registeredSchema = await readSchemaJson(
-                databaseExecutor,
+                db,
                 schema.id,
                 schema.version,
             );
             if (registeredSchema !== null) {
                 if (registeredSchema !== JSON.stringify(schema)) {
-                    const schemaOwners = await databaseExecutor.executeCommand({
+                    const schemaOwners = await db.executeCommand({
                         option: "SELECT",
                         table: "study_library_content_packs",
                         columns: ["publisher", "pack_id"],
@@ -255,10 +255,10 @@ export class LibraryStore {
                     ) {
                         throw new Error("schema_version_conflict");
                     }
-                    await writeSchemaJson(databaseExecutor, schema, true);
+                    await writeSchemaJson(db, schema, true);
                 }
             } else {
-                await writeSchemaJson(databaseExecutor, schema, false);
+                await writeSchemaJson(db, schema, false);
             }
             const importedSourceIds = new Set(
                 Array.from(
@@ -268,7 +268,7 @@ export class LibraryStore {
             );
             if (manifest.pruneOmittedRecords !== false) {
                 const retained = await retainedPackEntries(
-                    databaseExecutor,
+                    db,
                     previousEntryIds,
                     importedSourceIds,
                     providerModifiedEntryIds,
@@ -284,12 +284,12 @@ export class LibraryStore {
                         "source_entry_id",
                         "target_entry_id",
                     ]) {
-                        await executeReferences(databaseExecutor, {
+                        await executeReferences(db, {
                             option: "DELETE",
                             where: [{ column, value: previousId }],
                         });
                     }
-                    await databaseExecutor.executeCommand({
+                    await db.executeCommand({
                         option: "DELETE",
                         table: "study_library_entries",
                         where: [{ column: "id", value: previousId }],
@@ -304,7 +304,7 @@ export class LibraryStore {
                 offset < replacedSources.length;
                 offset += 500
             ) {
-                await executeReferences(databaseExecutor, {
+                await executeReferences(db, {
                     option: "DELETE",
                     where: [
                         {
@@ -352,40 +352,35 @@ export class LibraryStore {
                     }
                 }
                 const { canonicalId: id, contentHash } = identity;
-                await this.upsert(
-                    databaseExecutor,
-                    "study_library_entries",
-                    ["id"],
-                    {
-                        id,
-                        scope: "global",
-                        scope_id: "global",
-                        schema_id: schema.id,
-                        schema_version: schema.version,
-                        layer: record.layer,
-                        language: schema.language,
-                        label: record.label.trim(),
-                        class: record.class ?? null,
-                        tags_json: JSON.stringify(record.tags ?? []),
-                        source_record_id: record.id,
-                        display_id: record.displayId ?? null,
-                        hidden: record.hidden === true,
-                        always_show_definition:
-                            record.alwaysShowDefinition === true,
-                        protected: manifest.protected === true,
-                        editable: record.editable !== false,
-                        fields_json: JSON.stringify(fields),
-                        search_text:
-                            `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
-                                .normalize()
-                                .toLocaleLowerCase(),
-                        content_hash: contentHash,
-                        created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
-                        updated_at: new Date().toISOString(),
-                    },
-                );
+                await this.upsert(db, "study_library_entries", ["id"], {
+                    id,
+                    scope: "global",
+                    scope_id: "global",
+                    schema_id: schema.id,
+                    schema_version: schema.version,
+                    layer: record.layer,
+                    language: schema.language,
+                    label: record.label.trim(),
+                    class: record.class ?? null,
+                    tags_json: JSON.stringify(record.tags ?? []),
+                    source_record_id: record.id,
+                    display_id: record.displayId ?? null,
+                    hidden: record.hidden === true,
+                    always_show_definition:
+                        record.alwaysShowDefinition === true,
+                    protected: manifest.protected === true,
+                    editable: record.editable !== false,
+                    fields_json: JSON.stringify(fields),
+                    search_text:
+                        `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
+                            .normalize()
+                            .toLocaleLowerCase(),
+                    content_hash: contentHash,
+                    created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
+                    updated_at: new Date().toISOString(),
+                });
             }
-            await replacePackAssets(databaseExecutor, plan);
+            await replacePackAssets(db, plan);
             for (const record of records) {
                 const source = recordIdentity.get(record.id);
                 if (!source) continue;
@@ -409,7 +404,7 @@ export class LibraryStore {
                             row.reference,
                         ),
                     };
-                    await executeReferences(databaseExecutor, {
+                    await executeReferences(db, {
                         option: "INSERT",
                         values,
                         conflict: { action: "ignore" },
@@ -417,7 +412,7 @@ export class LibraryStore {
                 }
             }
             if (!unchanged) {
-                await databaseExecutor.executeCommand({
+                await db.executeCommand({
                     option: "INSERT",
                     table: "study_library_content_packs",
                     values: {
@@ -486,14 +481,11 @@ export class LibraryStore {
         ) => Promise<void>,
     ): Promise<readonly string[]> {
         let deletedEntryIds: readonly string[] = [];
-        await this.activeDatabase.transaction(async (databaseExecutor) => {
-            deletedEntryIds = await this.resolveDeletionCascade(
-                entryIds,
-                databaseExecutor,
-            );
+        await this.activeDatabase.transaction(async (db) => {
+            deletedEntryIds = await this.resolveDeletionCascade(entryIds, db);
             const entries: LibraryEntry[] = [];
             for (const entryId of deletedEntryIds) {
-                const entryResult = await databaseExecutor.executeCommand({
+                const entryResult = await db.executeCommand({
                     option: "SELECT",
                     table: "study_library_entries",
                     where: [{ column: "id", value: entryId }],
@@ -505,7 +497,7 @@ export class LibraryStore {
             await authorize(entries);
             const remove = async () => {
                 for (const entryId of deletedEntryIds) {
-                    const result = await databaseExecutor.executeCommand({
+                    const result = await db.executeCommand({
                         option: "SELECT",
                         table: "study_library_entries",
                         columns: ["content_hash"],
@@ -516,7 +508,7 @@ export class LibraryStore {
                         blacklistContentHashes &&
                         typeof contentHash === "string"
                     ) {
-                        await databaseExecutor.executeCommand({
+                        await db.executeCommand({
                             option: "INSERT",
                             table: "study_library_content_hash_blacklist",
                             values: {
@@ -530,12 +522,12 @@ export class LibraryStore {
                         "source_entry_id",
                         "target_entry_id",
                     ]) {
-                        await executeReferences(databaseExecutor, {
+                        await executeReferences(db, {
                             option: "DELETE",
                             where: [{ column, value: entryId }],
                         });
                     }
-                    await databaseExecutor.executeCommand({
+                    await db.executeCommand({
                         option: "DELETE",
                         table: "study_library_entries",
                         where: [{ column: "id", value: entryId }],
@@ -550,7 +542,7 @@ export class LibraryStore {
 
     async resolveDeletionCascade(
         entryIds: readonly string[],
-        transactionDatabase: DbExecutor = this.activeDatabase,
+        db: DbExecutor = this.activeDatabase,
         includeRestricted = false,
     ): Promise<readonly string[]> {
         const cascadeIds = new Set(entryIds);
@@ -559,7 +551,7 @@ export class LibraryStore {
         const schemaCache = new Map<string, LibrarySchema>();
         while (pendingIds.length > 0) {
             const targetEntryId = pendingIds.shift()!;
-            const dependents = await executeReferences(transactionDatabase, {
+            const dependents = await executeReferences(db, {
                 option: "SELECT",
                 columns: ["source_entry_id", "relation"],
                 where: [{ column: "target_entry_id", value: targetEntryId }],
@@ -567,7 +559,7 @@ export class LibraryStore {
             for (const row of dependents.rows ?? []) {
                 const dependentId = String(row.source_entry_id);
                 if (cascadeIds.has(dependentId)) continue;
-                const sourceResult = await transactionDatabase.executeCommand({
+                const sourceResult = await db.executeCommand({
                     option: "SELECT",
                     table: "study_library_entries",
                     columns: ["schema_id", "schema_version", "layer"],
@@ -579,7 +571,7 @@ export class LibraryStore {
                 let schema = schemaCache.get(schemaKey);
                 if (!schema) {
                     const schemaJson = await readSchemaJson(
-                        transactionDatabase,
+                        db,
                         String(source.schema_id),
                         Number(source.schema_version),
                     );

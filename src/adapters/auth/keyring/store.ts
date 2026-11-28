@@ -24,8 +24,8 @@ export interface KeyringVaultStore {
 class DatabaseKeyringVaultStore implements KeyringVaultStore {
     private readonly database: KeyringDbExecutor;
 
-    constructor(database: unknown) {
-        this.database = database as KeyringDbExecutor;
+    constructor(db: unknown) {
+        this.database = db as KeyringDbExecutor;
     }
 
     async ensureSchema(): Promise<void> {
@@ -87,8 +87,8 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
 
     async set(accountId: string, vaultJson: string): Promise<void> {
         const updatedAt = new Date().toISOString();
-        await this.database.transaction(async (database) => {
-            await database.executeCommand({
+        await this.database.transaction(async (db) => {
+            await db.executeCommand({
                 option: "DELETE",
                 table: "auth_keyring_vault_parts",
                 where: [{ column: "account_id", value: accountId }],
@@ -101,7 +101,7 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
                         vault_json: chunk,
                         updated_at: updatedAt,
                     };
-                    await database.executeCommand({
+                    await db.executeCommand({
                         option: "INSERT",
                         table: "auth_keyring_vaults",
                         values,
@@ -115,7 +115,7 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
                         },
                     });
                 } else
-                    await database.executeCommand({
+                    await db.executeCommand({
                         option: "INSERT",
                         table: "auth_keyring_vault_parts",
                         values: {
@@ -130,12 +130,12 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
     }
 
     async delete(accountId: string): Promise<void> {
-        await this.database.transaction(async (database) => {
+        await this.database.transaction(async (db) => {
             for (const table of [
                 "auth_keyring_vault_parts",
                 "auth_keyring_vaults",
             ])
-                await database.executeCommand({
+                await db.executeCommand({
                     option: "DELETE",
                     table,
                     where: [{ column: "account_id", value: accountId }],
@@ -143,4 +143,4 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
         });
     }
 }
-export { DatabaseKeyringVaultStore as DbKeyringVaultStore };
+export { DatabaseKeyringVaultStore };

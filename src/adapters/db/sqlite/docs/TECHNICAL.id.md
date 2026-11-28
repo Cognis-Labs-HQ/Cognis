@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional SQLite.
 
 ## Antarmuka
 
-`SqliteDbGateway(client)` menerapkan DatabaseGateway. SqliteClient menyediakan all(statement, params), run(statement, params) dengan changes, dan exec(statement). Perintah terstruktur memakai placeholder serta konflik SQLite.
+`SqliteDatabaseGateway(client)` menerapkan DatabaseGateway. SqliteClient menyediakan all(statement, params), run(statement, params) dengan changes, dan exec(statement). Perintah terstruktur memakai placeholder serta konflik SQLite.
 
 ## Konfigurasi
 
@@ -18,7 +18,7 @@ Adapter SQLite menyediakan gateway database ringan untuk deployment berbasis SQL
 
 ### Tanggung Jawab
 
-- Mengimplementasikan antarmuka `DatabaseGateway` melalui `SqliteDbGateway`.
+- Mengimplementasikan antarmuka `DatabaseGateway` melalui `SqliteDatabaseGateway`.
 - Menjalankan kueri, perintah, dan transaksi terhadap klien SQLite yang disediakan.
 - Mendukung perintah database terstruktur dengan sintaks placeholder dan konflik SQLite.
 - Menyediakan helper skema auth khusus SQLite serta skrip inisialisasi dan migrasi SQL.

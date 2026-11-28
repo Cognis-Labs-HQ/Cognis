@@ -145,7 +145,7 @@ function bindStudyNestedNavigation(
         { signal },
     );
 }
-export { bindStudyNestedNavigation as bindStudySubNavigation };
+export { bindStudyNestedNavigation };
 
 /**
  * Clears the in-memory sub-navigation cache. Call this after any operation
@@ -161,7 +161,7 @@ function clearStudyNestedNavigationCache() {
         new CustomEvent("cognis:study-enrollment-changed"),
     );
 }
-export { clearStudyNestedNavigationCache as clearStudySubNavCache };
+export { clearStudyNestedNavigationCache };
 
 function resolveDefaultChildPageUrl(modules) {
     const firstModulePageUrl = (modules ?? [])
@@ -188,16 +188,16 @@ function resolveRememberedStudyPageUrl(currentPath) {
  * page.
  *
  * Public exports:
- *   loadStudySubNavigationModel — loads the active learning languages,
+ *   loadStudyNestedNavigationModel — loads the active learning languages,
  *   resolves display labels, selects the active language, and fetches child
  *   component links for the active and switchable Study languages.
- *   renderStudySubNavigation — renders the shared Study child-page
+ *   renderStudyNestedNavigation — renders the shared Study child-page
  *   sub-navigation HTML string from the loaded model.
- *   clearStudySubNavCache — clears the in-memory cache; call after the user
+ *   clearStudyNestedNavigationCache — clears the in-memory cache; call after the user
  *   changes their learning-language preferences so the next render is fresh.
  *
  * Usage:
- *   const model = await loadStudySubNavigationModel({
+ *   const model = await loadStudyNestedNavigationModel({
  *     fallbackLanguageCode: 'ja',
  *   });
  *
@@ -370,7 +370,7 @@ async function loadStudyNestedNavigationModel({ fallbackLanguageCode } = {}) {
         languagePageUrlsByCode,
     };
 }
-export { loadStudyNestedNavigationModel as loadStudySubNavigationModel };
+export { loadStudyNestedNavigationModel };
 
 /** A composer slot shared by Study pages; route selection remains render-time state. */
 function createStudyNestedNavigationSlot(model, i18n) {
@@ -385,13 +385,13 @@ function createStudyNestedNavigationSlot(model, i18n) {
             }),
     };
 }
-export { createStudyNestedNavigationSlot as createStudySubNavigationSlot };
+export { createStudyNestedNavigationSlot };
 
 /**
  * Renders the shared Study child-page sub-navigation HTML.
  *
  * Usage:
- *   const subNavigationHtml = renderStudySubNavigation({
+ *   const subNavigationHtml = renderStudyNestedNavigation({
  *     model,
  *     currentPath: window.location.pathname,
  *     i18n,
@@ -525,4 +525,4 @@ function renderStudyNestedNavigation({ model, currentPath, i18n }) {
         </div>
     `;
 }
-export { renderStudyNestedNavigation as renderStudySubNavigation };
+export { renderStudyNestedNavigation };

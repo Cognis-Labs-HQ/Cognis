@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { installI18nEnvironment } from "../../../tooling/reuse/i18n-environment.js";
 
-const context = virtualMachine.createContext({});
-const module = new virtualMachine.SourceTextModule(
+const context = vm.createContext({});
+const module = new vm.SourceTextModule(
     await readFile(new URL("../ui/event-composer.js", import.meta.url), "utf8"),
     { context },
 );
@@ -18,7 +18,7 @@ await module.link((specifier) => {
     };
     const exports = contracts[specifier];
     assert.ok(exports, `Unexpected composer dependency: ${specifier}`);
-    return new virtualMachine.SyntheticModule(
+    return new vm.SyntheticModule(
         Object.keys(exports),
         function () {
             for (const [name, value] of Object.entries(exports))

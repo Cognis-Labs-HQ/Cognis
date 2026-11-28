@@ -34,11 +34,8 @@ export function normalizeHttpUrl(rawUrl) {
     }
 }
 
-export function resolveExternalBaseUrl(environment = process.env) {
-    return String(
-        environment.EXTERNAL_HOST ??
-            (environment.HOST ? `http://${environment.HOST}` : ""),
-    )
+export function resolveExternalBaseUrl(env = process.env) {
+    return String(env.EXTERNAL_HOST ?? (env.HOST ? `http://${env.HOST}` : ""))
         .trim()
         .replace(/\/+$/g, "");
 }

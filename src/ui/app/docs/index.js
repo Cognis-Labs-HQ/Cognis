@@ -3,9 +3,9 @@ import { reportClientError } from "../../reuse/error-reporting.js";
 import { showToast } from "../../reuse/toast.js";
 import { guides } from "./guides.js";
 import {
-    loadDocsIndex as loadDocumentsIndex,
-    loadDocsBundleMarkdown as loadDocumentsBundleMarkdown,
-    readDocsLanguages as readDocumentsLanguages,
+    loadDocumentsIndex,
+    loadDocumentsBundleMarkdown,
+    readDocumentsLanguages,
 } from "../../reuse/docs-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
@@ -55,11 +55,11 @@ function documentTitle(item) {
     );
 }
 
-function createDocumentsSearchProvider(i18n, documents, activeDocumentContent) {
+function createDocumentsSearchProvider(i18n, docs, activeDocumentContent) {
     return async () => {
         const documentsItems = [];
         const changelogItems = [];
-        for (const item of documents ?? []) {
+        for (const item of docs ?? []) {
             const title = documentTitle(item);
             let contentText = activeDocumentContent.get(item.slug) ?? "";
             if (!contentText) {
@@ -291,8 +291,8 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
-    const documents = await loadDocumentsIndex({ signal });
-    const navigationDocuments = documents.filter(
+    const docs = await loadDocumentsIndex({ signal });
+    const navigationDocuments = docs.filter(
         (document) => !isChangelogDocument(document),
     );
     const navigationMenu = createSideMenu({
@@ -302,7 +302,7 @@ export async function mount(root, { signal } = {}) {
     });
     registerSearchIndex(
         "docs",
-        createDocumentsSearchProvider(i18n, documents, documentsSearchContent),
+        createDocumentsSearchProvider(i18n, docs, documentsSearchContent),
     );
 
     const elements = [

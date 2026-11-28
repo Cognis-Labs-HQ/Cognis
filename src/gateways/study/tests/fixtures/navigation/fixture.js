@@ -3,8 +3,8 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
-    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
-    bindStudySubNavigation as bindStudyNestedNavigation,
+    createStudyNestedNavigationSlot,
+    bindStudyNestedNavigation,
 } from "/static/gateways/study/sub-navigation.js";
 
 const finish = beginPageLoading();

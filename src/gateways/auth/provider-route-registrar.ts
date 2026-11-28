@@ -72,15 +72,15 @@ export function registerAuthProviderRoutes(
         registeredPaths.add(key);
         claimedRoutes.add(key);
         disposers.push(
-            routeRegistry.register(async (request, response, url) => {
-                if (request.method !== method || url.pathname !== routePath) {
+            routeRegistry.register(async (req, res, url) => {
+                if (req.method !== method || url.pathname !== routePath) {
                     return false;
                 }
                 if (!isProviderEnabled()) {
-                    response.writeHead(503, {
+                    res.writeHead(503, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "provider_unavailable",
@@ -91,13 +91,13 @@ export function registerAuthProviderRoutes(
                     return true;
                 }
                 try {
-                    await handler(request, response, url);
+                    await handler(req, res, url);
                 } catch {
-                    if (!response.headersSent) {
-                        response.writeHead(500, {
+                    if (!res.headersSent) {
+                        res.writeHead(500, {
                             "content-type": "application/json",
                         });
-                        response.end(
+                        res.end(
                             JSON.stringify({
                                 error: {
                                     code: "sso_callback_failed",
@@ -106,8 +106,8 @@ export function registerAuthProviderRoutes(
                                 },
                             }),
                         );
-                    } else if (!response.writableEnded) {
-                        response.end();
+                    } else if (!res.writableEnded) {
+                        res.end();
                     }
                 }
                 return true;
@@ -121,34 +121,34 @@ export function registerAuthProviderRoutes(
             claimedRoutes.add(publicKey);
             registeredPaths.add(publicKey);
             disposers.push(
-                routeRegistry.register(async (request, response, url) => {
+                routeRegistry.register(async (req, res, url) => {
                     if (
-                        request.method !== method ||
+                        req.method !== method ||
                         url.pathname !== publicRoutePath
                     ) {
                         return false;
                     }
                     if (!isProviderEnabled()) {
-                        response.writeHead(302, {
+                        res.writeHead(302, {
                             location: "/login?reason=sso_provider_unavailable",
                         });
-                        response.end();
+                        res.end();
                         return true;
                     }
                     if (path === "/callback" && !url.search) {
-                        await serveAuthCallbackPage(response);
+                        await serveAuthCallbackPage(res);
                         return true;
                     }
                     try {
-                        await handler(request, response, url);
+                        await handler(req, res, url);
                     } catch {
-                        if (!response.headersSent) {
-                            response.writeHead(302, {
+                        if (!res.headersSent) {
+                            res.writeHead(302, {
                                 location: "/login?reason=sso_callback_failed",
                             });
-                            response.end();
-                        } else if (!response.writableEnded) {
-                            response.end();
+                            res.end();
+                        } else if (!res.writableEnded) {
+                            res.end();
                         }
                     }
                     return true;

@@ -14,22 +14,22 @@ export function createTfaAdapterAdminRoutes(
 ) {
     const base = "/api/v1/gateways/tfa/adapters";
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const claims = getAuthClaims(request);
+        const claims = getAuthClaims(req);
         const logMetadata = {
             component: "tfa-gateway",
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
             accountId: claims?.sub,
         };
 
-        if (url.pathname === base && request.method === "GET") {
-            if (!requireAuth(request, response, "admin")) return true;
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+        if (url.pathname === base && req.method === "GET") {
+            if (!requireAuth(req, res, "admin")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: gateway.listAdapters().map((adapter) => ({
                         ...adapter,
@@ -47,12 +47,12 @@ export function createTfaAdapterAdminRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch) {
-            if (!requireAuth(request, response, "admin")) return true;
+            if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
             const adapter = gateway.getAdapter(adapterId);
             if (!adapter) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -62,15 +62,15 @@ export function createTfaAdapterAdminRoutes(
                 );
                 return true;
             }
-            if (request.method === "GET") {
+            if (req.method === "GET") {
                 const adapterConfig = await gateway.getAdapterConfig(adapterId);
                 const schema = adapter.getConfigSchema();
                 const configData: Record<string, unknown> = {};
                 for (const field of schema) {
                     configData[field.key] = adapterConfig[field.key] ?? null;
                 }
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: configData,
                         envValues: {},
@@ -84,11 +84,11 @@ export function createTfaAdapterAdminRoutes(
                 );
                 return true;
             }
-            if (request.method === "PUT") {
-                const body = await readJson(request);
+            if (req.method === "PUT") {
+                const body = await readJson(req);
                 await gateway.saveAdapterConfig(adapterId, body);
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { saved: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
                 log?.("info", "Saved TFA adapter config.", {
                     ...logMetadata,
                     adapterId,
@@ -101,14 +101,14 @@ export function createTfaAdapterAdminRoutes(
         const stateMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
-        if (stateMatch && request.method === "POST") {
-            if (!requireAuth(request, response, "admin")) return true;
+        if (stateMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(stateMatch[1]);
             const action = stateMatch[2];
             const adapter = gateway.getAdapter(adapterId);
             if (!adapter) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -123,8 +123,8 @@ export function createTfaAdapterAdminRoutes(
             } else {
                 await gateway.disableAdapter(adapterId);
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { updated: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
             log?.("warn", "Changed TFA adapter state.", {
                 ...logMetadata,
                 adapterId,

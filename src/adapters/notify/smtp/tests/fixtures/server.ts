@@ -19,9 +19,9 @@ export function createMockSmtpServer(
                 host: "127.0.0.1",
                 port: address.port,
                 close: () =>
-                    new Promise<void>((currentResolve, reject) =>
+                    new Promise<void>((res, reject) =>
                         server.close((error) =>
-                            error ? reject(error) : currentResolve(),
+                            error ? reject(error) : res(),
                         ),
                     ),
             });

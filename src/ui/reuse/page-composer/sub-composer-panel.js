@@ -2,10 +2,10 @@
  * Builds the nested composer's element library and save/discard/reset panel.
  *
  * Public exports:
- *   createSubComposerPanelHandlers(deps) — creates the panel renderer for nested editor states.
+ *   createNestedComposerPanelHandlers(deps) — creates the panel renderer for nested editor states.
  *
  * Usage:
- *   const panels = createSubComposerPanelHandlers(dependencies);
+ *   const panels = createNestedComposerPanelHandlers(dependencies);
  *   panels.createSubElementsPanel(state); // state identifies the active nested grid.
  *
  * @param {object} deps Injected sizing, placement, panel bounds, rendering and editing callbacks.
@@ -331,4 +331,4 @@ function createNestedComposerPanelHandlers({
 
     return { createSubElementsPanel: createNestedElementsPanel };
 }
-export { createNestedComposerPanelHandlers as createSubComposerPanelHandlers };
+export { createNestedComposerPanelHandlers };

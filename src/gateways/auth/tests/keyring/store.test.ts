@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { InMemoryTestExecutor } from "../../../db/tests/in-memory-test-executor.js";
-import { DbKeyringVaultStore as DatabaseKeyringVaultStore } from "../../../../adapters/auth/keyring/store.js";
+import { DatabaseKeyringVaultStore } from "../../../../adapters/auth/keyring/store.js";
 
 test("keyring vaults persist opaque envelopes in their own database table", async () => {
-    const database = new InMemoryTestExecutor();
-    const store = new DatabaseKeyringVaultStore(database);
+    const db = new InMemoryTestExecutor();
+    const store = new DatabaseKeyringVaultStore(db);
     await store.ensureSchema();
 
     const envelope = JSON.stringify({
@@ -16,7 +16,7 @@ test("keyring vaults persist opaque envelopes in their own database table", asyn
         updatedAt: "2026-07-28T00:00:00.000Z",
     });
     await store.set("account-a", envelope);
-    const restartedStore = new DatabaseKeyringVaultStore(database);
+    const restartedStore = new DatabaseKeyringVaultStore(db);
     await restartedStore.ensureSchema();
     assert.equal(await restartedStore.get("account-a"), envelope);
 

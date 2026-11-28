@@ -55,9 +55,9 @@ The gateway also contributes a `DbDialectHelper` as the `db:dialect` capability.
 
 Not responsible for: defining application-level schemas (those live in adapter SQL files), caching query results, or managing connection pools beyond what the underlying driver provides.
 
-### DbExecutor and createDbExecutor
+### DbExecutor and createDatabaseExecutor
 
-The internal `DbExecutor` abstraction in `src/gateways/db/reuse/db-executor.ts` is used by the gateway's store layer and by the auth gateway. The factory function `createDbExecutor(dbType)` in `src/gateways/db/executor.ts` selects and instantiates the right executor based on `DB_TYPE`:
+The internal `DbExecutor` abstraction in `src/gateways/db/reuse/db-executor.ts` is used by the gateway's store layer and by the auth gateway. The factory function `createDatabaseExecutor(dbType)` in `src/gateways/db/executor.ts` selects and instantiates the right executor based on `DB_TYPE`:
 
 - `postgresql` — `PostgresExecutor` using the `pg` driver; connection from `DATABASE_URL`.
 - `mariadb` — `MariadbExecutor` using `mysql2/promise`; connection from `DATABASE_URL`.
@@ -86,13 +86,13 @@ export interface DbDialectHelper {
 
 Key source locations:
 
-| Path                                   | Purpose                                                   |
-| -------------------------------------- | --------------------------------------------------------- |
-| `src/gateways/db/gateway.ts`           | `DatabaseGateway` interface                               |
-| `src/gateways/db/executor.ts`          | `createDbExecutor`, `PostgresExecutor`, `MariadbExecutor` |
-| `src/gateways/db/init.ts`              | `initializeDatabaseSchema`                                |
-| `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                  |
-| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                           |
+| Path                                   | Purpose                                                         |
+| -------------------------------------- | --------------------------------------------------------------- |
+| `src/gateways/db/gateway.ts`           | `DatabaseGateway` interface                                     |
+| `src/gateways/db/executor.ts`          | `createDatabaseExecutor`, `PostgresExecutor`, `MariadbExecutor` |
+| `src/gateways/db/init.ts`              | `initializeDatabaseSchema`                                      |
+| `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                        |
+| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                                 |
 
 ### Administration
 

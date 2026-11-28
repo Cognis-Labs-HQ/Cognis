@@ -10,10 +10,10 @@ import {
     fetchLeaderboardStandings,
 } from "../client.js";
 import {
-    bindStudySubNavigation as bindStudyNestedNavigation,
-    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
+    bindStudyNestedNavigation,
+    loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
+    createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 
 export async function mount(root, { signal } = {}) {

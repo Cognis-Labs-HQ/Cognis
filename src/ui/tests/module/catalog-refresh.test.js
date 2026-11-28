@@ -290,7 +290,7 @@ async function fixture(context, { failTranslations = false, settings } = {}) {
         {
             window,
             console: {
-                error: (...argumentsList) => errors.push(argumentsList),
+                error: (...args) => errors.push(args),
             },
             AbortController,
             CustomEvent: class extends Event {

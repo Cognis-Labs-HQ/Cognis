@@ -174,8 +174,7 @@ export class LibraryService implements LibraryCapability {
                     this.notifyDeletion,
                     this.log,
                 ),
-            validateImages: (...argumentsList) =>
-                this.images.validate(...argumentsList),
+            validateImages: (...args) => this.images.validate(...args),
             notifyRequest,
             isAvailable: (entry) =>
                 this.availability.allows(this.registeredSchema(entry.schemaId)),

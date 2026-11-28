@@ -75,12 +75,12 @@ async function collectRoomMessageSearchItems(room) {
     if (!records.length) {
         let before = "";
         while (true) {
-            const parameters = new URLSearchParams({
+            const params = new URLSearchParams({
                 limit: String(MESSAGE_SEARCH_PAGE_SIZE),
             });
-            if (before) parameters.set("before", before);
+            if (before) params.set("before", before);
             const response = await apiFetch(
-                `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${parameters}`,
+                `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
             );
             if (!response.ok) return [];
             const payload = await response.json();
@@ -739,10 +739,10 @@ export async function renderThread(
     before,
     { force = false } = {},
 ) {
-    const parameters = new URLSearchParams({ limit: "50" });
-    if (before) parameters.set("before", before);
+    const params = new URLSearchParams({ limit: "50" });
+    if (before) params.set("before", before);
     const response = await apiFetch(
-        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${parameters}`,
+        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
     );
     if (!response.ok) {
         if (!before) container.innerHTML = "";

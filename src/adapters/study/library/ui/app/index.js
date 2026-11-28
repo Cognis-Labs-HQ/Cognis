@@ -6,10 +6,10 @@ import { createSideMenu } from "/static/reuse/side-menu.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { loadLibrary } from "./data.js";
 import {
-    bindStudySubNavigation as bindStudyNestedNavigation,
-    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
+    bindStudyNestedNavigation,
+    loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
+    createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 import { isAdminScope } from "/static/gateways/study/language.js";
 import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";

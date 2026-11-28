@@ -10,4 +10,4 @@ function readDatabaseTimestampValue(value: unknown): string | null {
     }
     return String(value);
 }
-export { readDatabaseTimestampValue as readDbTimestampValue };
+export { readDatabaseTimestampValue };

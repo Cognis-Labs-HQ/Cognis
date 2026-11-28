@@ -6,12 +6,12 @@ import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
-    buildDbErrorMeta as buildDatabaseErrorMetadata,
+    buildDatabaseErrorMetadata,
     summarizeStatement,
-    writeDbLog as writeDatabaseLog,
+    writeDatabaseLog,
 } from "../../../gateways/db/reuse/executor-log.js";
 import {
-    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
+    buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
     type StructuredDbDialect,
@@ -125,17 +125,17 @@ class PostgresDatabaseGateway implements DatabaseGateway {
 
     async query<Row = Record<string, unknown>>(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<QueryResult<Row>> {
-        const result = await this.pool.query<Row>(statement, parameters);
+        const result = await this.pool.query<Row>(statement, params);
         return { rows: result.rows, rowCount: result.rowCount };
     }
 
     async execute(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        const result = await this.pool.query(statement, parameters);
+        const result = await this.pool.query(statement, params);
         return { affectedRows: result.rowCount ?? 0 };
     }
 
@@ -187,7 +187,7 @@ class PostgresDatabaseGateway implements DatabaseGateway {
         }
     }
 }
-export { PostgresDatabaseGateway as PostgresDbGateway };
+export { PostgresDatabaseGateway };
 
 class PostgresExecutor implements RawDbExecutor {
     constructor(
@@ -196,24 +196,24 @@ class PostgresExecutor implements RawDbExecutor {
         private readonly inTransaction = false,
     ) {}
 
-    async execute(sql: string, parameters: unknown[] = []) {
+    async execute(sql: string, params: unknown[] = []) {
         let parameterIndex = 1;
         const normalizedSql = sql.replace(/\?/g, () => `$${parameterIndex++}`);
         writeDatabaseLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "postgresql",
             statement: summarizeStatement(normalizedSql),
-            parameterCount: parameters.length,
+            parameterCount: params.length,
         });
         try {
-            const result = await this.pool.query(normalizedSql, parameters);
+            const result = await this.pool.query(normalizedSql, params);
             return { rows: result.rows, rowCount: result.rowCount };
         } catch (error) {
             writeDatabaseLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
                 provider: "postgresql",
                 statement: summarizeStatement(normalizedSql),
-                parameterCount: parameters.length,
+                parameterCount: params.length,
                 ...buildDatabaseErrorMetadata(error),
             });
             throw error;
@@ -488,24 +488,20 @@ function readRenamedColumn(
 function canHandleDatabaseProvider(providerId: DbProviderId): boolean {
     return providerId === "postgresql";
 }
-export { canHandleDatabaseProvider as canHandleDbProvider };
+export { canHandleDatabaseProvider };
 
-async function createDatabaseExecutor(argumentsList: {
+async function createDatabaseExecutor(args: {
     databaseUrl: string;
     log?: BootstrapLog;
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
     pool?: PostgresPool;
 }): Promise<RawDbExecutor> {
     const pool =
-        argumentsList.pool ??
-        (await createPostgresPool(
-            argumentsList.databaseUrl,
-            argumentsList.log,
-        ));
-    argumentsList.lifecycle?.registerShutdown(async () => {
+        args.pool ?? (await createPostgresPool(args.databaseUrl, args.log));
+    args.lifecycle?.registerShutdown(async () => {
         await pool.end();
         writeDatabaseLog(
-            argumentsList.log,
+            args.log,
             "info",
             "PostgreSQL connection pool drained.",
             {
@@ -514,9 +510,9 @@ async function createDatabaseExecutor(argumentsList: {
             },
         );
     });
-    return new PostgresExecutor(pool, argumentsList.log);
+    return new PostgresExecutor(pool, args.log);
 }
-export { createDatabaseExecutor as createDbExecutor };
+export { createDatabaseExecutor };
 
 async function createPostgresPool(
     databaseUrl: string,

@@ -1,7 +1,7 @@
 import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 test("composer opt-ins follow family tags and preserve other classifications", () => {
     const control = {
@@ -28,7 +28,7 @@ test("composer opt-ins follow family tags and preserve other classifications", (
             field.change();
         },
     };
-    const context = virtualMachine.createContext({});
+    const context = vm.createContext({});
     Object.assign(
         context,
         loadLibraryUiModule("app/transformation-opt-ins.js", context),

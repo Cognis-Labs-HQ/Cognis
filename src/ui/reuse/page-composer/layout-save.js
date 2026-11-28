@@ -28,8 +28,7 @@ function registerSaveFlow(ctx) {
     });
     ctx.extendFlow(FLOW, "persist", { id: FLOW }, async ({ input, data }) => {
         if (input.signal?.aborted) return;
-        const log = (...argumentsList) =>
-            ctx.capabilities.get("ui:log")?.(...argumentsList);
+        const log = (...args) => ctx.capabilities.get("ui:log")?.(...args);
         try {
             data.profiles = await input.save(...input.args, input.signal);
             if (!input.signal?.aborted)

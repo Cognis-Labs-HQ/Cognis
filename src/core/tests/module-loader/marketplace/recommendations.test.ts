@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createRecommendationReader } from "../../../services/module-loader/marketplace/recommendations.js";
 import { ModuleMarketplaceService } from "../../../services/module-loader/marketplace/index.js";
-import { mkdtemp, rm as removePath } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -12,7 +12,7 @@ const response = (ids: string[]) => new Response(JSON.stringify(ids));
 
 test("public marketplace reads share the cache and configuration changes select the new feed", async (context) => {
     const root = await mkdtemp(path.join(tmpdir(), "cognis-recommendations-"));
-    context.after(() => removePath(root, { recursive: true, force: true }));
+    context.after(() => rm(root, { recursive: true, force: true }));
     const originalFetch = globalThis.fetch;
     context.after(() => {
         globalThis.fetch = originalFetch;
@@ -83,7 +83,7 @@ test("a failed refresh retains the shared result and retries after its failure b
         now = 0;
     const logs: unknown[][] = [];
     const read = createRecommendationReader(
-        (...argumentsList) => logs.push(argumentsList),
+        (...args) => logs.push(args),
         async () => {
             requests++;
             return healthy

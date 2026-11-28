@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm as removePath } from "node:fs/promises";
-import operatingSystem from "node:os";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { MarketplaceRepository } from "../../../services/module-loader/marketplace/repository.js";
@@ -87,9 +87,7 @@ test("module manifests reject malformed dependency lists", () => {
 });
 
 test("public GitHub strings use the raw content endpoint", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-strings-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-strings-"));
     const repository = new TestMarketplaceRepository(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -130,7 +128,7 @@ test("public GitHub strings use the raw content endpoint", async () => {
         );
     } finally {
         globalThis.fetch = originalFetch;
-        await removePath(root, { recursive: true, force: true });
+        await rm(root, { recursive: true, force: true });
     }
 });
 
@@ -144,51 +142,41 @@ const githubSource: ModuleSource = {
 
 for (const privateRepository of [false, true]) {
     test(`large GitHub artwork is cached from raw bytes (private: ${privateRepository})`, async (context) => {
-        const root = await mkdtemp(
-            path.join(operatingSystem.tmpdir(), "cognis-artwork-"),
-        );
-        context.after(() => removePath(root, { recursive: true, force: true }));
+        const root = await mkdtemp(path.join(os.tmpdir(), "cognis-artwork-"));
+        context.after(() => rm(root, { recursive: true, force: true }));
         const repository = new TestMarketplaceRepository("sources.json", root);
         const body = Buffer.alloc(1300000, 42);
-        context.mock.method(
-            globalThis,
-            "fetch",
-            async (input, requestOptions) => {
-                const url = String(input);
-                if (privateRepository) {
-                    const endpoint = new URL(url);
-                    assert.equal(endpoint.origin, "https://api.github.com");
-                    assert.equal(
-                        endpoint.pathname,
-                        "/repos/example/notes/contents/assets/banner.png",
-                    );
-                    assert.equal(
-                        new Headers(requestOptions?.headers).get(
-                            "authorization",
-                        ),
-                        "Bearer test-token",
-                    );
-                    assert.equal(
-                        new Headers(requestOptions?.headers).get("accept"),
-                        "application/vnd.github.raw+json",
-                    );
-                } else {
-                    assert.equal(
-                        url,
-                        "https://raw.githubusercontent.com/example/notes/feature%2Fartwork/assets/banner.png",
-                    );
-                    assert.equal(
-                        new Headers(requestOptions?.headers).get(
-                            "authorization",
-                        ),
-                        null,
-                    );
-                }
-                return new Response(body, {
-                    headers: { "content-type": "application/octet-stream" },
-                });
-            },
-        );
+        context.mock.method(globalThis, "fetch", async (input, init) => {
+            const url = String(input);
+            if (privateRepository) {
+                const endpoint = new URL(url);
+                assert.equal(endpoint.origin, "https://api.github.com");
+                assert.equal(
+                    endpoint.pathname,
+                    "/repos/example/notes/contents/assets/banner.png",
+                );
+                assert.equal(
+                    new Headers(init?.headers).get("authorization"),
+                    "Bearer test-token",
+                );
+                assert.equal(
+                    new Headers(init?.headers).get("accept"),
+                    "application/vnd.github.raw+json",
+                );
+            } else {
+                assert.equal(
+                    url,
+                    "https://raw.githubusercontent.com/example/notes/feature%2Fartwork/assets/banner.png",
+                );
+                assert.equal(
+                    new Headers(init?.headers).get("authorization"),
+                    null,
+                );
+            }
+            return new Response(body, {
+                headers: { "content-type": "application/octet-stream" },
+            });
+        });
         const assetId = await repository.cacheAsset(
             { ...githubSource, scanPrivateRepos: privateRepository },
             "assets/banner.png",

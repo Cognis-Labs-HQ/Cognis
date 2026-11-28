@@ -43,10 +43,10 @@ export async function loadDynamicContribution(
         if (!moduleExports) return null;
         const factory = moduleExports?.[exportName];
         if (typeof factory !== "function") return null;
-        const argumentsList = buildArgumentsList
+        const args = buildArgumentsList
             ? await buildArgumentsList(descriptor)
             : undefined;
-        return factory(argumentsList);
+        return factory(args);
     } catch (error) {
         onError?.(error, descriptor);
         return null;

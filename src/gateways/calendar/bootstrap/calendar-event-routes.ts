@@ -14,7 +14,7 @@ import {
     requireOrganizerOwnedSourceEvent,
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
-    resolveEventMeta as resolveEventMetadata,
+    resolveEventMetadata,
     resolveAvailabilityStatus,
     sendCalendarError,
     sendJson,
@@ -29,8 +29,8 @@ import { requireSharedCalendarAccess } from "./shared-access.js";
 import { rejectInactiveSharedCalendar } from "./shared-calendar-guards.js";
 
 export async function handleCalendarEventRoutes({
-    req: request,
-    res: response,
+    req: req,
+    res: res,
     url,
     ctx,
     gateway,
@@ -60,8 +60,8 @@ export async function handleCalendarEventRoutes({
     const eventMatch = url.pathname.match(
         /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events\/([^/]+)$/,
     );
-    if (eventMatch && request.method === "GET") {
-        const claims = ctx.requireAuth(request, response, "user");
+    if (eventMatch && req.method === "GET") {
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(eventMatch[1]);
         const eventId = decodeURIComponent(eventMatch[2]);
@@ -74,8 +74,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req: request,
-                res: response,
+                req: req,
+                res: res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -90,7 +90,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res: response,
+                res: res,
             })
         ) {
             return true;
@@ -114,10 +114,10 @@ export async function handleCalendarEventRoutes({
             ownedCalendar ?? gateway.getCalendar(calendarId);
         const effectiveEvent = ownedEvent ?? invitedEvent;
         if (!effectiveCalendar || !effectiveEvent) {
-            sendCalendarError(response, "not_found", "Event not found.", 404);
+            sendCalendarError(res, "not_found", "Event not found.", 404);
             return true;
         }
-        sendJson(response, 200, {
+        sendJson(res, 200, {
             data: {
                 calendar: effectiveCalendar,
                 event: effectiveEvent,
@@ -132,8 +132,8 @@ export async function handleCalendarEventRoutes({
         return true;
     }
 
-    if (eventMatch && request.method === "PATCH") {
-        const claims = ctx.requireAuth(request, response, "user");
+    if (eventMatch && req.method === "PATCH") {
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(eventMatch[1]);
         const eventId = decodeURIComponent(eventMatch[2]);
@@ -146,8 +146,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req: request,
-                res: response,
+                req: req,
+                res: res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -163,7 +163,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res: response,
+                res: res,
             })
         ) {
             return true;
@@ -173,13 +173,13 @@ export async function handleCalendarEventRoutes({
         const sourceCalendarId =
             activeSharedCalendar?.ownerCalendarId ?? calendarId;
         const existingEvent = gateway.getEvent(sourceCalendarId, eventId);
-        const body = (await readJson(request)) as Record<string, unknown>;
+        const body = (await readJson(req)) as Record<string, unknown>;
         if (
             activeSharedCalendar &&
             (body.attendees !== undefined || body.inviteEmails !== undefined)
         ) {
             sendCalendarError(
-                response,
+                res,
                 "forbidden",
                 "Shared calendar recipients cannot change event participants or responses.",
                 403,
@@ -190,7 +190,7 @@ export async function handleCalendarEventRoutes({
         const canInviteByEmail = hasMinRole(claims.role, "admin");
         if (inviteEmails.length > 0 && !canInviteByEmail) {
             sendCalendarError(
-                response,
+                res,
                 "forbidden",
                 "Only founder or admin users can send email invites.",
                 403,
@@ -203,7 +203,7 @@ export async function handleCalendarEventRoutes({
                 gateway,
                 sharedCalendar: activeSharedCalendar,
                 eventId,
-                res: response,
+                res: res,
             })
         ) {
             return true;
@@ -215,7 +215,7 @@ export async function handleCalendarEventRoutes({
                 ownerAccountId: claims.sub,
                 calendarId,
                 eventId,
-                res: response,
+                res: res,
                 actionVerb: "edit",
             })
         ) {
@@ -293,30 +293,20 @@ export async function handleCalendarEventRoutes({
             updatedSeries.forEach((event) => {
                 scheduleReminderNotificationsForEvent(event);
             });
-            sendJson(response, 200, { data: updatedEvent });
+            sendJson(res, 200, { data: updatedEvent });
         } catch (error) {
             const message = errorMessage(error);
             if (message === "calendar_not_found") {
-                sendCalendarError(
-                    response,
-                    "not_found",
-                    "Calendar not found.",
-                    404,
-                );
+                sendCalendarError(res, "not_found", "Calendar not found.", 404);
                 return true;
             }
             if (message === "calendar_event_not_found") {
-                sendCalendarError(
-                    response,
-                    "not_found",
-                    "Event not found.",
-                    404,
-                );
+                sendCalendarError(res, "not_found", "Event not found.", 404);
                 return true;
             }
             if (message === "calendar_invalid_range") {
                 sendCalendarError(
-                    response,
+                    res,
                     "bad_request",
                     "Event end time must be after start time.",
                     400,
@@ -331,7 +321,7 @@ export async function handleCalendarEventRoutes({
                 error: message,
             });
             sendCalendarError(
-                response,
+                res,
                 "internal_error",
                 "Failed to update event.",
                 500,
@@ -340,8 +330,8 @@ export async function handleCalendarEventRoutes({
         return true;
     }
 
-    if (eventMatch && request.method === "DELETE") {
-        const claims = ctx.requireAuth(request, response, "user");
+    if (eventMatch && req.method === "DELETE") {
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(eventMatch[1]);
         const eventId = decodeURIComponent(eventMatch[2]);
@@ -354,8 +344,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req: request,
-                res: response,
+                req: req,
+                res: res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -371,7 +361,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res: response,
+                res: res,
             })
         ) {
             return true;
@@ -387,7 +377,7 @@ export async function handleCalendarEventRoutes({
                     gateway,
                     sharedCalendar: activeSharedCalendar,
                     eventId,
-                    res: response,
+                    res: res,
                 })
             ) {
                 return true;
@@ -399,7 +389,7 @@ export async function handleCalendarEventRoutes({
                     ownerAccountId: claims.sub,
                     calendarId,
                     eventId,
-                    res: response,
+                    res: res,
                     actionVerb: "delete",
                 })
             ) {
@@ -426,16 +416,11 @@ export async function handleCalendarEventRoutes({
                     }),
                 ),
             );
-            sendJson(response, 200, { data: { deleted: true } });
+            sendJson(res, 200, { data: { deleted: true } });
         } catch (error) {
             const message = errorMessage(error);
             if (message === "calendar_event_not_found") {
-                sendCalendarError(
-                    response,
-                    "not_found",
-                    "Event not found.",
-                    404,
-                );
+                sendCalendarError(res, "not_found", "Event not found.", 404);
                 return true;
             }
             log?.("error", "Failed to delete event.", {
@@ -446,7 +431,7 @@ export async function handleCalendarEventRoutes({
                 error: message,
             });
             sendCalendarError(
-                response,
+                res,
                 "internal_error",
                 "Failed to delete event.",
                 500,

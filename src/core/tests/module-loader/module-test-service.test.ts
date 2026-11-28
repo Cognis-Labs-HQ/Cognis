@@ -1,14 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
-import operatingSystem from "node:os";
+import os from "node:os";
 import path from "node:path";
 import { ModuleTestService, discoverTestFiles } from "../../index.js";
 
 async function createModule(testBody: string) {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-module-tests-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-module-tests-"));
     const moduleRoot = path.join(root, "checkout-by-uuid");
     await mkdir(path.join(moduleRoot, "tests"), { recursive: true });
     await writeFile(

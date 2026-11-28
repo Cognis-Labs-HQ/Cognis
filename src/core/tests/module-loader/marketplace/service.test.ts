@@ -1,16 +1,10 @@
 import { createSecretContext } from "./fixtures/encryption.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    mkdir,
-    mkdtemp,
-    readFile,
-    rm as removePath,
-    writeFile,
-} from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import operatingSystem from "node:os";
 import path from "node:path";
-import { execFile as executorFile, spawnSync } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { promisify } from "node:util";
 import {
     DEFAULT_TRUSTED_MODULE_SOURCE,
@@ -26,7 +20,7 @@ const source = {
     namespace: "example",
     baseUrl: "https://api.github.com",
 };
-const executorFileAsync = promisify(executorFile);
+const executorFileAsync = promisify(execFile);
 const gitAvailable = spawnSync("git", ["--version"]).status === 0;
 
 test("module marketplace persists source metadata and exposes credential configuration", async () => {

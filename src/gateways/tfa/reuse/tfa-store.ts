@@ -585,4 +585,4 @@ class DatabaseTfaStore {
         });
     }
 }
-export { DatabaseTfaStore as DbTfaStore };
+export { DatabaseTfaStore };

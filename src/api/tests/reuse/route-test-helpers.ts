@@ -6,21 +6,21 @@ type AuthClaims = { sub: string; role: string };
 
 export function createAuthContext(claimsByToken: Map<string, AuthClaims>) {
     return {
-        getAuthClaims(request: { headers?: Record<string, string> }) {
-            const auth = request.headers?.authorization ?? "";
+        getAuthClaims(req: { headers?: Record<string, string> }) {
+            const auth = req.headers?.authorization ?? "";
             const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
             return claimsByToken.get(token) ?? null;
         },
         requireAuth(
-            request: { headers?: Record<string, string> },
-            response: Pick<ServerResponse, "writeHead" | "end">,
+            req: { headers?: Record<string, string> },
+            res: Pick<ServerResponse, "writeHead" | "end">,
         ) {
-            const auth = request.headers?.authorization ?? "";
+            const auth = req.headers?.authorization ?? "";
             const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
             const claims = claimsByToken.get(token);
             if (!auth || !auth.startsWith("Bearer ") || !claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",

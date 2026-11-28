@@ -22,10 +22,10 @@ const log = bindCapability("ui:log");
  * before the verification flow begins.
  *
  * Public exports:
- *   initGeneralPrefs(root, options) — initialises email management in the given root element.
+ *   initGeneralPreferences(root, options) — initialises email management in the given root element.
  *
  * Usage:
- *   const generalPrefs = initGeneralPrefs(root, { i18n, username, signal, onRender = () => {} });
+ *   const generalPrefs = initGeneralPreferences(root, { i18n, username, signal, onRender = () => {} });
  *   await generalPrefs.init();
  *
  * @param {Element} root
@@ -49,11 +49,11 @@ function initGeneralPreferences(
     }
 
     async function loadEmails() {
-        const response = await emailClient().request(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
-        if (!response.ok) return;
-        const payload = await response.json();
+        if (!res.ok) return;
+        const payload = await res.json();
         signal?.throwIfAborted();
         emails = payload.data ?? [];
     }
@@ -67,7 +67,7 @@ function initGeneralPreferences(
     }
 
     async function addEmail(address) {
-        const response = await emailClient().request(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
             {
                 method: "POST",
@@ -75,29 +75,28 @@ function initGeneralPreferences(
                 body: JSON.stringify({ email: address }),
             },
         );
-        if (response.status === 409) {
-            const payload = await response.json().catch(() => ({}));
+        if (res.status === 409) {
+            const payload = await res.json().catch(() => ({}));
             throw new Error(payload?.error?.code ?? "already_verified");
         }
-        if (response.status === 429) throw new Error("rate_limited");
-        if (response.status === 503)
-            throw new Error("email_delivery_unavailable");
-        if (!response.ok) throw new Error("add_failed");
-        const payload = await response.json();
+        if (res.status === 429) throw new Error("rate_limited");
+        if (res.status === 503) throw new Error("email_delivery_unavailable");
+        if (!res.ok) throw new Error("add_failed");
+        const payload = await res.json();
         return { ...payload.data, queued: payload.queued === true };
     }
 
     async function removeEmail(address) {
-        const response = await emailClient().request(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}`,
             { method: "DELETE" },
         );
-        if (response.status === 409) {
-            const payload = await response.json();
+        if (res.status === 409) {
+            const payload = await res.json();
             const code = payload?.error?.code ?? "remove_failed";
             throw new Error(code);
         }
-        if (!response.ok) throw new Error("remove_failed");
+        if (!res.ok) throw new Error("remove_failed");
     }
 
     async function forceRemoveUnverifiedEmail(address) {
@@ -108,15 +107,14 @@ function initGeneralPreferences(
     }
 
     async function resendVerification(address) {
-        const response = await emailClient().request(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/resend`,
             { method: "POST" },
         );
-        if (response.status === 429) throw new Error("rate_limited");
-        if (response.status === 503)
-            throw new Error("email_delivery_unavailable");
-        if (!response.ok) throw new Error("resend_failed");
-        const payload = await response.json();
+        if (res.status === 429) throw new Error("rate_limited");
+        if (res.status === 503) throw new Error("email_delivery_unavailable");
+        if (!res.ok) throw new Error("resend_failed");
+        const payload = await res.json();
         return { ...payload.data, queued: payload.queued === true };
     }
 
@@ -139,7 +137,7 @@ function initGeneralPreferences(
     }
 
     async function submitVerificationCode(address, code) {
-        const response = await emailClient().request(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/verify`,
             {
                 method: "POST",
@@ -147,8 +145,8 @@ function initGeneralPreferences(
                 body: JSON.stringify({ code }),
             },
         );
-        if (response.status === 422) throw new Error("invalid_code");
-        if (!response.ok) throw new Error("verify_failed");
+        if (res.status === 422) throw new Error("invalid_code");
+        if (!res.ok) throw new Error("verify_failed");
     }
 
     function renderEmailList() {
@@ -247,9 +245,7 @@ function initGeneralPreferences(
                                 .request(
                                     `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
                                 )
-                                .then((response) =>
-                                    response.ok ? response.json() : null,
-                                )
+                                .then((res) => (res.ok ? res.json() : null))
                                 .then((payload) => {
                                     const entry = (payload?.data ?? []).find(
                                         (emailEntry) =>
@@ -570,4 +566,4 @@ function initGeneralPreferences(
         },
     };
 }
-export { initGeneralPreferences as initGeneralPrefs };
+export { initGeneralPreferences };

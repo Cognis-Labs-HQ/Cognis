@@ -6,7 +6,7 @@ import {
     resolveGridWidthBounds,
 } from "../../reuse/page-composer/grid-sizing.js";
 import { createGridOverlayHandlers } from "../../reuse/page-composer/grid-overlay.js";
-import { createSubComposerHandlers as createNestedComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
+import { createNestedComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
 import { createComposerRenderer } from "../../reuse/page-composer/composer-render.js";
 import {
     fitComposerPanel,

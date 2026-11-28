@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
-import { DbProfileStore as DatabaseProfileStore } from "../../store.js";
-import { DbLocalAccountStore as DatabaseLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
+import { DatabaseProfileStore } from "../../store.js";
+import { DatabaseLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createSocialRoutes } from "../social.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
-import { makeTempDb as makeTemporaryDatabase } from "./helpers.js";
+import { makeTemporaryDatabase } from "./helpers.js";
 
 function makeRequest(method: string, token: string | null) {
     return {
@@ -28,7 +28,7 @@ async function setupUsers(executor: any, ...usernames: string[]) {
 }
 
 test("social routes - follow and unfollow", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -95,12 +95,12 @@ test("social routes - follow and unfollow", async () => {
         assert.equal(status, 200);
         assert.ok(!(await profileStore.isFollowing("alice", "bob")));
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - follow recreates a missing requester profile", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "hidden" });
@@ -137,12 +137,12 @@ test("social routes - follow recreates a missing requester profile", async () =>
             "alice started following you.",
         );
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - can unfollow inactive profile", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -169,12 +169,12 @@ test("social routes - can unfollow inactive profile", async () => {
         assert.equal(status, 200);
         assert.ok(!(await profileStore.isFollowing("alice", "bob")));
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - cannot follow hidden user", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "hidden");
         await profileStore.updateProfile("hidden", { visibility: "hidden" });
@@ -194,12 +194,12 @@ test("social routes - cannot follow hidden user", async () => {
         );
         assert.equal(status, 404);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - hidden requester cannot follow visible user", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "hidden" });
@@ -226,12 +226,12 @@ test("social routes - hidden requester cannot follow visible user", async () => 
         assert.match(body, /This user cannot be followed/);
         assert.ok(!(await profileStore.isFollowing("alice", "bob")));
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - cannot follow yourself", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice");
         const route = createSocialRoutes(profileStore);
@@ -250,12 +250,12 @@ test("social routes - cannot follow yourself", async () => {
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - unauthenticated follow request returns 401", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "hidden" });
@@ -275,12 +275,12 @@ test("social routes - unauthenticated follow request returns 401", async () => {
         );
         assert.equal(status, 401);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - block removes follow and returns 404 for blocked user", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -317,12 +317,12 @@ test("social routes - block removes follow and returns 404 for blocked user", as
         );
         assert.equal(status, 404);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - admin blocked by a user cannot find blocker in social search", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "admin");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -349,12 +349,12 @@ test("social routes - admin blocked by a user cannot find blocker in social sear
         assert.equal(status, 200);
         assert.deepEqual(JSON.parse(body).data, []);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - cannot block yourself", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice");
         const route = createSocialRoutes(profileStore);
@@ -373,12 +373,12 @@ test("social routes - cannot block yourself", async () => {
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - unblock removes block", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -418,12 +418,12 @@ test("social routes - unblock removes block", async () => {
         );
         assert.equal(status, 200);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - get followers and following", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(
             executor,
@@ -475,12 +475,12 @@ test("social routes - get followers and following", async () => {
         assert.equal(following.data.length, 1);
         assert.equal(following.data[0].handle, "alice");
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - followers list is empty for friends-visibility account when requester is not a follower", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(
             executor,
@@ -513,12 +513,12 @@ test("social routes - followers list is empty for friends-visibility account whe
         const parsed = JSON.parse(body);
         assert.equal(parsed.data.length, 0);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - admin search includes hidden users", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "admin", "hidden-user");
         await profileStore.updateProfile("hidden-user", {
@@ -547,12 +547,12 @@ test("social routes - admin search includes hidden users", async () => {
         assert.equal(parsed.data.length, 1);
         assert.equal(parsed.data[0].handle, "hidden-user");
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - regular search excludes hidden users", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "hidden-user");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -581,12 +581,12 @@ test("social routes - regular search excludes hidden users", async () => {
         const parsed = JSON.parse(body);
         assert.deepEqual(parsed.data, []);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("social routes - admin relationship can message hidden users", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "admin", "hidden-user");
         await profileStore.updateProfile("admin", { visibility: "hidden" });
@@ -619,6 +619,6 @@ test("social routes - admin relationship can message hidden users", async () => 
         assert.equal(parsed.data.canSendMessageRequest, true);
         assert.equal(parsed.data.requiresMessageRequest, false);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });

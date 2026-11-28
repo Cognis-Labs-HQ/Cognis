@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbNotificationStore as DatabaseNotificationStore } from "../notification-store.js";
+import { DatabaseNotificationStore } from "../notification-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
 async function makeNotificationStore(): Promise<DatabaseNotificationStore> {

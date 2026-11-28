@@ -10,11 +10,11 @@ export function createCapabilityRegistry() {
     const values = new Map();
     const pending = [];
     const normalize = (id) => String(id ?? "").trim();
-    const invoke = (id, argumentsList) => {
+    const invoke = (id, args) => {
         const handler = values.get(id);
         if (typeof handler !== "function")
             throw new TypeError(`capability_not_callable:${id}`);
-        return handler(...argumentsList);
+        return handler(...args);
     };
     return {
         contribute(id, value) {
@@ -38,9 +38,9 @@ export function createCapabilityRegistry() {
         bind(id) {
             const key = normalize(id);
             if (!key) throw new TypeError("capability_id_required");
-            return (...argumentsList) => {
-                if (values.has(key)) return invoke(key, argumentsList);
-                pending.push({ id: key, args: argumentsList });
+            return (...args) => {
+                if (values.has(key)) return invoke(key, args);
+                pending.push({ id: key, args: args });
                 if (pending.length > MAX_PENDING_INVOCATIONS) pending.shift();
                 return Promise.resolve(false);
             };

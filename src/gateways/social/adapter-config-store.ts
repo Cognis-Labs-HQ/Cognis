@@ -63,4 +63,4 @@ class DatabaseAdapterConfigStore implements AdapterConfigStore {
         });
     }
 }
-export { DatabaseAdapterConfigStore as DbAdapterConfigStore };
+export { DatabaseAdapterConfigStore };

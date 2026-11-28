@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { mergeEntryCollectionUpdate } from "../ui/app/entry-collection.js";
 import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 
@@ -15,7 +15,7 @@ function fixture({
     const toasts = [];
     const details = [];
     const page = new AbortController();
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         replaceMountScope,
         mergeEntryCollectionUpdate,
         window: new EventTarget(),
@@ -24,9 +24,9 @@ function fixture({
         bindViewedEntries: () => () => {},
         closeUnrelatedVariantViews: () => false,
         loadDrawing: async () => false,
-        openEntryPopup: (...argumentsList) => {
+        openEntryPopup: (...args) => {
             const deferred = Promise.withResolvers();
-            details.push({ ...deferred, signal: argumentsList[6] });
+            details.push({ ...deferred, signal: args[6] });
             return deferred.promise;
         },
         bindVariantInteractions() {},
@@ -38,9 +38,8 @@ function fixture({
         setSelectionMode() {},
         fetchLibraryLocations: () =>
             new Promise((resolve, reject) => pending.push({ resolve, reject })),
-        updateSelectionActions: (...argumentsList) =>
-            updates.push(argumentsList),
-        showToast: (...argumentsList) => toasts.push(argumentsList),
+        updateSelectionActions: (...args) => updates.push(args),
+        showToast: (...args) => toasts.push(args),
     });
     Object.assign(
         context,

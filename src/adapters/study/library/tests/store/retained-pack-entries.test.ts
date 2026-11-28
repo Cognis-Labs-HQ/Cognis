@@ -11,9 +11,9 @@ test("pack pruning retains recursive dependencies of user cards and provider edi
         ["modified", "old-reading"],
         ["replaced", "obsolete"],
     ];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (operation) => operation(database),
+        transaction: async (operation) => operation(db),
         executeCommand: async (command) => {
             assert.ok(
                 [
@@ -32,7 +32,7 @@ test("pack pruning retains recursive dependencies of user cards and provider edi
         },
     };
     const retained = await retainedPackEntries(
-        database,
+        db,
         new Set([
             "modified",
             "replaced",

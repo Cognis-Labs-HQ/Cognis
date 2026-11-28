@@ -40,7 +40,7 @@ class PreferenceDatabase implements DbExecutor {
         return callback(this);
     }
 }
-export { PreferenceDatabase as PreferenceDb };
+export { PreferenceDatabase };
 
 export class ResponseRecorder extends EventEmitter {
     statusCode = 0;

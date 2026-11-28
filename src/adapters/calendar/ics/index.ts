@@ -56,7 +56,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
 
     const respondCalendarPayload = (
         requestMethod: string | undefined,
-        response: {
+        res: {
             writeHead: (
                 statusCode: number,
                 headers?: Record<string, string>,
@@ -74,39 +74,39 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             "x-cognis-calendar-access": accessMode,
         };
         if (requestMethod === "OPTIONS") {
-            response.writeHead(204, {
+            res.writeHead(204, {
                 ...headers,
                 allow: "GET,HEAD,OPTIONS,PROPFIND",
             });
-            response.end();
+            res.end();
             return;
         }
         if (requestMethod === "PROPFIND") {
-            response.writeHead(207, {
+            res.writeHead(207, {
                 ...headers,
                 "content-type": "application/xml; charset=utf-8",
             });
-            response.end(
+            res.end(
                 `<?xml version="1.0" encoding="utf-8"?><d:multistatus xmlns:d="DAV:"><d:response><d:href>${escapeXml(resourcePath)}</d:href><d:propstat><d:prop><d:displayname>${escapeXml(calendarName)}</d:displayname><d:getcontenttype>text/calendar</d:getcontenttype><d:current-user-privilege-set><d:privilege><d:read/></d:privilege></d:current-user-privilege-set></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>`,
             );
             return;
         }
         if (requestMethod === "HEAD") {
-            response.writeHead(200, headers);
-            response.end();
+            res.writeHead(200, headers);
+            res.end();
             return;
         }
-        response.writeHead(200, headers);
-        response.end(payload);
+        res.writeHead(200, headers);
+        res.end(payload);
     };
 
-    return async (request, response, url): Promise<boolean> => {
+    return async (req, res, url): Promise<boolean> => {
         const publicMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/ics\/public\/([^/]+)$/,
         );
         if (
             publicMatch &&
-            (request.method === "GET" || isMetadataProbeMethod(request.method))
+            (req.method === "GET" || isMetadataProbeMethod(req.method))
         ) {
             const encodedName = decodeURIComponent(publicMatch[1]);
             const calendarIdFromQuery = String(
@@ -117,8 +117,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     ? ctx.gateway.getCalendar(calendarIdFromQuery)
                     : null) ?? ctx.gateway.getCalendar(encodedName);
             if (!calendar || calendar.visibility !== "public") {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -130,8 +130,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");
             respondCalendarPayload(
-                request.method,
-                response,
+                req.method,
+                res,
                 ics,
                 calendar.name,
                 calendar.id,
@@ -146,22 +146,22 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         );
         if (
             shareMatch &&
-            (request.method === "GET" ||
-                isMutationMethod(request.method) ||
-                isMetadataProbeMethod(request.method))
+            (req.method === "GET" ||
+                isMutationMethod(req.method) ||
+                isMetadataProbeMethod(req.method))
         ) {
             const token = decodeURIComponent(shareMatch[1]);
-            const receivedPassphrase = readSharePassphrase(request, url);
+            const receivedPassphrase = readSharePassphrase(req, url);
             const shareLink = await resolveGatewayCalendarShare(
                 ctx.capabilities,
                 token,
                 receivedPassphrase,
                 resolveCalendarLink,
-                routeContext.getAuthClaims(request)?.sub,
+                routeContext.getAuthClaims(req)?.sub,
             );
             if (!shareLink?.calendarId) {
                 const unauthorized = shareLink?.unauthorized === true;
-                response.writeHead(unauthorized ? 401 : 404, {
+                res.writeHead(unauthorized ? 401 : 404, {
                     "content-type": "application/json",
                     ...(unauthorized
                         ? {
@@ -170,7 +170,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                           }
                         : {}),
                 });
-                response.end(
+                res.end(
                     JSON.stringify({
                         error: {
                             code: unauthorized ? "unauthorized" : "not_found",
@@ -184,8 +184,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const calendar = ctx.gateway.getCalendar(shareLink.calendarId);
             if (!calendar) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -195,20 +195,20 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            if (isMutationMethod(request.method)) {
-                response.writeHead(403, {
+            if (isMutationMethod(req.method)) {
+                res.writeHead(403, {
                     "content-type": "application/xml; charset=utf-8",
                     allow: "GET,HEAD,OPTIONS,PROPFIND",
                 });
-                response.end(
+                res.end(
                     `<?xml version="1.0" encoding="utf-8"?><d:error xmlns:d="DAV:"><d:need-privileges><d:resource><d:href>${escapeXml(`${url.pathname}${url.search}`)}</d:href><d:privilege><d:write/></d:privilege></d:resource></d:need-privileges></d:error>`,
                 );
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");
             respondCalendarPayload(
-                request.method,
-                response,
+                req.method,
+                res,
                 ics,
                 calendar.name,
                 calendar.id,
@@ -223,15 +223,15 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         );
         if (
             privateMatch &&
-            (request.method === "GET" || isMetadataProbeMethod(request.method))
+            (req.method === "GET" || isMetadataProbeMethod(req.method))
         ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const token = decodeURIComponent(privateMatch[1]);
             const tokenRecord = ctx.gateway.resolvePrivateExportToken(token);
             if (!tokenRecord) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -243,8 +243,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const calendar = ctx.gateway.getCalendar(tokenRecord.calendarId);
             if (!calendar) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -256,8 +256,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
             respondCalendarPayload(
-                request.method,
-                response,
+                req.method,
+                res,
                 ics,
                 calendar.name,
                 calendar.id,
@@ -269,9 +269,9 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
 
         if (
             url.pathname === "/api/v1/calendar/ics/export" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = String(
                 url.searchParams.get("calendarId") ?? "",
@@ -281,8 +281,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 calendarId,
             );
             if (!calendar) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -293,29 +293,29 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            response.writeHead(
+            res.writeHead(
                 200,
                 buildCalendarExportHeaders(calendar.name, calendar.id),
             );
-            response.end(ics);
+            res.end(ics);
             return true;
         }
 
         if (
             url.pathname === "/api/v1/calendar/ics/import" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = (await readJson(request)) as {
+            const body = (await readJson(req)) as {
                 calendarId?: unknown;
                 ics?: unknown;
             };
             const calendarId = String(body?.calendarId ?? "").trim();
             const ics = String(body?.ics ?? "").trim();
             if (!calendarId || !ics) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -331,18 +331,18 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     calendarId,
                     ics,
                 });
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: result }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: result }));
                 return true;
             } catch (error) {
                 if (
                     error instanceof Error &&
                     error.message === "calendar_not_found"
                 ) {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -352,8 +352,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     );
                     return true;
                 }
-                response.writeHead(500, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(500, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "internal_error",

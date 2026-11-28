@@ -121,12 +121,12 @@ function matchesFilters(
 }
 
 function writeSseEvent(
-    response: ServerResponse,
+    res: ServerResponse,
     event: string,
     payload: Record<string, unknown>,
 ): void {
-    response.write(`event: ${event}\n`);
-    response.write(`data: ${JSON.stringify(payload)}\n\n`);
+    res.write(`event: ${event}\n`);
+    res.write(`data: ${JSON.stringify(payload)}\n\n`);
 }
 
 async function readFileChunk(
@@ -154,22 +154,22 @@ function createLoggingRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/logging/entries" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = ctx.requireAuth(request, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = (await readJson(request)) as Record<string, unknown>;
+            const body = (await readJson(req)) as Record<string, unknown>;
             const level = String(body.level ?? "info") as LogLevel;
             const message = String(body.message ?? "").trim();
             if (!isLogLevel(level) || !message || message.length > 2000) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_log_entry",
@@ -190,24 +190,21 @@ function createLoggingRoutes(
                 source: "browser",
                 accountId: claims.sub,
             });
-            response.writeHead(204, {
+            res.writeHead(204, {
                 "x-cognis-log-console": String(
                     ctx.hasMinRole(claims.role, "admin") &&
                         browserConsoleAllowed(level),
                 ),
                 "cache-control": "no-store",
             });
-            response.end();
+            res.end();
             return true;
         }
-        if (
-            url.pathname !== "/api/v1/logging/stream" ||
-            request.method !== "GET"
-        ) {
+        if (url.pathname !== "/api/v1/logging/stream" || req.method !== "GET") {
             return false;
         }
 
-        const claims = ctx.requireAuth(request, response, "admin");
+        const claims = ctx.requireAuth(req, res, "admin");
         if (!claims) return true;
         const filePath = getFilePath();
 
@@ -233,7 +230,7 @@ function createLoggingRoutes(
                 )
             )
                 return;
-            writeSseEvent(response, "log", { id: sequence++, ...entry });
+            writeSseEvent(res, "log", { id: sequence++, ...entry });
         };
 
         const processLines = (lines: string[]) => {
@@ -263,7 +260,7 @@ function createLoggingRoutes(
                         ),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
-                    writeSseEvent(response, "log", {
+                    writeSseEvent(res, "log", {
                         id: sequence++,
                         ...entry,
                     });
@@ -283,7 +280,7 @@ function createLoggingRoutes(
                                 : String(error),
                     },
                 );
-                writeSseEvent(response, "snapshot_error", {
+                writeSseEvent(res, "snapshot_error", {
                     code: "snapshot_unavailable",
                 });
             }
@@ -296,7 +293,7 @@ function createLoggingRoutes(
                 if (fileStats.size < contentLength) {
                     contentLength = 0;
                     pendingLine = "";
-                    writeSseEvent(response, "reset", { reason: "log_rotated" });
+                    writeSseEvent(res, "reset", { reason: "log_rotated" });
                 }
                 if (fileStats.size === contentLength) {
                     return;
@@ -329,13 +326,13 @@ function createLoggingRoutes(
             }
         };
 
-        response.writeHead(200, {
+        res.writeHead(200, {
             "content-type": "text/event-stream; charset=utf-8",
             "cache-control": "no-cache",
             connection: "keep-alive",
         });
-        response.flushHeaders?.();
-        response.write("retry: 1500\n\n");
+        res.flushHeaders?.();
+        res.write("retry: 1500\n\n");
 
         await sendSnapshot();
 
@@ -345,7 +342,7 @@ function createLoggingRoutes(
         pollTimer.unref?.();
         const heartbeatTimer = setInterval(() => {
             if (closed) return;
-            response.write(": keepalive\n\n");
+            res.write(": keepalive\n\n");
         }, STREAM_HEARTBEAT_INTERVAL_MILLISECONDS);
         heartbeatTimer.unref?.();
 
@@ -361,8 +358,8 @@ function createLoggingRoutes(
             });
         };
 
-        request.on("close", closeStream);
-        response.on("close", closeStream);
+        req.on("close", closeStream);
+        res.on("close", closeStream);
 
         log?.("info", "Opened admin log stream.", {
             component: "logging-gateway",
@@ -456,17 +453,13 @@ function createLoggingAdapterRoutes(
     };
     applyConfiguration();
 
-    return async (
-        request: IncomingMessage,
-        response: ServerResponse,
-        url: URL,
-    ) => {
+    return async (req: IncomingMessage, res: ServerResponse, url: URL) => {
         if (!url.pathname.startsWith(base)) return false;
-        const claims = ctx.requireAuth(request, response, "admin");
+        const claims = ctx.requireAuth(req, res, "admin");
         if (!claims) return true;
-        if (url.pathname === base && request.method === "GET") {
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+        if (url.pathname === base && req.method === "GET") {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: adapters.map((adapter) => ({
                         ...adapter,
@@ -489,11 +482,11 @@ function createLoggingAdapterRoutes(
         );
         if (
             toggleMatch &&
-            request.method === "POST" &&
+            req.method === "POST" &&
             adapters.some(({ id }) => id === toggleMatch[1])
         ) {
-            response.writeHead(409, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(409, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "adapter_locked",
@@ -508,9 +501,9 @@ function createLoggingAdapterRoutes(
         );
         const adapter = adapters.find(({ id }) => id === match?.[1]);
         if (!adapter) return false;
-        if (request.method === "GET") {
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+        if (req.method === "GET") {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: overrides.get(adapter.id) ?? {},
                     envValues: environmentConfig[adapter.id],
@@ -521,7 +514,7 @@ function createLoggingAdapterRoutes(
             );
             return true;
         }
-        if (request.method === "DELETE") {
+        if (req.method === "DELETE") {
             await preferenceStore.delete(adapter.id);
             overrides.delete(adapter.id);
             applyConfiguration();
@@ -531,20 +524,20 @@ function createLoggingAdapterRoutes(
                 accountId: claims.sub,
                 adapterId: adapter.id,
             });
-            response.writeHead(204);
-            response.end();
+            res.writeHead(204);
+            res.end();
             return true;
         }
-        if (request.method === "PUT") {
-            const body = (await readJson(request)) as Record<string, unknown>;
+        if (req.method === "PUT") {
+            const body = (await readJson(req)) as Record<string, unknown>;
             const allowedKeys = new Set(adapter.schema.map(({ key }) => key));
             const config = Object.fromEntries(
                 Object.entries(body).filter(([key]) => allowedKeys.has(key)),
             ) as Record<string, ConfigValue>;
             const validationError = adapter.validateConfig(config);
             if (validationError) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_config",
@@ -565,8 +558,8 @@ function createLoggingAdapterRoutes(
                 adapterId: adapter.id,
                 changedFields: Object.keys(config).sort(),
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
         return false;
@@ -649,8 +642,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
         fileLevel,
     );
-    const runtimeLog: BootstrapLog = (logLevel, message, metadata) => {
-        void logger.log(logLevel, message, metadata);
+    const runtimeLog: BootstrapLog = (logLevel, message, meta) => {
+        void logger.log(logLevel, message, meta);
     };
 
     ctx.capabilities.contribute("logging:logger", logger);

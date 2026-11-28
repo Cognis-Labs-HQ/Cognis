@@ -27,16 +27,16 @@ import path from "node:path";
 const sourceRoot = path.resolve(import.meta.dirname, "../..");
 
 /** Recursively collect all .ts files under a directory. */
-async function findTypeScriptFiles(directory: string): Promise<string[]> {
+async function findTypeScriptFiles(dir: string): Promise<string[]> {
     const results: string[] = [];
     let entries: string[];
     try {
-        entries = await readdir(directory);
+        entries = await readdir(dir);
     } catch {
         return results;
     }
     for (const entry of entries) {
-        const fullPath = path.join(directory, entry);
+        const fullPath = path.join(dir, entry);
         const info = await stat(fullPath);
         if (info.isDirectory()) {
             results.push(...(await findTypeScriptFiles(fullPath)));

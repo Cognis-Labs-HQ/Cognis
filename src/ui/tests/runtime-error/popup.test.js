@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
@@ -781,8 +781,8 @@ test("runtime error popup copy action adds and removes copied class on success",
         normalizeSameOriginRoutePath(routePath) {
             return String(routePath ?? "");
         },
-        setTimeout(callback, milliseconds) {
-            timeouts.push({ fn: callback, ms: milliseconds });
+        setTimeout(callback, ms) {
+            timeouts.push({ fn: callback, ms: ms });
         },
         async copyTextToClipboard(value) {
             try {
@@ -881,8 +881,8 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
         normalizeSameOriginRoutePath(routePath) {
             return String(routePath ?? "");
         },
-        setTimeout(callback, milliseconds) {
-            timeouts.push({ fn: callback, ms: milliseconds });
+        setTimeout(callback, ms) {
+            timeouts.push({ fn: callback, ms: ms });
         },
         async copyTextToClipboard(value) {
             try {

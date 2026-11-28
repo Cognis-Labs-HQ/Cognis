@@ -11,7 +11,7 @@ function failMissingArgumentsList(missing: string[], usage: string): never {
         `Not enough arguments (missing: ${names})\n\nUsage:\n  ${usage}`,
     );
 }
-export { failMissingArgumentsList as failMissingArgs };
+export { failMissingArgumentsList };
 
 function requireArgumentsList(
     argumentsList: string[],
@@ -21,7 +21,7 @@ function requireArgumentsList(
     const missing = names.filter((_, index) => !argumentsList[index]);
     if (missing.length > 0) failMissingArgumentsList(missing, usage);
 }
-export { requireArgumentsList as requireArgs };
+export { requireArgumentsList };
 
 export function mergePayloadFields(
     payload: unknown,

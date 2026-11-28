@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 const registrations = [];
 const context = {
@@ -12,7 +12,7 @@ const context = {
     window: new EventTarget(),
     offline: false,
 };
-virtualMachine.createContext(context);
+vm.createContext(context);
 Object.assign(
     context,
     loadTestModule(
@@ -99,16 +99,14 @@ test("entry previews initialize drawing concealment and audio with the same abor
             disconnected = true;
         }
     };
-    context.bindDrawingPreview = (...argumentsList) =>
-        calls.push(["drawing", ...argumentsList]);
-    context.placeAudioSpeaker = (...argumentsList) =>
-        calls.push(["speaker", ...argumentsList]);
-    context.loadLibraryAudio = (...argumentsList) => {
-        calls.push(["audio", ...argumentsList]);
+    context.bindDrawingPreview = (...args) => calls.push(["drawing", ...args]);
+    context.placeAudioSpeaker = (...args) => calls.push(["speaker", ...args]);
+    context.loadLibraryAudio = (...args) => {
+        calls.push(["audio", ...args]);
         return Promise.resolve();
     };
-    context.loadReferenceImages = (...argumentsList) => {
-        calls.push(["images", ...argumentsList]);
+    context.loadReferenceImages = (...args) => {
+        calls.push(["images", ...args]);
         return Promise.resolve();
     };
     let dismissed = 0;

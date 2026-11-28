@@ -26,7 +26,7 @@ async function fixture(testContext, { failHandshake = false } = {}) {
     const consoleTarget = Object.fromEntries(
         Object.keys(CONSOLE_LEVELS).map((level) => [
             level,
-            (...argumentsList) => output.push({ level, args: argumentsList }),
+            (...args) => output.push({ level, args: args }),
         ]),
     );
     const originalConsole = { ...consoleTarget };

@@ -5,7 +5,7 @@ import { Readable } from "node:stream";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createCtx, CTX_CAPABILITY } from "@cognis/core";
 import { bootstrapSocialAdapter } from "../index.js";
-import { DbMessagesStore as DatabaseMessagesStore } from "../store.js";
+import { DatabaseMessagesStore } from "../store.js";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 import type { SocialAdapterBootstrapCtx } from "../../../../gateways/social/gateway.js";

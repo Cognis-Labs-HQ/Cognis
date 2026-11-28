@@ -12,7 +12,7 @@ import {
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import type { GatewayBootstrapContext } from "../shared.js";
-import { DbCalendarStore as DatabaseCalendarStore } from "../store.js";
+import { DatabaseCalendarStore } from "../store.js";
 import { normalizeCalendarColor } from "../color.js";
 import {
     CoreCalendarGateway,

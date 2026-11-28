@@ -10,7 +10,7 @@ import type {
     RoomRow,
     TypingRow,
 } from "./types.js";
-import { readDbTimestampValue as readDatabaseTimestampValue } from "../../../../gateways/db/reuse/timestamp.js";
+import { readDatabaseTimestampValue } from "../../../../gateways/db/reuse/timestamp.js";
 
 function readString(value: unknown, fallback = ""): string {
     if (value instanceof Date) {

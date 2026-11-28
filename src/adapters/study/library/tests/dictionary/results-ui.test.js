@@ -7,7 +7,7 @@ import {
 import { replaceMountScope } from "../../../../../ui/reuse/mount-scope.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 const schema = {
     id: "test",
@@ -34,7 +34,7 @@ async function searchPage(lookup, selectedIndex) {
             if (type === "click") click = handler;
         },
     };
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         URLSearchParams,
         parseLanguageCode: (value) => value,
         replaceMountScope,
@@ -56,7 +56,7 @@ async function searchPage(lookup, selectedIndex) {
         document: { documentElement: { lang: "en" } },
         createI18n: async () => ({ t: (key) => key }),
         applyDocumentTitle() {},
-        loadStudySubNavigationModel: async () => ({
+        loadStudyNestedNavigationModel: async () => ({
             selectedLanguageCode: "ja",
             dictionaryProviders: [{ id: "dictionary", schemaId: "test" }],
         }),
@@ -83,10 +83,10 @@ async function searchPage(lookup, selectedIndex) {
                 target.outerHTML = config.elements[0].render();
             },
         }),
-        bindStudySubNavigation() {},
+        bindStudyNestedNavigation() {},
         mountWhenDirect: async () => {},
     });
-    context.createStudySubNavigationSlot = () => ({ render: () => "" });
+    context.createStudyNestedNavigationSlot = () => ({ render: () => "" });
     const search = await importTestModule(
         new URL("../../ui/app/search/index.js", import.meta.url),
         {
@@ -110,11 +110,11 @@ async function searchPage(lookup, selectedIndex) {
                 formatDateTime: context.formatDateTime,
             },
             "/static/gateways/study/sub-navigation.js": {
-                bindStudySubNavigation: context.bindStudySubNavigation,
-                loadStudySubNavigationModel:
-                    context.loadStudySubNavigationModel,
-                createStudySubNavigationSlot:
-                    context.createStudySubNavigationSlot,
+                bindStudyNestedNavigation: context.bindStudyNestedNavigation,
+                loadStudyNestedNavigationModel:
+                    context.loadStudyNestedNavigationModel,
+                createStudyNestedNavigationSlot:
+                    context.createStudyNestedNavigationSlot,
             },
             "/static/gateways/study/library-client.js": {
                 dictionarySearchContext: context.dictionarySearchContext,
@@ -195,7 +195,7 @@ test("failed searches render a retryable error state rather than successful resu
 });
 
 test("My Requests shows every submitted status read-only while Pending exposes authorized actions", () => {
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         localStorage: { getItem: () => "me" },
         uiCtx: { capabilities: { get: () => null } },
         escapeHtml: String,
@@ -232,7 +232,7 @@ test("My Requests shows every submitted status read-only while Pending exposes a
 });
 
 test("relocation directions disable conflicts and resume when a conflicting card is deselected", () => {
-    const context = virtualMachine.createContext({});
+    const context = vm.createContext({});
     Object.assign(context, loadLibraryUiModule("app/selection.js", context));
     const personal = { id: "personal", scope: "user", canDelete: true };
     const shared = { id: "shared", scope: "global", canDelete: true };
@@ -258,7 +258,7 @@ test("relocation directions disable conflicts and resume when a conflicting card
 });
 
 test("request headers show linked identities and decision time on the status pill", () => {
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         localStorage: { getItem: () => "me" },
         uiCtx: {
             capabilities: {

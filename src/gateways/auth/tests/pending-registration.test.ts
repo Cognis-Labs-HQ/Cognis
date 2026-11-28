@@ -8,8 +8,8 @@ import { VolatileLocalAccountStore } from "../reuse/account-store.js";
 import { registerAuthBootstrapHook } from "../bootstrap/flow-registrations.js";
 import {
     createAuthRouteBootstrapRuntime,
-    ACCOUNT_CREATION_ATTEMPT_TTL_MS as ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS,
-    TFA_LOGIN_ATTEMPT_TTL_MS as TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS,
+    ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS,
+    TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS,
 } from "../bootstrap/route-runtime.js";
 import { createSessionRoutes } from "../bootstrap/routes/session.js";
 import type { AuthAccountStore } from "../bootstrap/index.js";
@@ -18,7 +18,7 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import {
     dispatchRoute,
     makeJsonRequest,
-    makeInMemoryDb as makeInMemoryDatabase,
+    makeInMemoryDatabase,
 } from "./auth-gateway-test-helpers.js";
 
 async function registrationFixture() {

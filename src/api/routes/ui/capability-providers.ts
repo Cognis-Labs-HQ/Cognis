@@ -5,8 +5,8 @@ import type { RouteContext } from "../../reuse/route-context.js";
 import { versionDescriptor } from "./asset-versioning.js";
 
 export async function serveProviders(
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     url: URL,
     routeContext: RouteContext,
     uiRegistry: UIRegistry | undefined,
@@ -14,11 +14,11 @@ export async function serveProviders(
 ): Promise<boolean> {
     if (
         url.pathname !== "/api/v1/ui/capability-providers" ||
-        request.method !== "GET"
+        req.method !== "GET"
     ) {
         return false;
     }
-    const claims = routeContext.getAuthClaims(request);
+    const claims = routeContext.getAuthClaims(req);
     let providers = (uiRegistry?.listCapabilityProviders() ?? []).filter(
         (provider) =>
             claims
@@ -38,11 +38,11 @@ export async function serveProviders(
             providers,
             "capabilities",
         );
-    response.writeHead(200, {
+    res.writeHead(200, {
         "content-type": "application/json",
         "cache-control": "no-store",
     });
-    response.end(
+    res.end(
         JSON.stringify({ data: versionDescriptor(providers, assetVersion) }),
     );
     return true;

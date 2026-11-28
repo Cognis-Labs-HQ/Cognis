@@ -16,8 +16,7 @@ export function registerFloatingMenus(ctx) {
     const entries = [];
     const disposers = [];
     let sequence = 0;
-    const log = (...argumentsList) =>
-        ctx.capabilities.get("ui:log")?.(...argumentsList);
+    const log = (...args) => ctx.capabilities.get("ui:log")?.(...args);
     const report = (error) => {
         if (!ctx.signal?.aborted)
             log("error", "Floating menu operation failed.", {

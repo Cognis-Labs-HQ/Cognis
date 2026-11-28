@@ -5,12 +5,12 @@ import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
-    buildDbErrorMeta as buildDatabaseErrorMetadata,
+    buildDatabaseErrorMetadata,
     summarizeStatement,
-    writeDbLog as writeDatabaseLog,
+    writeDatabaseLog,
 } from "../../../gateways/db/reuse/executor-log.js";
 import {
-    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
+    buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
     type StructuredDbDialect,
@@ -171,18 +171,18 @@ export class MariaDbGateway implements DatabaseGateway {
 
     async query<Row = Record<string, unknown>>(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<QueryResult<Row>> {
-        const [result] = await this.queryTarget.query(statement, parameters);
+        const [result] = await this.queryTarget.query(statement, params);
         const rows = result as Row[];
         return { rows, rowCount: rows.length };
     }
 
     async execute(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        const [result] = await this.queryTarget.query(statement, parameters);
+        const [result] = await this.queryTarget.query(statement, params);
         return { affectedRows: readAffectedRows(result) };
     }
 
@@ -236,15 +236,15 @@ class MariaDbExecutor implements RawDbExecutor {
         >(),
     ) {}
 
-    async execute(sql: string, parameters: unknown[] = []) {
+    async execute(sql: string, params: unknown[] = []) {
         writeDatabaseLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "mariadb",
             statement: summarizeStatement(sql),
-            parameterCount: parameters.length,
+            parameterCount: params.length,
         });
         try {
-            const [result] = await this.pool.query(sql, parameters);
+            const [result] = await this.pool.query(sql, params);
             if (Array.isArray(result)) {
                 return { rows: result, rowCount: result.length };
             }
@@ -254,7 +254,7 @@ class MariaDbExecutor implements RawDbExecutor {
                 component: "db",
                 provider: "mariadb",
                 statement: summarizeStatement(sql),
-                parameterCount: parameters.length,
+                parameterCount: params.length,
                 ...buildDatabaseErrorMetadata(error),
             });
             throw error;
@@ -583,9 +583,9 @@ function readRenamedColumn(
 function canHandleDatabaseProvider(providerId: DbProviderId): boolean {
     return providerId === "mariadb";
 }
-export { canHandleDatabaseProvider as canHandleDbProvider };
+export { canHandleDatabaseProvider };
 
-async function createDatabaseExecutor(argumentsList: {
+async function createDatabaseExecutor(args: {
     databaseUrl: string;
     log?: BootstrapLog;
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
@@ -594,34 +594,28 @@ async function createDatabaseExecutor(argumentsList: {
     sleep?: (milliseconds: number) => Promise<void>;
 }): Promise<RawDbExecutor> {
     const pool =
-        argumentsList.pool ??
-        (await createMariaDbPool(argumentsList.databaseUrl, argumentsList.log));
+        args.pool ?? (await createMariaDbPool(args.databaseUrl, args.log));
     try {
         await waitForMariaDb(
             pool,
-            argumentsList.startup ?? readMariaDbStartupSettings(),
-            argumentsList.log,
-            argumentsList.sleep,
+            args.startup ?? readMariaDbStartupSettings(),
+            args.log,
+            args.sleep,
         );
     } catch (error) {
         await pool.end();
         throw error;
     }
-    argumentsList.lifecycle?.registerShutdown(async () => {
+    args.lifecycle?.registerShutdown(async () => {
         await pool.end();
-        writeDatabaseLog(
-            argumentsList.log,
-            "info",
-            "MariaDB connection pool drained.",
-            {
-                component: "db",
-                provider: "mariadb",
-            },
-        );
+        writeDatabaseLog(args.log, "info", "MariaDB connection pool drained.", {
+            component: "db",
+            provider: "mariadb",
+        });
     });
-    return new MariaDbExecutor(pool, argumentsList.log);
+    return new MariaDbExecutor(pool, args.log);
 }
-export { createDatabaseExecutor as createDbExecutor };
+export { createDatabaseExecutor };
 
 const RETRYABLE_STARTUP_ERROR_CODES = new Set([
     "ECONNREFUSED",

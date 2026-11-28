@@ -16,18 +16,18 @@ export function createDictionarySearchContextRoutes(
     ) => void | Promise<void>,
 ) {
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname !== "/api/v1/study/library/dictionary/context")
             return false;
-        const claims = auth.requireAuth(request, response);
+        const claims = auth.requireAuth(req, res);
         if (!claims) return true;
-        response.setHeader("cache-control", "no-store");
+        res.setHeader("cache-control", "no-store");
         try {
-            if (!["GET", "PUT"].includes(request.method ?? "")) return false;
-            const reading = request.method === "GET";
+            if (!["GET", "PUT"].includes(req.method ?? "")) return false;
+            const reading = req.method === "GET";
             const data: Record<string, unknown> = {};
             await flow.run(
                 reading
@@ -49,7 +49,7 @@ export function createDictionarySearchContextRoutes(
                               }
                             : {
                                   validate: async () => {
-                                      data.input = await readJson(request, {
+                                      data.input = await readJson(req, {
                                           maxBytes: 16 * 1024,
                                       });
                                   },
@@ -63,7 +63,7 @@ export function createDictionarySearchContextRoutes(
                     },
                 },
             );
-            sendJson(response, 200, { data: data.result });
+            sendJson(res, 200, { data: data.result });
         } catch (error) {
             const code =
                 error instanceof SyntaxError
@@ -78,7 +78,7 @@ export function createDictionarySearchContextRoutes(
                 errorName: error instanceof Error ? error.name : "Unknown",
             });
             sendJson(
-                response,
+                res,
                 code === "request_body_too_large"
                     ? 413
                     : code === "invalid_query"

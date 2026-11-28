@@ -2,10 +2,10 @@
  * Owns nested composer grids, placement profiles and their editing lifetimes.
  *
  * Public exports:
- *   createSubComposerHandlers(deps) — creates nested mounting, rendering, sizing, saving and cleanup operations.
+ *   createNestedComposerHandlers(deps) — creates nested mounting, rendering, sizing, saving and cleanup operations.
  *
  * Usage:
- *   const nested = createSubComposerHandlers(dependencies);
+ *   const nested = createNestedComposerHandlers(dependencies);
  *   await nested.mountSubComposer(element, section); // element declares subComposerOptions.
  *   nested.unmountSubComposer(element);
  *   nested.destroy(); // Also releases any remaining mounted grids.
@@ -35,7 +35,7 @@ import {
     hasGridProfile,
     resolveComposerResize,
 } from "./responsive-layout.js";
-import { createSubComposerPanelHandlers as createNestedComposerPanelHandlers } from "./sub-composer-panel.js";
+import { createNestedComposerPanelHandlers } from "./sub-composer-panel.js";
 import { resolveInitialGridWidth } from "./grid-sizing.js";
 import { bindLayoutKeyboard } from "./keyboard-layout.js";
 function createNestedComposerHandlers({
@@ -830,4 +830,4 @@ function createNestedComposerHandlers({
         initializeSubPlacements: initializeNestedPlacements,
     };
 }
-export { createNestedComposerHandlers as createSubComposerHandlers };
+export { createNestedComposerHandlers };

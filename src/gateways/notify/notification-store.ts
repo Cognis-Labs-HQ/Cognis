@@ -727,7 +727,7 @@ class DatabaseNotificationStore implements NotificationConfigStore {
         });
     }
 }
-export { DatabaseNotificationStore as DbNotificationStore };
+export { DatabaseNotificationStore };
 
 class DatabaseNotificationPreferenceStore implements NotificationPreferenceStore {
     constructor(private readonly store: DatabaseNotificationStore) {}
@@ -743,4 +743,4 @@ class DatabaseNotificationPreferenceStore implements NotificationPreferenceStore
             .map((preference) => preference.senderId);
     }
 }
-export { DatabaseNotificationPreferenceStore as DbNotificationPreferenceStore };
+export { DatabaseNotificationPreferenceStore };

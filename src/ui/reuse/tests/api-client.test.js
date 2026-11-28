@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const apiClientSource = readFileSync(
@@ -81,7 +81,7 @@ function loadApiClientForTests({
     };
     context.globalThis = context;
 
-    virtualMachine.createContext(context);
+    vm.createContext(context);
     const offlineState = loadTestModule(
         new URL("../offline-state.js", import.meta.url),
         { "./capabilities.js": createDiagnosticFixture() },

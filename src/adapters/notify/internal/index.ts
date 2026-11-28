@@ -10,7 +10,7 @@ import {
     type IInternalNotificationStore,
     AsyncInternalNotificationStore,
 } from "./store.js";
-import { DbInternalNotificationStore as DatabaseInternalNotificationStore } from "./db-store.js";
+import { DatabaseInternalNotificationStore } from "./db-store.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes/index.js";
@@ -47,7 +47,7 @@ class InternalNotificationSender implements NotificationSender {
  * `process.env`. The internal adapter does not need any environment
  * configuration, so the argument is ignored. The returned sender always
  * resolves its store lazily from the module-level `activeStore`, which
- * `bootstrapNotifyAdapter` upgrades to a `DbInternalNotificationStore` once
+ * `bootstrapNotifyAdapter` upgrades to a `DatabaseInternalNotificationStore` once
  * the database is available — that lazy lookup is what lets notifications
  * persist across logins.
  *

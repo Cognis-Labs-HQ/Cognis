@@ -3,10 +3,10 @@ import { rowToStudyLanguage } from "./rows.js";
 import type { StudyLanguageRow } from "./types.js";
 
 export async function listStudyLanguages(
-    database: DbExecutor,
+    db: DbExecutor,
     onlyAvailable = false,
 ): Promise<StudyLanguageRow[]> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "study_languages",
         columns: ["code", "name", "flag", "available", "active", "sort_order"],
@@ -24,10 +24,10 @@ export async function listStudyLanguages(
 }
 
 export async function upsertStudyLanguage(
-    database: DbExecutor,
+    db: DbExecutor,
     row: Partial<StudyLanguageRow> & { code: string },
 ): Promise<StudyLanguageRow> {
-    await database.executeCommand({
+    await db.executeCommand({
         option: "INSERT",
         table: "study_languages",
         values: {
@@ -43,7 +43,7 @@ export async function upsertStudyLanguage(
             target: ["code"],
         },
     });
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "study_languages",
         columns: ["code", "name", "flag", "available", "active", "sort_order"],

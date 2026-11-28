@@ -17,7 +17,7 @@ import {
     createAuthTestContext,
     dispatchRoute,
     makeJsonRequest,
-    makeInMemoryDb as makeInMemoryDatabase,
+    makeInMemoryDatabase,
     type InMemoryDb,
 } from "../auth-gateway-test-helpers.js";
 
@@ -416,9 +416,9 @@ test("registered auth providers own removable callback routes", async () => {
         configure() {},
         getConfigSchema: () => [],
         registerRoutes(router) {
-            router.get("/callback", (_request, response) => {
-                response.writeHead(302, { location: "/login" });
-                response.end("");
+            router.get("/callback", (_request, res) => {
+                res.writeHead(302, { location: "/login" });
+                res.end("");
             });
         },
     });
@@ -452,9 +452,7 @@ test("registered auth providers own removable callback routes", async () => {
                 configure() {},
                 getConfigSchema: () => [],
                 registerRoutes(router) {
-                    router.get("/callback", (_request, response) =>
-                        response.end(""),
-                    );
+                    router.get("/callback", (_request, res) => res.end(""));
                 },
             }),
         /auth_provider_route_duplicate/,
@@ -475,9 +473,7 @@ test("registered auth providers own removable callback routes", async () => {
         configure() {},
         getConfigSchema: () => [],
         registerRoutes(router) {
-            router.get("/callback", (_request, response) =>
-                response.end("unexpected"),
-            );
+            router.get("/callback", (_request, res) => res.end("unexpected"));
         },
     });
     const disabled = await dispatchRoute(
@@ -740,7 +736,7 @@ test("auth gateway bootstrap registers security section without redundant authen
 test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", async () => {
     const { CoreAuthGateway } = await import("../../gateway.js");
 
-    const database = {
+    const db = {
         execute: async (_sql: string, _parameters?: unknown[]) => ({
             rows: [],
         }),
@@ -753,7 +749,7 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
         executeCommand: () => Promise<{ rows?: unknown[] }>;
     };
 
-    const gateway = new CoreAuthGateway(database);
+    const gateway = new CoreAuthGateway(db);
 
     const mockAdapter = {
         id: "oidc",
@@ -868,7 +864,7 @@ test("CoreAuthGateway redacts configured passwords and preserves them on blank u
         ],
     };
     let savedConfig = "";
-    const database = {
+    const db = {
         ensureTable: async () => undefined,
         executeCommand: async (command: Record<string, unknown>) => {
             if (command.option === "SELECT") {
@@ -879,7 +875,7 @@ test("CoreAuthGateway redacts configured passwords and preserves them on blank u
             return { rows: [] };
         },
     };
-    const gateway = new CoreAuthGateway(database as never);
+    const gateway = new CoreAuthGateway(db as never);
     gateway.registerAdapter({
         id: "ldap-test",
         name: "LDAP Test",

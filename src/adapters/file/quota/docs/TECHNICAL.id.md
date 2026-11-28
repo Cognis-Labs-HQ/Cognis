@@ -6,7 +6,7 @@ Antarmuka publik dan aturan operasional Batas Penyimpanan.
 
 ### Arsitektur
 
-`DbFileQuotaStore` di `src/adapters/file/quota/index.ts` mengimplementasikan kontrak `FileQuotaStore` (`src/gateways/files/reuse/quota-store-contract.ts`) terhadap empat tabel:
+`DatabaseFileQuotaStore` di `src/adapters/file/quota/index.ts` mengimplementasikan kontrak `FileQuotaStore` (`src/gateways/files/reuse/quota-store-contract.ts`) terhadap empat tabel:
 
 | Tabel                           | Tujuan                                                      |
 | ------------------------------- | ----------------------------------------------------------- |
@@ -36,7 +36,7 @@ Adapter kuota file adalah penyimpanan kebijakan berbasis basis data yang dikonsu
 - Snapshot default saat ini ke dalam baris override per-pengguna pada waktu pembuatan akun (`provisionUser`), sehingga kuota pengguna mencerminkan apa yang berlaku saat mereka mendaftar, bukan berubah seiring perubahan admin selanjutnya.
 - Mengizinkan admin untuk mengedit kuota per-namespace atau global pengguna setelah penyediaan.
 
-Tidak bertanggung jawab atas: akuntansi penggunaan (dilakukan oleh `DbFileObjectStore` milik gateway file) atau penegakan kuota (`NamespaceFileService` milik gateway file membandingkan penggunaan dengan nilai-nilai ini sebelum setiap penulisan).
+Tidak bertanggung jawab atas: akuntansi penggunaan (dilakukan oleh `DatabaseFileObjectStore` milik gateway file) atau penegakan kuota (`NamespaceFileService` milik gateway file membandingkan penggunaan dengan nilai-nilai ini sebelum setiap penulisan).
 
 ### Inisialisasi skema secara lambat
 

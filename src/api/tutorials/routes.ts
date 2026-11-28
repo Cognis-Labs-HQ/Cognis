@@ -19,21 +19,17 @@ export function createTutorialCompletionRoutes(context: RouteContext) {
         if (ctx && !ctx.hasFlow(id))
             ctx.registerFlow({ id, stages: ["validate", "execute", "after"] });
     }
-    return async (
-        request: IncomingMessage,
-        response: ServerResponse,
-        url: URL,
-    ) => {
+    return async (req: IncomingMessage, res: ServerResponse, url: URL) => {
         if (
             url.pathname !== "/api/v1/tutorials/completions" ||
-            !["GET", "POST"].includes(request.method ?? "")
+            !["GET", "POST"].includes(req.method ?? "")
         )
             return false;
-        const claims = context.requireAuth(request, response);
+        const claims = context.requireAuth(req, res);
         if (!claims) return true;
         let ids: string[] = [];
-        if (request.method === "POST") {
-            const body = await readJson(request);
+        if (req.method === "POST") {
+            const body = await readJson(req);
             if (
                 Object.keys(body).some((key) => key !== "ids") ||
                 !Array.isArray(body.ids) ||
@@ -43,8 +39,8 @@ export function createTutorialCompletionRoutes(context: RouteContext) {
                     (id) => typeof id !== "string" || !identifier.test(id),
                 )
             ) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_tutorial_completion",
@@ -59,8 +55,8 @@ export function createTutorialCompletionRoutes(context: RouteContext) {
         }
         const database = context.getCapability<TutorialDatabase>("db:executor");
         if (!ctx || !database) {
-            response.writeHead(503, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "tutorial_completion_unavailable",
@@ -73,7 +69,7 @@ export function createTutorialCompletionRoutes(context: RouteContext) {
         }
         store ??= createTutorialCompletionStore(database);
         const result = await ctx.runFlow(
-            request.method === "GET"
+            req.method === "GET"
                 ? "tutorial:completion:list"
                 : "tutorial:completion:record",
             { accountId: claims.sub, ids },
@@ -81,19 +77,19 @@ export function createTutorialCompletionRoutes(context: RouteContext) {
                 handlers: {
                     execute: async (stage) => {
                         stage.data.result =
-                            request.method === "GET"
+                            req.method === "GET"
                                 ? await store!.list(claims.sub)
                                 : await store!.complete(claims.sub, ids);
                     },
                 },
             },
         );
-        response.writeHead(request.method === "GET" ? 200 : 204, {
+        res.writeHead(req.method === "GET" ? 200 : 204, {
             "content-type": "application/json",
             "cache-control": "private, no-store",
         });
-        response.end(
-            request.method === "GET"
+        res.end(
+            req.method === "GET"
                 ? JSON.stringify({ data: result.data.result })
                 : undefined,
         );

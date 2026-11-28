@@ -63,9 +63,9 @@ class DatabaseLocalAccountStore implements LocalAccountStore {
     private writeLog(
         level: "debug" | "info" | "warn" | "error",
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ): void {
-        this.log?.(level, message, metadata);
+        this.log?.(level, message, meta);
     }
 
     async ensureExternalAccount(identity: {
@@ -892,4 +892,4 @@ class DatabaseLocalAccountStore implements LocalAccountStore {
         });
     }
 }
-export { DatabaseLocalAccountStore as DbLocalAccountStore };
+export { DatabaseLocalAccountStore };

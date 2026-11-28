@@ -4,7 +4,7 @@
 
 ## Schnittstellen
 
-createNotificationSender nutzt den aktuellen Speicher verzögert. bootstrapNotifyAdapter registriert Pflichtsender, geschützte Postfachrouten und Glocke. Mit db:executor startet DbInternalNotificationStore; ohne ihn wird flüchtiger Speicher gemeldet.
+createNotificationSender nutzt den aktuellen Speicher verzögert. bootstrapNotifyAdapter registriert Pflichtsender, geschützte Postfachrouten und Glocke. Mit db:executor startet DatabaseInternalNotificationStore; ohne ihn wird flüchtiger Speicher gemeldet.
 
 | Methode  | Pfad                            | Beschreibung                                | Auth     |
 | -------- | ------------------------------- | ------------------------------------------- | -------- |

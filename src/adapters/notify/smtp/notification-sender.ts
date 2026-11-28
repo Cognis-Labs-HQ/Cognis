@@ -40,7 +40,7 @@ import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
 } from "./notification-queue.js";
-import { EMAIL_DELIVERY_RATE_LIMIT_MS as EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS } from "./rate-limit.js";
+import { EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS } from "./rate-limit.js";
 
 export interface SmtpConfig {
     host: string;
@@ -411,9 +411,9 @@ export class SmtpNotificationSender implements NotificationSender {
         this.environmentSnapshot = environmentSnapshot ?? {};
         this.sleep =
             sleep ??
-            ((milliseconds) =>
+            ((ms) =>
                 new Promise((resolve) => {
-                    const timer = setTimeout(resolve, milliseconds);
+                    const timer = setTimeout(resolve, ms);
                     timer.unref();
                 }));
         this.createRateLimiter =

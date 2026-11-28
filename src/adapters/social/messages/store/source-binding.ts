@@ -9,7 +9,7 @@ export interface ChatroomSourceInput {
 
 /** Compare-and-set prevents concurrent integrations from claiming the same room. */
 export async function changeChatroomSource(
-    database: DbExecutor,
+    db: DbExecutor,
     input: ChatroomSourceInput,
     release = false,
     administrator = false,
@@ -23,7 +23,7 @@ export async function changeChatroomSource(
     )
         throw new Error("Invalid chatroom source binding.");
     const select = () =>
-        database.executeCommand({
+        db.executeCommand({
             option: "SELECT",
             table: "chatrooms",
             columns: ["created_by", "source_type", "source_id"],
@@ -32,7 +32,7 @@ export async function changeChatroomSource(
     const room = (await select()).rows?.[0];
     if (!room && release) return;
     if (!room) throw new Error("Chatroom not found.");
-    const membership = await database.executeCommand({
+    const membership = await db.executeCommand({
         option: "SELECT",
         table: "chatroom_members",
         columns: ["account_id"],
@@ -47,7 +47,7 @@ export async function changeChatroomSource(
         !membership.rows?.length
     )
         throw new Error("Chatroom source access denied.");
-    await database.executeCommand({
+    await db.executeCommand({
         option: "UPDATE",
         table: "chatrooms",
         set: {

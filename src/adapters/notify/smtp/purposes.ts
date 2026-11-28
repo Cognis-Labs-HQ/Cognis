@@ -1,4 +1,4 @@
-import { EMAIL_DELIVERY_RATE_LIMIT_MS as EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS } from "./rate-limit.js";
+import { EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS } from "./rate-limit.js";
 import { createEmailTemplates } from "./email-templates.js";
 import {
     registerBootstrapFlow,

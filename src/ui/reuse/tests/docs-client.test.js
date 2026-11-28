@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    loadDocsIndex as loadDocumentsIndex,
-    loadDocsBundleMarkdown as loadDocumentsBundleMarkdown,
+    loadDocumentsIndex,
+    loadDocumentsBundleMarkdown,
 } from "../docs-client.js";
 import { selectUiLanguage } from "../ui-language-state.js";
 
@@ -47,23 +47,23 @@ test("index and every view prioritize the displayed UI language over account ord
 });
 
 test("docs index loader returns an empty list for unsuccessful responses", async () => {
-    const documents = await loadDocumentsIndex({
+    const docs = await loadDocumentsIndex({
         fetchDocs: async () => ({ ok: false }),
     });
-    assert.deepEqual(documents, []);
+    assert.deepEqual(docs, []);
 });
 
 test("docs index loader returns an empty list when the request fails", async () => {
-    const documents = await loadDocumentsIndex({
+    const docs = await loadDocumentsIndex({
         fetchDocs: async () => {
             throw new Error("network unavailable");
         },
     });
-    assert.deepEqual(documents, []);
+    assert.deepEqual(docs, []);
 });
 
 test("docs index loader rejects malformed index data", async () => {
-    const documents = await loadDocumentsIndex({
+    const docs = await loadDocumentsIndex({
         fetchDocs: async () => ({
             ok: true,
             async json() {
@@ -71,11 +71,11 @@ test("docs index loader rejects malformed index data", async () => {
             },
         }),
     });
-    assert.deepEqual(documents, []);
+    assert.deepEqual(docs, []);
 });
 
 test("docs index loader rejects malformed JSON", async () => {
-    const documents = await loadDocumentsIndex({
+    const docs = await loadDocumentsIndex({
         fetchDocs: async () => ({
             ok: true,
             async json() {
@@ -83,12 +83,12 @@ test("docs index loader rejects malformed JSON", async () => {
             },
         }),
     });
-    assert.deepEqual(documents, []);
+    assert.deepEqual(docs, []);
 });
 
 test("docs index loader keeps only object entries", async () => {
     const entry = { slug: "overview" };
-    const documents = await loadDocumentsIndex({
+    const docs = await loadDocumentsIndex({
         fetchDocs: async () => ({
             ok: true,
             async json() {
@@ -96,7 +96,7 @@ test("docs index loader keeps only object entries", async () => {
             },
         }),
     });
-    assert.deepEqual(documents, [entry]);
+    assert.deepEqual(docs, [entry]);
 });
 
 test("bundle reads pin one version, include all views, and preserve cancellation", async () => {

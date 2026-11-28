@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLeaderboardRoutes } from "./routes/index.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { DbLeaderboardStore as DatabaseLeaderboardStore } from "./store.js";
+import { DatabaseLeaderboardStore } from "./store.js";
 
 let ready = false;
 const UI_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
@@ -76,10 +76,10 @@ export async function bootstrapStudyAdapter(
         () => ctx.isAdapterEnabled(),
         scoring,
         {
-            canRead: (...argumentsList) =>
+            canRead: (...args) =>
                 ctx.capabilities
                     .get<StudyClassAccessCapability>("study:classes:access")
-                    ?.canRead(...argumentsList) ?? Promise.resolve(false),
+                    ?.canRead(...args) ?? Promise.resolve(false),
         },
         ctx.log,
         (state) => store.save(state),
@@ -137,10 +137,10 @@ export async function bootstrapStudyAdapter(
     const capability = new Proxy(service, {
         get(target, property, receiver) {
             if (metadataMethods.some((method) => method === property))
-                return async (...argumentsList: unknown[]) => {
+                return async (...args: unknown[]) => {
                     await systemCtx.flow.run(
                         `study:leaderboard:${String(property)}`,
-                        argumentsList,
+                        args,
                     );
                 };
             if (property === "submitObservation")

@@ -161,7 +161,7 @@ function createDocumentLineDifference(
     }
     return lines;
 }
-export { createDocumentLineDifference as createDocumentLineDiff };
+export { createDocumentLineDifference };
 
 function publicationTime(value: unknown): number {
     const milliseconds =

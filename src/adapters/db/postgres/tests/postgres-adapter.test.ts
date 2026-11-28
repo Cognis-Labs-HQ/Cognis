@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    PostgresDbGateway as PostgresDatabaseGateway,
-    createDbExecutor as createDatabaseExecutor,
+    PostgresDatabaseGateway,
+    createDatabaseExecutor,
     readPostgresPoolSettings,
     type PostgresClient,
     type PostgresPool,
@@ -177,8 +177,8 @@ test("postgres adapter registers pool shutdown with the lifecycle capability", a
 test("postgres adapter executes structured commands", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const pool = createPool({
-        query: async (sql: string, parameters?: unknown[]) => {
-            calls.push({ sql, params: parameters });
+        query: async (sql: string, params?: unknown[]) => {
+            calls.push({ sql, params: params });
             return { rows: [{ id: 3 }], rowCount: 1 };
         },
     });

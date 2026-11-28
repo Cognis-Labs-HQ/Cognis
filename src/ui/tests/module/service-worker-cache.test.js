@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 for (const offline of [false, true]) {
     test(`module scripts bypass stale service worker caches when ${offline ? "offline" : "online"}`, async () => {
@@ -25,7 +25,7 @@ for (const offline of [false, true]) {
                 return "current module";
             },
         };
-        virtualMachine.runInNewContext(
+        vm.runInNewContext(
             readFileSync(
                 new URL("../../public/sw.js", import.meta.url),
                 "utf8",

@@ -157,14 +157,14 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             registerNavbarPlugin(plugin) {
                 registeredPlugins.push(plugin);
             },
-            registerStaticDir(id, directory) {
-                registeredStaticDirectories.push({ id, dir: directory });
+            registerStaticDir(id, dir) {
+                registeredStaticDirectories.push({ id, dir: dir });
             },
-            registerAdapterStaticDir(gatewayId, adapterId, directory) {
+            registerAdapterStaticDir(gatewayId, adapterId, dir) {
                 registeredAdapterStaticDirectories.push({
                     gatewayId,
                     adapterId,
-                    dir: directory,
+                    dir: dir,
                 });
             },
             resolveAssetUrl(assetUrl) {

@@ -5,7 +5,7 @@ import { setImmediate } from "node:timers/promises";
 import {
     openSession,
     upgradeToTls,
-    SMTP_TIMEOUT_MS as SMTP_TIMEOUT_MILLISECONDS,
+    SMTP_TIMEOUT_MILLISECONDS,
 } from "../smtp-session.js";
 
 for (const transport of ["tls", "starttls"] as const) {

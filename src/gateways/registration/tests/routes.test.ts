@@ -89,17 +89,17 @@ test("founder can list only their pending registration tokens", async () => {
         accountStore,
     );
 
-    const response = makeResponse();
+    const res = makeResponse();
     const handled = await route(
         {
             method: "GET",
             headers: { authorization: `Bearer ${founderToken}` },
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/registration/tokens"),
     );
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     assert.equal(inviterFilter, "founder-user");
 });
 
@@ -130,17 +130,17 @@ test("admin invite management is scoped to invitations they created", async () =
         accountStore,
     );
 
-    const response = makeResponse();
+    const res = makeResponse();
     const handled = await route(
         {
             method: "GET",
             headers: { authorization: `Bearer ${adminToken}` },
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/registration/tokens"),
     );
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     assert.equal(inviterFilter, "admin-user");
 });
 
@@ -159,21 +159,21 @@ test("registration state exposes founder-safe gateway status", async () => {
         () => false,
     );
 
-    const response = makeResponse();
+    const res = makeResponse();
     const handled = await route(
         {
             method: "GET",
             headers: { authorization: `Bearer ${founderToken}` },
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/registration/state"),
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
-    assert.match(response.payload, /"gatewayEnabled":false/);
-    assert.match(response.payload, /"inviteEnabled":true/);
-    assert.match(response.payload, /"canGenerateToken":false/);
+    assert.equal(res.status, 200);
+    assert.match(res.payload, /"gatewayEnabled":false/);
+    assert.match(res.payload, /"inviteEnabled":true/);
+    assert.match(res.payload, /"canGenerateToken":false/);
 });
 
 test("founding users cannot issue manual registration tokens", async () => {
@@ -190,23 +190,23 @@ test("founding users cannot issue manual registration tokens", async () => {
         } as any,
         accountStore,
     );
-    const request = Readable.from([JSON.stringify({ delivery: "manual" })]);
-    Object.assign(request, {
+    const req = Readable.from([JSON.stringify({ delivery: "manual" })]);
+    Object.assign(req, {
         method: "POST",
         headers: {
             authorization: `Bearer ${founderToken}`,
             "content-type": "application/json",
         },
     });
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
-        request as any,
-        response,
+        req as any,
+        res,
         new URL("http://localhost/api/v1/registration/tokens"),
     );
 
-    assert.equal(response.status, 403);
+    assert.equal(res.status, 403);
     assert.equal(issued, false);
 });
 
@@ -241,15 +241,15 @@ test("invite endpoint returns inviter details for valid token", async () => {
         accountStore,
     );
 
-    const response = makeResponse();
+    const res = makeResponse();
     const handled = await route(
         { method: "GET", headers: {} } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/registration/invite?token=a.b"),
     );
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
-    assert.match(response.payload, /Founder Name/);
+    assert.equal(res.status, 200);
+    assert.match(res.payload, /Founder Name/);
 });
 
 test("invite endpoint returns invite_disabled when invite adapter is disabled", async () => {
@@ -262,15 +262,15 @@ test("invite endpoint returns invite_disabled when invite adapter is disabled", 
         accountStore,
     );
 
-    const response = makeResponse();
+    const res = makeResponse();
     const handled = await route(
         { method: "GET", headers: {} } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/registration/invite?token=a.b"),
     );
     assert.equal(handled, true);
-    assert.equal(response.status, 409);
-    assert.match(response.payload, /invite_disabled/);
+    assert.equal(res.status, 409);
+    assert.match(res.payload, /invite_disabled/);
 });
 
 test("issue invite returns 409 when email is already registered", async () => {
@@ -298,7 +298,7 @@ test("issue invite returns 409 when email is already registered", async () => {
         accountStore,
     );
 
-    const response = makeResponse();
+    const res = makeResponse();
     const handled = await route(
         {
             method: "POST",
@@ -307,13 +307,13 @@ test("issue invite returns 409 when email is already registered", async () => {
                 yield Buffer.from('{"email":"taken@example.com"}');
             },
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/registration/tokens"),
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 409);
-    assert.match(response.payload, /email_taken/);
+    assert.equal(res.status, 409);
+    assert.match(res.payload, /email_taken/);
 });
 
 test("GET /register does not redirect authenticated users to dashboard", async () => {

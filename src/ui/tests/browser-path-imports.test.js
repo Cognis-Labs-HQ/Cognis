@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, relative, resolve, sep as separator } from "node:path";
+import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -20,7 +20,7 @@ function collectJavaScriptFiles(directory) {
             return collectJavaScriptFiles(entryPath);
         }
         if (!entry.isFile() || !entry.name.endsWith(".js")) return [];
-        const repositoryPath = relative(ROOT, entryPath).split(separator);
+        const repositoryPath = relative(ROOT, entryPath).split(sep);
         return repositoryPath[1] === "ui" || repositoryPath.includes("ui")
             ? [entryPath]
             : [];
@@ -59,7 +59,7 @@ function resolveStaticPath(staticPath) {
 }
 
 function getAdapterOwner(filePath) {
-    const repositoryPath = relative(ROOT, filePath).split(separator);
+    const repositoryPath = relative(ROOT, filePath).split(sep);
     if (repositoryPath[1] !== "adapters") return null;
     return `${repositoryPath[2]}/${repositoryPath[3]}`;
 }
@@ -70,7 +70,7 @@ function getStaticAdapterOwner(staticPath) {
 }
 
 function getLocalImportRoot(filePath) {
-    const repositoryPath = relative(ROOT, filePath).split(separator);
+    const repositoryPath = relative(ROOT, filePath).split(sep);
     if (repositoryPath[1] !== "adapters") return null;
     return resolve(ROOT, ...repositoryPath.slice(0, 5));
 }
@@ -79,7 +79,7 @@ function isWithin(directory, filePath) {
     const pathFromDirectory = relative(directory, filePath);
     return (
         pathFromDirectory === "" ||
-        (!pathFromDirectory.startsWith(`..${separator}`) &&
+        (!pathFromDirectory.startsWith(`..${sep}`) &&
             pathFromDirectory !== "..")
     );
 }

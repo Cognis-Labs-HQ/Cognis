@@ -11,10 +11,10 @@ export function readJson(
     options?: JsonReadOptions & { shape?: "object" },
 ): Promise<Record<string, unknown>>;
 export async function readJson(
-    request: IncomingMessage,
+    req: IncomingMessage,
     options: JsonReadOptions & { shape?: "object" | "array" } = {},
 ): Promise<Record<string, unknown> | unknown[]> {
-    const text = (await readRawBody(request, options)).toString("utf8") || "{}";
+    const text = (await readRawBody(req, options)).toString("utf8") || "{}";
     const body: unknown = JSON.parse(text);
     const valid =
         options.shape === "array"
@@ -26,12 +26,12 @@ export async function readJson(
 }
 
 export async function readRawBody(
-    request: IncomingMessage,
+    req: IncomingMessage,
     { maxBytes }: { maxBytes?: number } = {},
 ): Promise<Buffer> {
     const chunks: Buffer[] = [];
     let size = 0;
-    for await (const chunk of request) {
+    for await (const chunk of req) {
         const data = Buffer.from(chunk);
         size += data.length;
         if (maxBytes !== undefined && size > maxBytes)

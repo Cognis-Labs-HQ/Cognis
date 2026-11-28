@@ -6,10 +6,10 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import {
-    bindStudySubNavigation as bindStudyNestedNavigation,
-    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
+    bindStudyNestedNavigation,
+    loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
+    createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 import {
     bindLibraryRequestReviews,

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, rm as removePath } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { ModuleMarketplaceService, type ModuleSource } from "../../../index.js";
@@ -27,7 +27,7 @@ for (const changeSource of [false, true]) {
             path.join(tmpdir(), "cognis-shared-scan-"),
         );
         testContext.after(() =>
-            removePath(directory, { recursive: true, force: true }),
+            rm(directory, { recursive: true, force: true }),
         );
         const started = deferred();
         const bothStarted = deferred();

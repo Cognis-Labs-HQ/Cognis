@@ -41,7 +41,7 @@ test("POST /api/v1/auth/request-login-link sends a password reset link and consu
         const gatewayRegistry = new GatewayRegistry();
         const routeRegistry = new RouteRegistry();
         const capabilities = new CapabilityStore();
-        const database = new InMemoryTestExecutor();
+        const db = new InMemoryTestExecutor();
         let sentLink = "";
         capabilities.contribute("notify:emailAvailable", () => true);
         capabilities.contribute(
@@ -60,7 +60,7 @@ test("POST /api/v1/auth/request-login-link sends a password reset link and consu
             gatewayRegistry,
             routeRegistry,
             capabilities,
-            db: database,
+            db: db,
         });
 
         const accountStore = capabilities.get<{
@@ -135,7 +135,7 @@ test("POST /api/v1/auth/consume-login-link rejects concurrent reuse before first
         const gatewayRegistry = new GatewayRegistry();
         const routeRegistry = new RouteRegistry();
         const capabilities = new CapabilityStore();
-        const database = new InMemoryTestExecutor();
+        const db = new InMemoryTestExecutor();
         let sentLink = "";
         capabilities.contribute("notify:emailAvailable", () => true);
         capabilities.contribute(
@@ -154,7 +154,7 @@ test("POST /api/v1/auth/consume-login-link rejects concurrent reuse before first
             gatewayRegistry,
             routeRegistry,
             capabilities,
-            db: database,
+            db: db,
         });
 
         const accountStore = capabilities.get<{
@@ -253,13 +253,13 @@ test("POST /api/v1/auth/request-login-link falls back to support contact details
         const gatewayRegistry = new GatewayRegistry();
         const routeRegistry = new RouteRegistry();
         const capabilities = new CapabilityStore();
-        const database = new InMemoryTestExecutor();
+        const db = new InMemoryTestExecutor();
 
         await bootstrapAuthGateway({
             gatewayRegistry,
             routeRegistry,
             capabilities,
-            db: database,
+            db: db,
         });
 
         const accountStore = capabilities.get<{

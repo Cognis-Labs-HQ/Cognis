@@ -1,14 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, writeFile, rm as removePath } from "node:fs/promises";
-import operatingSystem from "node:os";
+import { mkdir, mkdtemp, writeFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { ModuleMarketplaceService } from "../../../index.js";
 
 test("module marketplace removes cached modules when a successful scan returns no repositories", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const statePath = path.join(root, "sources.json");
     await mkdir(path.join(root, "modules", ".cache"), { recursive: true });
     await writeFile(
@@ -36,9 +34,7 @@ test("module marketplace removes cached modules when a successful scan returns n
 });
 
 test("module marketplace keeps cached repositories whose refresh is inconclusive", async () => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const statePath = path.join(root, "sources.json");
     const service = new ModuleMarketplaceService(
         statePath,
@@ -77,10 +73,8 @@ test("module marketplace keeps cached repositories whose refresh is inconclusive
 });
 
 test("empty cached artwork is unavailable and logs its asset identity", async (context) => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-empty-artwork-"),
-    );
-    context.after(() => removePath(root, { recursive: true, force: true }));
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-empty-artwork-"));
+    context.after(() => rm(root, { recursive: true, force: true }));
     const logs: Array<Record<string, unknown>> = [];
     const service = new ModuleMarketplaceService(
         "sources.json",

@@ -4,7 +4,7 @@ import {
     mkdtemp,
     mkdir,
     readFile,
-    rm as removePath,
+    rm,
     symlink,
     writeFile,
 } from "node:fs/promises";
@@ -71,7 +71,7 @@ test("module repository validator accepts a portable repository", async () => {
     try {
         await validateModuleRepository(fixture.root, fixture.manifest);
     } finally {
-        await removePath(fixture.root, { recursive: true, force: true });
+        await rm(fixture.root, { recursive: true, force: true });
     }
 });
 
@@ -86,7 +86,7 @@ test("module repository validator ignores the root README alias", async () => {
         });
         await validateModuleRepository(fixture.root, fixture.manifest);
     } finally {
-        await removePath(fixture.root, { recursive: true, force: true });
+        await rm(fixture.root, { recursive: true, force: true });
     }
 });
 
@@ -109,7 +109,7 @@ test("module repository validator verifies an internal AGENTS.md symlink", async
         });
         await validateModuleRepository(fixture.root, fixture.manifest);
     } finally {
-        await removePath(fixture.root, { recursive: true, force: true });
+        await rm(fixture.root, { recursive: true, force: true });
     }
 });
 
@@ -128,8 +128,8 @@ test("module repository validator rejects symlinks outside the repository", asyn
             /missing_module_repository_file:AGENTS\.md/,
         );
     } finally {
-        await removePath(fixture.root, { recursive: true, force: true });
-        await removePath(externalFile, { force: true });
+        await rm(fixture.root, { recursive: true, force: true });
+        await rm(externalFile, { force: true });
     }
 });
 
@@ -162,7 +162,7 @@ test("module repository validator rejects mismatched packages and files", async 
             /module_file_checksum_mismatch/,
         );
     } finally {
-        await removePath(fixture.root, { recursive: true, force: true });
+        await rm(fixture.root, { recursive: true, force: true });
     }
 });
 
@@ -177,6 +177,6 @@ test("module repository validator requires a root license file when declared", a
         await writeFile(path.join(fixture.root, "LICENSE"), "MIT\n");
         await validateModuleRepository(fixture.root, fixture.manifest);
     } finally {
-        await removePath(fixture.root, { recursive: true, force: true });
+        await rm(fixture.root, { recursive: true, force: true });
     }
 });

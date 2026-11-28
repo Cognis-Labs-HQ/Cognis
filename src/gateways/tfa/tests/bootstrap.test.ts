@@ -14,7 +14,7 @@ import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 import { bootstrap as bootstrapAuth } from "../../auth/bootstrap/index.js";
-import { DbTfaStore as DatabaseTfaStore } from "../reuse/tfa-store.js";
+import { DatabaseTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
 const tfaRoutesSource = readFileSync(
@@ -59,28 +59,28 @@ async function dispatchRoute(
     pathname: string,
     method = "GET",
 ) {
-    const response = makeResponse();
+    const res = makeResponse();
     let handled = false;
-    const request = {
+    const req = {
         method,
         headers,
     } as unknown as import("node:http").IncomingMessage;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            request,
-            response as unknown as import("node:http").ServerResponse,
+            req,
+            res as unknown as import("node:http").ServerResponse,
             new URL(pathname, "http://localhost"),
         );
         if (handled) {
             break;
         }
     }
-    return { handled, res: response };
+    return { handled, res: res };
 }
 
 test("tfa catalog restores adapter state and publishes authenticated lifecycle controls", async () => {
-    const database = new InMemoryTestExecutor();
-    const store = new DatabaseTfaStore(database);
+    const db = new InMemoryTestExecutor();
+    const store = new DatabaseTfaStore(db);
     await store.ensureSchema();
     await store.saveAdapterConfig("totp", false, {});
 
@@ -90,7 +90,7 @@ test("tfa catalog restores adapter state and publishes authenticated lifecycle c
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
     capabilities.contribute("system:ctx", systemCtx);
-    capabilities.contribute("db:executor", database);
+    capabilities.contribute("db:executor", db);
 
     const registeredSecuritySections: Array<{
         id: string;
@@ -225,14 +225,14 @@ test("TFA verification preserves the pending login session TTL", () => {
 });
 
 test("tfa login UI integration unhooks when gateway is disabled", async () => {
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
     capabilities.contribute("system:ctx", systemCtx);
-    capabilities.contribute("db:executor", database);
+    capabilities.contribute("db:executor", db);
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
 
     await runBootstrapScope(

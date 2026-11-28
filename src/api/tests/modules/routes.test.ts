@@ -73,8 +73,8 @@ test("module routes log enable operations", async () => {
             disable: async () => ({ moduleId: "x", enabled: false }),
         } as any,
         {
-            log: (level, message, metadata) => {
-                entries.push({ level, message, meta: metadata });
+            log: (level, message, meta) => {
+                entries.push({ level, message, meta: meta });
             },
         },
     );
@@ -398,11 +398,11 @@ test("module source mutations and scans emit lifecycle logs", async () => {
     const route = createModuleRoutes(
         { list: async () => [] } as any,
         {
-            log: (level, message, metadata) =>
+            log: (level, message, meta) =>
                 logs.push({
                     level,
                     message,
-                    count: metadata?.catalogModulesFound,
+                    count: meta?.catalogModulesFound,
                 }),
         },
         undefined,

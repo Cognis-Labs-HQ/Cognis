@@ -6,9 +6,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import {
-    bindStudySubNavigation as bindStudyNestedNavigation,
-    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
-    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
+    bindStudyNestedNavigation,
+    loadStudyNestedNavigationModel,
+    createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 import {
     dictionarySearchContext,

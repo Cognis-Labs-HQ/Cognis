@@ -13,11 +13,11 @@ import { showToast } from "/static/reuse/toast.js";
  * reverted.
  *
  * Public exports:
- *   initNotificationPrefs(root, options) — initialises the notification preferences matrix.
+ *   initNotificationPreferences(root, options) — initialises the notification preferences matrix.
  *   createSettingsSection({ i18n, root, markDirty }) — returns a settings section descriptor.
  *
  * Usage:
- *   const notifPrefs = initNotificationPrefs(root, { i18n, username, onDirtyChange });
+ *   const notifPrefs = initNotificationPreferences(root, { i18n, username, onDirtyChange });
  *   await notifPrefs.init();
  *
  * @param {Element} root
@@ -36,25 +36,25 @@ function initNotificationPreferences(root, { i18n, username, onDirtyChange }) {
     }
 
     async function loadProviders() {
-        const response = await apiFetch("/api/v1/notify/providers");
-        if (!response.ok) return;
-        const payload = await response.json();
+        const res = await apiFetch("/api/v1/notify/providers");
+        if (!res.ok) return;
+        const payload = await res.json();
         providers = payload.data ?? [];
     }
 
     async function loadCategories() {
-        const response = await apiFetch("/api/v1/notify/categories");
-        if (!response.ok) return;
-        const payload = await response.json();
+        const res = await apiFetch("/api/v1/notify/categories");
+        if (!res.ok) return;
+        const payload = await res.json();
         categories = payload.data ?? [];
     }
 
     async function loadPreferences() {
-        const response = await apiFetch(
+        const res = await apiFetch(
             `/api/v1/notify/users/${encodeURIComponent(username)}/notification-prefs`,
         );
-        if (!response.ok) return;
-        const payload = await response.json();
+        if (!res.ok) return;
+        const payload = await res.json();
         const raw = payload.data ?? [];
         savedPreferences = {};
         for (const entry of raw) {
@@ -66,11 +66,11 @@ function initNotificationPreferences(root, { i18n, username, onDirtyChange }) {
     }
 
     async function loadUserEmails() {
-        const response = await apiFetch(
+        const res = await apiFetch(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
-        if (!response.ok) return;
-        const payload = await response.json();
+        if (!res.ok) return;
+        const payload = await res.json();
         userEmails = payload.data ?? [];
     }
 
@@ -223,7 +223,7 @@ function initNotificationPreferences(root, { i18n, username, onDirtyChange }) {
         getPendingPrefs: getPendingPreferences,
     };
 }
-export { initNotificationPreferences as initNotificationPrefs };
+export { initNotificationPreferences };
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let notificationPreferences = null;

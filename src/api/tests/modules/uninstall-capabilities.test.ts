@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { copyFile, mkdir, mkdtemp, rm as removePath } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createCtx, type ModuleRuntimeGateway } from "@cognis/core";
@@ -17,7 +17,7 @@ test("disabled language modules resolve live public cleanup capabilities on unin
         if (previousRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousRoot;
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     });
     const manifests = [
         {

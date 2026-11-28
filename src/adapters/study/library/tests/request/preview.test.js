@@ -36,8 +36,7 @@ test("request previews use the normal card renderer with staged fields and persi
             rendered.push(entry);
             return `<button data-library-entry="${entry.id}">${entry.label}</button>`;
         },
-        openEntryPopup: async (...argumentsList) =>
-            popups.push(argumentsList.at(-1)),
+        openEntryPopup: async (...args) => popups.push(args.at(-1)),
         stageLibraryPromotion: async (id, entry) => {
             saved.push([id, entry]);
             return { ...request, proposedEntry: entry };

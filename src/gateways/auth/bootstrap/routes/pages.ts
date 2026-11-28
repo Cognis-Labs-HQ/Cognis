@@ -15,7 +15,7 @@ const AUTH_UI_ROOT = path.resolve(
 );
 
 export async function serveAuthCallbackPage(
-    response: ServerResponse,
+    res: ServerResponse,
     routeContext?: RouteContext,
 ): Promise<void> {
     const ctx = resolveRouteContext(routeContext);
@@ -23,15 +23,15 @@ export async function serveAuthCallbackPage(
         const file = await readFile(
             path.join(AUTH_UI_ROOT, "pages", "callback.html"),
         );
-        ctx.setPageSecurityHeaders(response);
-        response.writeHead(200, {
+        ctx.setPageSecurityHeaders(res);
+        res.writeHead(200, {
             "content-type": "text/html; charset=utf-8",
             "cache-control": "no-store",
         });
-        response.end(file);
+        res.end(file);
     } catch {
-        response.writeHead(404, { "content-type": "application/json" });
-        response.end(
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
             JSON.stringify({
                 error: { code: "not_found", message: "Asset not found." },
             }),
@@ -42,24 +42,24 @@ export async function serveAuthCallbackPage(
 export function createAuthPageRoutes(routeContext?: RouteContext) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (request.method !== "GET") return false;
+        if (req.method !== "GET") return false;
         const page = url.pathname === "/login" ? "login.html" : null;
         if (!page) return false;
         try {
             const file = await readFile(path.join(AUTH_UI_ROOT, "pages", page));
-            ctx.setPageSecurityHeaders(response);
-            response.writeHead(200, {
+            ctx.setPageSecurityHeaders(res);
+            res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
             });
-            response.end(file);
+            res.end(file);
         } catch {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "not_found", message: "Asset not found." },
                 }),

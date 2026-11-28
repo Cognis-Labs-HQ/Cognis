@@ -20,7 +20,7 @@ import { transientSurfaces } from "../transient-surfaces.js";
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 import {
-    DEBOUNCE_MS as DEBOUNCE_MILLISECONDS,
+    DEBOUNCE_MILLISECONDS,
     MIN_SEARCH_QUERY_LENGTH,
     REGISTERED_SEARCH_CATEGORY_HOOKS,
     bindSearchShortcut,
@@ -29,7 +29,7 @@ import {
 import {
     buildSearchUrl,
     collectBrowserPreferenceSearchGroups,
-    collectGlobalDocsSearchGroups as collectGlobalDocumentsSearchGroups,
+    collectGlobalDocumentsSearchGroups,
     collectGlobalSettingsSearchGroups,
     collectVisibleNavigationSearchGroups,
     collectVisiblePageSearchGroups,

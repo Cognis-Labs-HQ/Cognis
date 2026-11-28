@@ -390,10 +390,8 @@ function applyCompactNavigation(root, signal) {
             applyActiveNavigation();
         },
         log: uiCtx.capabilities.get("ui:log"),
-        registerSurface: (...argumentsList) =>
-            uiCtx.capabilities
-                .get("ui:transientSurfaces")
-                ?.register(...argumentsList),
+        registerSurface: (...args) =>
+            uiCtx.capabilities.get("ui:transientSurfaces")?.register(...args),
     });
 }
 

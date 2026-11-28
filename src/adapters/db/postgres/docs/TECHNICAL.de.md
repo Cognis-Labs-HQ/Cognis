@@ -6,7 +6,7 @@
 
 ### Architektur
 
-`PostgresDbGateway` in `src/adapters/db/postgres/index.ts` besitzt einen `pg.Pool`. Normale Abfragen laufen direkt über den Pool. Transaktionen reservieren einen Client für `BEGIN`, alle Callback-Anweisungen und `COMMIT` oder `ROLLBACK` und geben ihn anschließend frei. Der Adapter registriert das Leeren des Pools über die ctx-Fähigkeit `system:lifecycle`, damit beim Beenden keine Arbeit mehr angenommen wird, bevor die Verbindungen geschlossen werden.
+`PostgresDatabaseGateway` in `src/adapters/db/postgres/index.ts` besitzt einen `pg.Pool`. Normale Abfragen laufen direkt über den Pool. Transaktionen reservieren einen Client für `BEGIN`, alle Callback-Anweisungen und `COMMIT` oder `ROLLBACK` und geben ihn anschließend frei. Der Adapter registriert das Leeren des Pools über die ctx-Fähigkeit `system:lifecycle`, damit beim Beenden keine Arbeit mehr angenommen wird, bevor die Verbindungen geschlossen werden.
 
 Die Schema-Selbstheilung erhält Fremdschlüsseldefinitionen beim Hinzufügen fehlender Spalten und meldet Fehler bei der Reparatur von Indizes oder Spalten, statt sie stillschweigend zu ignorieren.
 

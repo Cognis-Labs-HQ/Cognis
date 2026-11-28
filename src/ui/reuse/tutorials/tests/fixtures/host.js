@@ -61,10 +61,10 @@ export function tutorialHost({
             if (onPresent) await onPresent(entry);
             return entry;
         },
-        log: (...argumentsList) => logs.push(argumentsList),
-        feedback: (...argumentsList) => {
-            feedback.push(argumentsList);
-            return onFeedback?.(...argumentsList);
+        log: (...args) => logs.push(args),
+        feedback: (...args) => {
+            feedback.push(args);
+            return onFeedback?.(...args);
         },
     });
     const owners = [];

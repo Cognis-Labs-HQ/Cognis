@@ -10,10 +10,10 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { execFile as executorFile } from "node:child_process";
+import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
-const run = promisify(executorFile);
+const run = promisify(execFile);
 
 test("a directly registered provider remains a built entry when another entry imports it", async () => {
     const directory = await mkdtemp(path.join(tmpdir(), "cognis-build-entry-"));

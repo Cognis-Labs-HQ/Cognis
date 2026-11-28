@@ -17,12 +17,13 @@ export async function loadLocalAccountStore(
         "store.ts",
     );
     const localStoreModule = await import(`${localStorePath}?t=${Date.now()}`);
-    const LocalAccountStoreClass = localStoreModule.DbLocalAccountStore as
-        | (new (
-              databaseExecutor: DbExecutor,
-              log?: GatewayBootstrapContext["log"],
-          ) => AuthAccountStore)
-        | undefined;
+    const LocalAccountStoreClass =
+        localStoreModule.DatabaseLocalAccountStore as
+            | (new (
+                  databaseExecutor: DbExecutor,
+                  log?: GatewayBootstrapContext["log"],
+              ) => AuthAccountStore)
+            | undefined;
     if (!LocalAccountStoreClass) {
         throw new Error("local_account_store_missing");
     }

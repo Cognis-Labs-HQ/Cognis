@@ -11,8 +11,8 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
     const ctx = resolveRouteContext(dependencies.routeContext);
 
     return async (
-        currentRequest: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const isRequestsCollection =
@@ -24,11 +24,11 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
             return false;
         }
 
-        const claims = ctx.requireAuth(currentRequest, response, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub;
 
-        if (isRequestsCollection && currentRequest.method === "GET") {
+        if (isRequestsCollection && req.method === "GET") {
             const incoming =
                 await messagesStore.listIncomingMessageRequests(accountId);
             const enriched = await Promise.all(
@@ -44,12 +44,12 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
                     };
                 }),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: enriched }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: enriched }));
             return true;
         }
 
-        if (!requestMatch || currentRequest.method !== "POST") {
+        if (!requestMatch || req.method !== "POST") {
             return false;
         }
 
@@ -57,8 +57,8 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
         const action = requestMatch[2];
         const request = await messagesStore.getMessageRequest(requestId);
         if (!request || request.toAccountId !== accountId) {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "not_found",
@@ -69,8 +69,8 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
             return true;
         }
         if (request.status !== "pending") {
-            response.writeHead(409, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(409, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "invalid_state",
@@ -97,8 +97,8 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
                     });
                 }
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { status: "rejected" } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { status: "rejected" } }));
             return true;
         }
 
@@ -108,8 +108,8 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
             request.toAccountId,
         );
         if (!requestAllowed) {
-            response.writeHead(403, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "forbidden",
@@ -124,7 +124,7 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
             : null;
         const existingRoom =
             requestedRoom ??
-            (await messagesStore.findDmBetween(
+            (await messagesStore.findDirectMessageBetween(
                 request.fromAccountId,
                 request.toAccountId,
             ));
@@ -160,8 +160,8 @@ export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
             request.toAccountId,
             room.id,
         );
-        response.writeHead(200, { "content-type": "application/json" });
-        response.end(JSON.stringify({ data: room }));
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ data: room }));
         return true;
     };
 }

@@ -43,7 +43,7 @@ function resolveDatabaseProviderDirectory(databaseType: string) {
         return "mariadb";
     return "postgres";
 }
-export { resolveDatabaseProviderDirectory as resolveDbProviderDir };
+export { resolveDatabaseProviderDirectory };
 
 function splitSqlStatements(sql: string): string[] {
     return sql
@@ -56,10 +56,10 @@ function splitSqlStatements(sql: string): string[] {
 }
 
 async function ensureMigrationsTable(
-    directory: string,
+    dir: string,
     executor: DbExecutor,
 ): Promise<void> {
-    if (directory === "mariadb") {
+    if (dir === "mariadb") {
         await executor.execute(
             `CREATE TABLE IF NOT EXISTS db_migrations (
   id VARCHAR(191) PRIMARY KEY,
@@ -78,16 +78,16 @@ async function ensureMigrationsTable(
     }
 }
 
-function migrationPlaceholder(directory: string, index: number): string {
-    return directory === "postgres" ? `$${index}` : "?";
+function migrationPlaceholder(dir: string, index: number): string {
+    return dir === "postgres" ? `$${index}` : "?";
 }
 
 async function isMigrationApplied(
     id: string,
-    directory: string,
+    dir: string,
     executor: DbExecutor,
 ): Promise<boolean> {
-    const placeholder = migrationPlaceholder(directory, 1);
+    const placeholder = migrationPlaceholder(dir, 1);
     const result = await executor.execute(
         `SELECT id FROM db_migrations WHERE id = ${placeholder}`,
         [id],
@@ -98,11 +98,11 @@ async function isMigrationApplied(
 async function recordMigration(
     id: string,
     checksum: string,
-    directory: string,
+    dir: string,
     executor: DbExecutor,
 ): Promise<void> {
     const now = new Date().toISOString();
-    if (directory === "postgres") {
+    if (dir === "postgres") {
         await executor.execute(
             "INSERT INTO db_migrations (id, sha256, applied_at) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING",
             [id, checksum, now],
@@ -120,15 +120,11 @@ const INIT_SENTINEL_CHECKSUM = "phase-sentinel";
 
 async function runInitPhase(
     initRoot: string,
-    directory: string,
+    dir: string,
     logger: DbInitLogger,
     executor: DbExecutor,
 ): Promise<{ files: string[]; sqlCount: number }> {
-    const already = await isMigrationApplied(
-        INIT_SENTINEL_ID,
-        directory,
-        executor,
-    );
+    const already = await isMigrationApplied(INIT_SENTINEL_ID, dir, executor);
     if (already) {
         await logger.info("Database init phase already applied, skipping.", {
             dir: initRoot,
@@ -145,7 +141,7 @@ async function runInitPhase(
         await recordMigration(
             INIT_SENTINEL_ID,
             INIT_SENTINEL_CHECKSUM,
-            directory,
+            dir,
             executor,
         );
         return { files: [], sqlCount: 0 };
@@ -173,7 +169,7 @@ async function runInitPhase(
     await recordMigration(
         INIT_SENTINEL_ID,
         INIT_SENTINEL_CHECKSUM,
-        directory,
+        dir,
         executor,
     );
     return { files, sqlCount: files.length };
@@ -181,7 +177,7 @@ async function runInitPhase(
 
 async function runMigratePhase(
     migrateRoot: string,
-    directory: string,
+    dir: string,
     logger: DbInitLogger,
     executor: DbExecutor,
 ): Promise<{ files: string[]; sqlCount: number }> {
@@ -202,11 +198,7 @@ async function runMigratePhase(
     for (let i = 0; i < files.length; i++) {
         const migrationId = `migrate:${files[i]}`;
         const checksum = sha256Of(contents[i]);
-        const already = await isMigrationApplied(
-            migrationId,
-            directory,
-            executor,
-        );
+        const already = await isMigrationApplied(migrationId, dir, executor);
         if (already) {
             await logger.info(
                 "Database migration script already applied, skipping.",
@@ -218,7 +210,7 @@ async function runMigratePhase(
         for (const statement of statements) {
             await executor.execute(statement);
         }
-        await recordMigration(migrationId, checksum, directory, executor);
+        await recordMigration(migrationId, checksum, dir, executor);
         await logger.info("Database migration script applied.", {
             file: files[i],
         });
@@ -234,29 +226,23 @@ export async function initializeDatabaseSchema(
     executor: DbExecutor,
     adaptersRoot: string = path.resolve(process.cwd(), "src", "adapters"),
 ) {
-    const directory = resolveDatabaseProviderDirectory(databaseType);
-    const initRoot = path.join(adaptersRoot, "db", directory, "sql", "init");
-    const migrateRoot = path.join(
-        adaptersRoot,
-        "db",
-        directory,
-        "sql",
-        "migrate",
-    );
+    const dir = resolveDatabaseProviderDirectory(databaseType);
+    const initRoot = path.join(adaptersRoot, "db", dir, "sql", "init");
+    const migrateRoot = path.join(adaptersRoot, "db", dir, "sql", "migrate");
 
-    await ensureMigrationsTable(directory, executor);
+    await ensureMigrationsTable(dir, executor);
 
     const { files: initFiles, sqlCount: initCount } = await runInitPhase(
         initRoot,
-        directory,
+        dir,
         logger,
         executor,
     );
     const { files: migrateFiles, sqlCount: migrateCount } =
-        await runMigratePhase(migrateRoot, directory, logger, executor);
+        await runMigratePhase(migrateRoot, dir, logger, executor);
 
     return {
-        dbType: directory,
+        dbType: dir,
         files: [...initFiles, ...migrateFiles],
         sqlCount: initCount + migrateCount,
     };

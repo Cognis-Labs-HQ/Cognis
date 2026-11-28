@@ -1,10 +1,5 @@
 import path from "node:path";
-import {
-    readFile,
-    mkdtemp,
-    writeFile,
-    rm as removePath,
-} from "node:fs/promises";
+import { readFile, mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { discoverCoreComponentDependencies } from "../../components/discovery.js";
 import assert from "node:assert/strict";
@@ -189,9 +184,7 @@ test("Social provider owners use runtime IDs while retaining canonical manifest 
 
 test("required and locked adapter providers retain their identity across aliases and descriptor resolution", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "provider-ownership-"));
-    context.after(() =>
-        removePath(directory, { recursive: true, force: true }),
-    );
+    context.after(() => rm(directory, { recursive: true, force: true }));
     const manifestPath = path.join(directory, "assets.json");
     await writeFile(
         manifestPath,

@@ -6,7 +6,7 @@ import {
 import { randomBytes } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DbTfaStore } from "./reuse/tfa-store.js";
+import type { DatabaseTfaStore } from "./reuse/tfa-store.js";
 
 import type {
     TfaConfigField,
@@ -133,7 +133,7 @@ export class CoreTfaGateway {
     >();
 
     constructor(
-        private readonly store: DbTfaStore,
+        private readonly store: DatabaseTfaStore,
         private readonly options: {
             dispatchNotification?: NotifyDispatch;
             adapterFactoryContext?: Record<string, unknown>;

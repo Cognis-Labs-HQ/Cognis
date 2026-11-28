@@ -2,11 +2,11 @@
  * Loads and validates the documentation index exposed by the core docs API.
  *
  * Public exports:
- * - `loadDocsIndex` — returns documentation index entries or an empty list when unavailable.
- * - `loadDocsBundleMarkdown` — reads all views at one component version.
+ * - `loadDocumentsIndex` — returns documentation index entries or an empty list when unavailable.
+ * - `loadDocumentsBundleMarkdown` — reads all views at one component version.
  *
  * @example
- * const docs = await loadDocsIndex();
+ * const docs = await loadDocumentsIndex();
  *
  * @param {{ fetchDocs?: (path: string) => Promise<Response> }} [options]
  * @returns {Promise<Array<Record<string, unknown>>>} Valid documentation entries.
@@ -29,7 +29,7 @@ function readDocumentsLanguages() {
         ),
     ];
 }
-export { readDocumentsLanguages as readDocsLanguages };
+export { readDocumentsLanguages };
 
 async function loadDocumentsIndex({
     fetchDocs: fetchDocuments = apiFetch,
@@ -47,7 +47,7 @@ async function loadDocumentsIndex({
         (entry) => entry && typeof entry === "object" && !Array.isArray(entry),
     );
 }
-export { loadDocumentsIndex as loadDocsIndex };
+export { loadDocumentsIndex };
 
 async function loadDocumentsBundleMarkdown(
     item,
@@ -86,4 +86,4 @@ async function loadDocumentsBundleMarkdown(
     }
     return markdown.join("\n\n");
 }
-export { loadDocumentsBundleMarkdown as loadDocsBundleMarkdown };
+export { loadDocumentsBundleMarkdown };

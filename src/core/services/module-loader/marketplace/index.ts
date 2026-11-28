@@ -10,7 +10,7 @@ import {
     readFile,
     readdir,
     rename,
-    rm as removePath,
+    rm,
     writeFile,
 } from "node:fs/promises";
 import path from "node:path";
@@ -123,7 +123,7 @@ interface ModuleInstallProvenance {
 
 export class ModuleMarketplaceService extends MarketplaceServiceBase {
     private readonly readRecommendations = createRecommendationReader(
-        (...argumentsList) => this.log(...argumentsList),
+        (...args) => this.log(...args),
     );
     private readonly installationLocks = new Map<string, Promise<void>>();
     private readonly sourceScans = new Map<
@@ -636,7 +636,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         const target = path.join(this.installRoot, module.uuid);
         const temporary = `${target}.installing`;
         await mkdir(this.installRoot, { recursive: true });
-        await removePath(temporary, { recursive: true, force: true });
+        await rm(temporary, { recursive: true, force: true });
         const cloneUrl = this.assertCloneUrl(module.cloneUrl);
         const selectedBranch = branch ?? module.defaultBranch;
         const installReferences = [
@@ -713,7 +713,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 JSON.stringify(provenance, null, 2),
                 { mode: 0o600 },
             );
-            await removePath(target, { recursive: true, force: true });
+            await rm(target, { recursive: true, force: true });
             await rename(temporary, target);
             await this.updateCachedInstallState(
                 module.uuid,
@@ -723,7 +723,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             );
             return manifest;
         } catch (error) {
-            await removePath(temporary, { recursive: true, force: true });
+            await rm(temporary, { recursive: true, force: true });
             throw error;
         }
     }
@@ -743,7 +743,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 "Module uninstall path is outside the install root",
             );
         }
-        await removePath(target, {
+        await rm(target, {
             recursive: true,
             force: true,
         });

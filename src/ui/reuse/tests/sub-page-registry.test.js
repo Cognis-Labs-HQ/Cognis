@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createSubPageRegistry as createNestedPageRegistry } from "../sub-page-registry.js";
+import { createNestedPageRegistry } from "../sub-page-registry.js";
 
 test("sub-page providers expose grouped menus and resolve page routes", async () => {
     const registry = createNestedPageRegistry();

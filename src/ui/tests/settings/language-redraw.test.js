@@ -19,7 +19,7 @@ function setup(context, { fail = false } = {}) {
         window,
         setTimeout,
         clearTimeout,
-        console: { error: (...argumentsList) => errors.push(argumentsList) },
+        console: { error: (...args) => errors.push(args) },
     };
     const { createUnsavedChangesBar } = loadTestModule(
         new URL("../../reuse/unsaved-changes.js", import.meta.url),
@@ -63,7 +63,7 @@ function setup(context, { fail = false } = {}) {
             "../../reuse/offline-identity.js":
                 host.imports["/static/reuse/offline-identity.js"],
             "../../reuse/toast.js": {
-                showToast: (...argumentsList) => toasts.push(argumentsList),
+                showToast: (...args) => toasts.push(args),
             },
         },
         globals,

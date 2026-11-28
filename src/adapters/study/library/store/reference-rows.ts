@@ -34,12 +34,12 @@ export function referenceTransformationValue(reference: {
 
 /** Write canonical placements identically for new and edited cards. */
 export async function insertEntryReferences(
-    database: DbExecutor,
+    db: DbExecutor,
     sourceId: string,
     input: Pick<LibraryEntryInput, "references" | "referenceGroups">,
 ): Promise<void> {
     for (const row of entryReferenceRows(input)) {
-        await executeReferences(database, {
+        await executeReferences(db, {
             option: "INSERT",
             values: {
                 source_entry_id: sourceId,

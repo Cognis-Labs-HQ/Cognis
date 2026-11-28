@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test, { type TestContext } from "node:test";
-import { copyFile, mkdtemp, mkdir, rm as removePath } from "node:fs/promises";
+import { copyFile, mkdtemp, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -41,7 +41,7 @@ async function fixture(
         if (previous === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previous;
-        await removePath(directory, { recursive: true, force: true });
+        await rm(directory, { recursive: true, force: true });
     });
     root.contributePublicCapability("fixture:bootstrap", () =>
         work(requireBootstrapScope(root)),

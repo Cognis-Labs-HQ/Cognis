@@ -666,9 +666,9 @@ export function createKeyringScope(componentName) {
     };
     const scoped =
         (operation) =>
-        (...argumentsList) => {
+        (...args) => {
             check();
-            return operation(...argumentsList);
+            return operation(...args);
         };
     return {
         get: scoped(getKeyringValue),

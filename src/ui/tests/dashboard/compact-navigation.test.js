@@ -34,7 +34,7 @@ function fixture() {
     const destroy = bindCompactNavigation(root, {
         signal: controller.signal,
         prepareNavigation: () => preparations++,
-        log: (...argumentsList) => logs.push(argumentsList),
+        log: (...args) => logs.push(args),
     });
     return {
         document,

@@ -6,7 +6,7 @@ import {
     type GatewayBootstrapContext,
 } from "../../shared.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
-import { DbTfaStore as DatabaseTfaStore } from "../reuse/tfa-store.js";
+import { DatabaseTfaStore } from "../reuse/tfa-store.js";
 import { CoreTfaGateway } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";

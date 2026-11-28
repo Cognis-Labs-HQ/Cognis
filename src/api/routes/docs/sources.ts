@@ -1,5 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
-import { dirname, join, relative, resolve, sep as separator } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 
 export type DocView = "info" | "usage" | "technical";
 export interface DocSource {
@@ -132,8 +132,8 @@ async function discoverDocumentSources(
     const sources: DocSource[] = [];
     const manifests = paths.filter(
         (path) =>
-            path.endsWith(`${separator}manifest.json`) ||
-            path.endsWith(`${separator}package.json`),
+            path.endsWith(`${sep}manifest.json`) ||
+            path.endsWith(`${sep}package.json`),
     );
     const owners = new Set<string>();
     for (const path of manifests.sort((first, second) =>
@@ -161,9 +161,7 @@ async function discoverDocumentSources(
                 throw new Error(`docs_manifest_pointer_invalid:${path}:${key}`);
             declared[view] = resolve(root, pointer);
         }
-        const relativeRoot = relative(sourceRoot, root)
-            .split(separator)
-            .join("/");
+        const relativeRoot = relative(sourceRoot, root).split(sep).join("/");
         const slug =
             path.endsWith("package.json") &&
             manifest.name?.startsWith("@cognis/")
@@ -180,13 +178,13 @@ async function discoverDocumentSources(
     const coreRoot = join(sourceRoot, "docs");
     for (const path of paths.filter(
         (path) =>
-            path.startsWith(coreRoot + separator) &&
-            path.endsWith(`${separator}INFO.en.md`) &&
-            !path.includes(`${separator}changelog${separator}`),
+            path.startsWith(coreRoot + sep) &&
+            path.endsWith(`${sep}INFO.en.md`) &&
+            !path.includes(`${sep}changelog${sep}`),
     )) {
         const directory = dirname(path);
         const slug =
-            relative(coreRoot, directory).split(separator).join("/") || "index";
+            relative(coreRoot, directory).split(sep).join("/") || "index";
         sources.push({
             slug,
             group: "platform",
@@ -202,18 +200,15 @@ async function discoverDocumentSources(
     const changelogs = new Map<string, Record<string, string>>();
     for (const path of paths.filter(
         (path) =>
-            path.includes(
-                `${separator}docs${separator}changelog${separator}`,
-            ) && /\.(en|de|id|ja)\.md$/.test(path),
+            path.includes(`${sep}docs${sep}changelog${sep}`) &&
+            /\.(en|de|id|ja)\.md$/.test(path),
     )) {
         const stem = path.replace(/\.(en|de|id|ja)\.md$/, "");
         const language = path.match(/\.(en|de|id|ja)\.md$/)![1];
         changelogs.set(stem, { ...changelogs.get(stem), [language]: path });
     }
     for (const [stem, files] of changelogs) {
-        const relativeStem = relative(sourceRoot, stem)
-            .split(separator)
-            .join("/");
+        const relativeStem = relative(sourceRoot, stem).split(sep).join("/");
         const [owner, branch] = relativeStem.split("docs/changelog/");
         const slug = `changelog/${owner ? owner.replace(/\/$/, "").split("/").pop() + "/" : ""}${branch}`;
         sources.push({
@@ -228,4 +223,4 @@ async function discoverDocumentSources(
     }
     return sources;
 }
-export { discoverDocumentSources as discoverDocSources };
+export { discoverDocumentSources };

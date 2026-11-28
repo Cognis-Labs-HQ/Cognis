@@ -31,15 +31,15 @@ import {
 } from "../../reuse/theme-toggle.js";
 import {
     toFontFamilyValue,
-    initFontPrefs as initFontPreferences,
+    initFontPreferences,
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
-import { initLanguagePrefs as initLanguagePreferences } from "./language-prefs.js";
-import { initCheckboxPrefs as initCheckboxPreferences } from "./checkbox-prefs.js";
-import { initGeneralPrefs as initGeneralPreferences } from "./general-prefs.js";
-import { initDateTimePrefs as initDateTimePreferences } from "./datetime-prefs.js";
+import { initLanguagePreferences } from "./language-prefs.js";
+import { initCheckboxPreferences } from "./checkbox-prefs.js";
+import { initGeneralPreferences } from "./general-prefs.js";
+import { initDateTimePreferences } from "./datetime-prefs.js";
 import {
-    initReleaseChangelogPrefs as initReleaseChangelogPreferences,
+    initReleaseChangelogPreferences,
     shouldShowReleaseChangelog,
 } from "./release-changelog-prefs.js";
 import {
@@ -47,7 +47,7 @@ import {
     applyTimezoneToLocalStorage,
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
-import { initAdvancedPrefs as initAdvancedPreferences } from "./advanced-prefs.js";
+import { initAdvancedPreferences } from "./advanced-prefs.js";
 import {
     loadEditorAcknowledgement,
     saveEditorAcknowledgement,

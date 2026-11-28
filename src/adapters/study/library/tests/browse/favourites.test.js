@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 test("favourite children render independently of unfavourited ancestors, and provider layout restores", async () => {
     const child = { dataset: { libraryEntry: "child" } };
@@ -42,7 +42,7 @@ test("favourite children render independently of unfavourited ancestors, and pro
             if (type === "change") change = callback;
         },
     };
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         loadFavourites: async () => ({
             has: (_kind, id) => id === "child",
             refresh() {},
@@ -100,7 +100,7 @@ test("favourite children render independently of unfavourited ancestors, and pro
 
 test("leaving a layer while favourites load prevents stale binding and misleading errors", async () => {
     const controller = new AbortController();
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         loadFavourites: async () => {
             controller.abort();
             throw new Error("aborted");

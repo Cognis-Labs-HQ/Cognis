@@ -1,9 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-    createDbExecutor as createDatabaseExecutor,
-    type PostgresPool,
-} from "../index.js";
+import { createDatabaseExecutor, type PostgresPool } from "../index.js";
 
 for (const existing of [false, true]) {
     test(`unique declarations are reconciled with existing index coverage: ${existing}`, async () => {

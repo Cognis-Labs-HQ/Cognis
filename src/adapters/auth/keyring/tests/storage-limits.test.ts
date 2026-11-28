@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { structuredStore } from "../../../../gateways/reuse/tests/structured-store.js";
-import { DbKeyringVaultStore as DatabaseKeyringVaultStore } from "../store.js";
+import { DatabaseKeyringVaultStore } from "../store.js";
 import {
     boundedVaultBytes,
     DEFAULT_MAX_VAULT_BYTES,

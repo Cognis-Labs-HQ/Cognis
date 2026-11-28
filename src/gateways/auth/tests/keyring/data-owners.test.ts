@@ -9,7 +9,7 @@ import {
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { bootstrapAuthTestHost as bootstrap } from "../auth-gateway-test-helpers.js";
 import {
-    makeInMemoryDb as makeInMemoryDatabase,
+    makeInMemoryDatabase,
     createAuthTestContext,
 } from "../auth-gateway-test-helpers.js";
 

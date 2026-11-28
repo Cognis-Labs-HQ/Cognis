@@ -78,28 +78,28 @@ export function createSecurityRoutes({
     }
 
     return async (
-        request,
-        response,
+        req,
+        res,
         url,
         logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/security-sections" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            if (!requireAuth(request, response, "user")) return true;
+            if (!requireAuth(req, res, "user")) return true;
             log?.("debug", "Listed auth security sections.", {
                 ...logMetadata,
                 count: securitySubsections.length,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: securitySubsections }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: securitySubsections }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/registration-config" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
             const enabled = await registrationsEnabled();
             const { userValidationMode } = await readSecuritySettings();
@@ -149,8 +149,8 @@ export function createSecurityRoutes({
                 registrationsEnabled: enabled,
                 userValidationMode,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         registrationsEnabled: enabled,
@@ -165,7 +165,7 @@ export function createSecurityRoutes({
 
         if (
             url.pathname === "/api/v1/auth/password-policy" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
             const preferenceStore =
                 capabilities.get<UserPreferenceStore>("preferences:store");
@@ -183,16 +183,16 @@ export function createSecurityRoutes({
                 }
             }
             log?.("debug", "Served password policy.", logMetadata);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: policy }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: policy }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/login-session-timeout" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const { loginSessionTimeoutMinutes: maximumMinutes } =
                 await readSecuritySettings();
@@ -212,8 +212,8 @@ export function createSecurityRoutes({
                     )
                     .catch(() => undefined);
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         timeoutMinutes,
@@ -227,18 +227,18 @@ export function createSecurityRoutes({
 
         if (
             url.pathname === "/api/v1/auth/login-session-timeout" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const { loginSessionTimeoutMinutes: maximumMinutes } =
                 await readSecuritySettings();
-            const body = await readJson(request);
+            const body = await readJson(req);
             const preferenceStore =
                 capabilities.get<UserPreferenceStore>("preferences:store");
             if (!preferenceStore) {
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "preferences_unavailable",
@@ -270,8 +270,8 @@ export function createSecurityRoutes({
                     accountId: claims.sub,
                     revokedSessionCount,
                 });
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: {
                             timeoutMinutes: maximumMinutes,
@@ -289,8 +289,8 @@ export function createSecurityRoutes({
                 Number(timeoutMinutes) < 1 ||
                 Number(timeoutMinutes) > maximumMinutes
             ) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_session_timeout",
@@ -322,8 +322,8 @@ export function createSecurityRoutes({
                 timeoutMinutes,
                 revokedSessionCount,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: { timeoutMinutes, appliesOnNextLogin },
                 }),
@@ -333,11 +333,11 @@ export function createSecurityRoutes({
 
         if (
             url.pathname === "/api/v1/auth/password-policy" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            const claims = requireAuth(request, response, "admin");
+            const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const policy = parsePasswordPolicy(body);
             const preferenceStore =
                 capabilities.get<UserPreferenceStore>("preferences:store");
@@ -352,8 +352,8 @@ export function createSecurityRoutes({
                 ...logMetadata,
                 accountId: claims.sub,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

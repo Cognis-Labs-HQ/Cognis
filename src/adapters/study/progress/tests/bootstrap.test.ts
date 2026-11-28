@@ -68,9 +68,9 @@ function bootstrapContext() {
             activities: settled.size,
             achievements: [],
         }),
-        invalidate: async (...argumentsList: string[]) => {
-            invalidated.push(argumentsList);
-            settled.delete(argumentsList[2]);
+        invalidate: async (...args: string[]) => {
+            invalidated.push(args);
+            settled.delete(args[2]);
         },
     });
     systemCtx.contributeCapability("db:executor", {

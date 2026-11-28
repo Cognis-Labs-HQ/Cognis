@@ -37,15 +37,15 @@ function fixture() {
     const route = createModuleSourceRoutes(
         marketplace as Parameters<typeof createModuleSourceRoutes>[0],
         {
-            requireAuth(currentRequest, response, role) {
+            requireAuth(req, res, role) {
                 assert.equal(role, "admin");
                 const authorizationHeader = String(
-                    currentRequest.headers.authorization ?? "",
+                    req.headers.authorization ?? "",
                 );
                 if (authorizationHeader.startsWith("admin-"))
                     return { sub: authorizationHeader, role: "admin" };
-                response.writeHead(403);
-                response.end();
+                res.writeHead(403);
+                res.end();
                 return null;
             },
         },
@@ -58,14 +58,11 @@ function fixture() {
     ) {
         let status = 0;
         let content = "";
-        const currentRequest = Object.assign(
-            Readable.from([JSON.stringify(body)]),
-            {
-                method,
-                headers: { authorization: actor },
-            },
-        );
-        const response = {
+        const req = Object.assign(Readable.from([JSON.stringify(body)]), {
+            method,
+            headers: { authorization: actor },
+        });
+        const res = {
             writeHead: (value: number) => {
                 status = value;
             },
@@ -74,8 +71,8 @@ function fixture() {
             },
         };
         const handled = await route(
-            currentRequest as IncomingMessage,
-            response as ServerResponse,
+            req as IncomingMessage,
+            res as ServerResponse,
             new URL(path, "https://example.test"),
         );
         return {

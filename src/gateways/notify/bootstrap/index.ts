@@ -89,12 +89,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.routeRegistry.register(handler, gatewayId ?? "notify"),
         registerNavbarPlugin: (scriptUrl) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
-        registerStaticDir: (prefix, directory) =>
-            ctx.uiRegistry?.registerStaticDir(prefix, directory),
-        requireAuth: (request, response, minimumRole) =>
-            routeContext?.requireAuth(request, response, minimumRole) ?? false,
-        readJson: (request) =>
-            readJson(request) as Promise<Record<string, unknown>>,
+        registerStaticDir: (prefix, dir) =>
+            ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        requireAuth: (req, res, minimumRole) =>
+            routeContext?.requireAuth(req, res, minimumRole) ?? false,
+        readJson: (req) => readJson(req) as Promise<Record<string, unknown>>,
         log: ctx.log,
         dbExecutor: databaseExecutor,
     });
@@ -177,14 +176,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.routeRegistry.register(
         async (
-            request: IncomingMessage,
-            response: ServerResponse,
+            req: IncomingMessage,
+            res: ServerResponse,
             url: URL,
         ): Promise<boolean> => {
-            if (url.pathname !== "/verify-email" || request.method !== "GET")
+            if (url.pathname !== "/verify-email" || req.method !== "GET")
                 return false;
             await serveHtmlPage(
-                response,
+                res,
                 path.join(uiDirectory, "verify-email.html"),
             );
             return true;

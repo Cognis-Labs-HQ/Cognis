@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtemp, rm as removePath } from "node:fs/promises";
-import operatingSystem from "node:os";
+import { mkdtemp, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
 import type { IncomingMessage } from "node:http";
@@ -28,11 +28,9 @@ async function fixture(
     } = {},
 ) {
     const directory = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "component-recovery-"),
+        path.join(os.tmpdir(), "component-recovery-"),
     );
-    context.after(() =>
-        removePath(directory, { recursive: true, force: true }),
-    );
+    context.after(() => rm(directory, { recursive: true, force: true }));
     const ctx = createCtx();
     const calls: Array<{
         path: string;
@@ -203,11 +201,8 @@ async function fixture(
     ]);
     const logs: unknown[] = [];
     const state = createComponentState(path.join(directory, "channels.json"));
-    const service = createComponentService(
-        ctx,
-        transport,
-        state,
-        (...argumentsList) => logs.push(argumentsList),
+    const service = createComponentService(ctx, transport, state, (...args) =>
+        logs.push(args),
     );
     const request = Readable.from([]) as IncomingMessage;
     request.headers = { authorization: "Bearer administrator" };

@@ -13,7 +13,7 @@ import type { AuthAccountStore } from "../index.js";
 import { resolveRole } from "../local-account.js";
 import { MemoryRateLimiter } from "../rate-limiter.js";
 import {
-    PASSWORD_RESET_LOOKUP_JITTER_MS as PASSWORD_RESET_LOOKUP_JITTER_MILLISECONDS,
+    PASSWORD_RESET_LOOKUP_JITTER_MILLISECONDS,
     PASSWORD_RESET_TOKEN_TTL_SECONDS,
     sleep,
     waitForPasswordResetResponseFloor,
@@ -42,21 +42,21 @@ export function createLoginLinkRoutes({
     log,
 }: LoginLinkRouteDependencies): AuthGatewayRouteHandler {
     return async (
-        request,
-        response,
+        req,
+        res,
         url,
         logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/login-link-status" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
             const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
                 "notify:emailAvailable",
             );
             const contactEmail = String(process.env.CONTACT_EMAIL ?? "").trim();
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         available: Boolean(canSendOneTimeLoginEmail?.()),
@@ -69,7 +69,7 @@ export function createLoginLinkRoutes({
 
         if (
             url.pathname === "/api/v1/auth/request-login-link" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
             const requestStartedAt = Date.now();
             const respondWithPasswordResetEnvelope = async (
@@ -77,13 +77,13 @@ export function createLoginLinkRoutes({
                 payload: unknown,
             ) => {
                 await waitForPasswordResetResponseFloor(requestStartedAt);
-                response.writeHead(statusCode, {
+                res.writeHead(statusCode, {
                     "content-type": "application/json",
                 });
-                response.end(JSON.stringify(payload));
+                res.end(JSON.stringify(payload));
                 return true;
             };
-            const body = await readJson(request);
+            const body = await readJson(req);
             const email = String(body.email ?? "")
                 .trim()
                 .toLowerCase();
@@ -95,7 +95,7 @@ export function createLoginLinkRoutes({
                     },
                 });
             }
-            const requestAddress = resolveRequestAddress(request);
+            const requestAddress = resolveRequestAddress(req);
             const addressRateLimitKey = `address:${requestAddress}`;
             const emailRateLimitKey = `email:${email}`;
             if (
@@ -213,15 +213,15 @@ This link expires in 15 minutes and can only be used once.`,
 
         if (
             url.pathname === "/api/v1/auth/check-login-link" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
             const rawToken = String(url.searchParams.get("token") ?? "").trim();
             const claims = rawToken
                 ? verifyAccessToken(rawToken, { purpose: "password-reset" })
                 : null;
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -231,21 +231,21 @@ This link expires in 15 minutes and can only be used once.`,
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { valid: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { valid: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/consume-login-link" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const body = await readJson(request);
+            const body = await readJson(req);
             const rawToken = String(body.token ?? "").trim();
             const nextPassword = String(body.password ?? "").trim();
             if (!rawToken) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -256,8 +256,8 @@ This link expires in 15 minutes and can only be used once.`,
                 return true;
             }
             if (!nextPassword) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -268,8 +268,8 @@ This link expires in 15 minutes and can only be used once.`,
                 return true;
             }
             if (nextPassword.length < 8) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "password_too_short",
@@ -283,8 +283,8 @@ This link expires in 15 minutes and can only be used once.`,
                 purpose: "password-reset",
             });
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -298,8 +298,8 @@ This link expires in 15 minutes and can only be used once.`,
                 .getInfo(claims.sub)
                 .catch(() => null);
             if (!accountInfo || accountInfo.enabled === false) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -310,8 +310,8 @@ This link expires in 15 minutes and can only be used once.`,
                 return true;
             }
             if (claims.providerId !== "local") {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "provider_unsupported",
@@ -324,8 +324,8 @@ This link expires in 15 minutes and can only be used once.`,
             }
             const localAdapter = authGateway.getLocalAdapter();
             if (!localAdapter?.store) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "provider_unsupported",
@@ -341,8 +341,8 @@ This link expires in 15 minutes and can only be used once.`,
             } catch (error) {
                 const message =
                     error instanceof Error ? error.message : String(error);
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "password_reset_failed",
@@ -365,8 +365,8 @@ This link expires in 15 minutes and can only be used once.`,
                     },
                 );
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { updated: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 

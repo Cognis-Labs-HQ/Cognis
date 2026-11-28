@@ -35,7 +35,7 @@ import { createTopBanners } from "./top-banners.js";
 import { registerOfflineRuntime } from "./offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
 import { createReuseResources } from "./resources.js";
-import { createSubPageRegistry as createNestedPageRegistry } from "./sub-page-registry.js";
+import { createNestedPageRegistry } from "./sub-page-registry.js";
 
 function sortHooks(hooks) {
     return [...hooks].sort((left, right) => {

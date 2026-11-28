@@ -189,13 +189,13 @@ test("admin can create DM with hidden recipient without a message request", asyn
     const createdRequests: unknown[] = [];
     const addedMembers: Array<Record<string, unknown>> = [];
     const messagesStore = {
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return null;
         },
         async hasApprovedMessageRequestBetween() {
             return false;
         },
-        async createDm() {
+        async createDirectMessage() {
             return { id: "room-admin-hidden", kind: "dm" };
         },
         async addMemberWithEvent(input: Record<string, unknown>) {
@@ -252,7 +252,7 @@ test("admin can create DM with hidden recipient without a message request", asyn
     });
     let statusCode = 0;
     let responseBody = "";
-    const request = {
+    const req = {
         method: "POST",
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
@@ -261,7 +261,7 @@ test("admin can create DM with hidden recipient without a message request", asyn
     } as any;
 
     const handled = await route(
-        request,
+        req,
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -883,13 +883,13 @@ test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction
     });
     let statusCode = 0;
     let responseBody = "";
-    const request = makeRequest("POST", token);
-    request[Symbol.asyncIterator] = async function* () {
+    const req = makeRequest("POST", token);
+    req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ emoji: "🔥" }));
     };
 
     const handled = await route(
-        request,
+        req,
         {
             writeHead(status: number) {
                 statusCode = status;

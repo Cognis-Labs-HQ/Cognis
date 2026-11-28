@@ -6,7 +6,7 @@
 
 ### Architektur
 
-`DbLocalAccountStore` in `src/adapters/auth/local/store.ts` ist die einzige Persistenzschicht für lokale Benutzerkonten.
+`DatabaseLocalAccountStore` in `src/adapters/auth/local/store.ts` ist die einzige Persistenzschicht für lokale Benutzerkonten.
 
 ## Konfiguration
 
@@ -27,7 +27,7 @@ Der lokale Auth-Adapter ist der eingebaute Credential-Store für Cognis. Er verw
 - Lokal verwaltete Anmeldedaten mit `crypto.scrypt` speichern und verifizieren.
 - `register()` für die Account-Erstellung bereitstellen.
 - `updateLastLogin()` für das Tracking des letzten Logins bereitstellen.
-- `DbLocalAccountStore` als `LocalAccountStore`-Implementierung bereitstellen.
+- `DatabaseLocalAccountStore` als `LocalAccountStore`-Implementierung bereitstellen.
 
 ### Passwort-Hashing
 

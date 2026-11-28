@@ -11,7 +11,7 @@ import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { createOfflineOutbox } from "../offline-outbox.js";
 import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
 import { createReuseResources } from "../resources.js";
-import { createSubPageRegistry as createNestedPageRegistry } from "../sub-page-registry.js";
+import { createNestedPageRegistry } from "../sub-page-registry.js";
 
 function fixture({ browser = false } = {}) {
     const window = new EventTarget();
@@ -75,7 +75,7 @@ function fixture({ browser = false } = {}) {
         "./resources.js": { createReuseResources },
         "./top-banners.js": { createTopBanners },
         "./sub-page-registry.js": {
-            createSubPageRegistry: createNestedPageRegistry,
+            createNestedPageRegistry: createNestedPageRegistry,
         },
     });
     uiCtx.capabilities.contribute("session:isOfflineValid", () => true);

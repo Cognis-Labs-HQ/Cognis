@@ -10,7 +10,7 @@
 
 情報・使い方・技術とバージョンを選び、表示を切り替えても版が維持されることを確認します。
 
-`docs:versionStore` 機能で作成したストアから `store.diff(fromVersion, toVersion)` を呼び出します。ランタイムモジュールは独自の認証済みルートから構造化された結果を返し、ブラウザ ctx から `ui:documentDiff` を取得して、その結果を `renderDocumentDiff(diff)` に渡せます。
+`docs:versionStore` 機能で作成したストアから `store.diff(fromVersion, toVersion)` を呼び出します。ランタイムモジュールは独自の認証済みルートから構造化された結果を返し、ブラウザ ctx から `ui:documentDiff` を取得して、その結果を `renderDocumentDifference(diff)` に渡せます。
 
 ## 期待される結果
 

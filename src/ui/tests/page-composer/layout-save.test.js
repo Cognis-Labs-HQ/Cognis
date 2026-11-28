@@ -17,9 +17,7 @@ function fixture(context, save) {
     const host = flowHost(lifetime.signal);
     const notices = [],
         logs = [];
-    host.ctx.capabilities.contribute("ui:log", (...argumentsList) =>
-        logs.push(argumentsList),
-    );
+    host.ctx.capabilities.contribute("ui:log", (...args) => logs.push(args));
     const i18n = {
         t: (key) =>
             ({
@@ -30,7 +28,7 @@ function fixture(context, save) {
     const update = createLayoutSaveHandler({
         ctx: host.ctx,
         save,
-        notify: (...argumentsList) => notices.push(argumentsList),
+        notify: (...args) => notices.push(args),
         i18n,
         signal: page.signal,
     });
@@ -68,9 +66,9 @@ test("concurrent save requests share one immutable write", async (context) => {
     let release;
     let calls = 0;
     const written = [];
-    const state = fixture(context, async (...argumentsList) => {
+    const state = fixture(context, async (...args) => {
         calls++;
-        written.push(argumentsList[3]);
+        written.push(args[3]);
         await new Promise((resolve) => {
             release = resolve;
         });

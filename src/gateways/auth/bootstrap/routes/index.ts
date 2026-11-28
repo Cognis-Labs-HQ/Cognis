@@ -12,7 +12,7 @@ import type {
     SecuritySettings,
 } from "../index.js";
 import { MemoryRateLimiter } from "../rate-limiter.js";
-import { PASSWORD_RESET_RATE_LIMIT_MS as PASSWORD_RESET_RATE_LIMIT_MILLISECONDS } from "../route-runtime.js";
+import { PASSWORD_RESET_RATE_LIMIT_MILLISECONDS } from "../route-runtime.js";
 import { createLoginLinkRoutes } from "./login-links.js";
 import { createPasswordRoutes } from "./password.js";
 import { createRegistrationRoutes } from "./registration.js";
@@ -55,13 +55,13 @@ export function createAuthGatewayRoutes(
         return Boolean(isPublicRegistrationEnabled?.());
     }
 
-    function resolveRequestAddress(request: IncomingMessage): string {
-        const forwardedFor = request.headers["x-forwarded-for"];
+    function resolveRequestAddress(req: IncomingMessage): string {
+        const forwardedFor = req.headers["x-forwarded-for"];
         if (typeof forwardedFor === "string") {
             const firstHop = forwardedFor.split(",")[0]?.trim();
             if (firstHop) return firstHop;
         }
-        return String(request.socket?.remoteAddress ?? "unknown");
+        return String(req.socket?.remoteAddress ?? "unknown");
     }
 
     const oneTimeLoginAccountRateLimiter = new MemoryRateLimiter(
@@ -117,17 +117,17 @@ export function createAuthGatewayRoutes(
     ];
 
     return async (
-        request: import("node:http").IncomingMessage,
-        response: import("node:http").ServerResponse,
+        req: import("node:http").IncomingMessage,
+        res: import("node:http").ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const logMetadata: AuthRouteLogMeta = {
             component: "auth-gateway",
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
         };
         for (const handler of handlers) {
-            if (await handler(request, response, url, logMetadata)) {
+            if (await handler(req, res, url, logMetadata)) {
                 return true;
             }
         }

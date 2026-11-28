@@ -517,8 +517,8 @@ export class GatewayService {
 
         // Validate cross-gateway dependencies now that all gateways have
         // bootstrapped and registered themselves.
-        for (const [gatewayId, metadata] of gatewayManifests) {
-            for (const dependencyReference of metadata.requires) {
+        for (const [gatewayId, meta] of gatewayManifests) {
+            for (const dependencyReference of meta.requires) {
                 const dependencyDirectory =
                     directoryByGatewayId.get(dependencyReference);
                 const dependencyId = dependencyDirectory
@@ -527,7 +527,7 @@ export class GatewayService {
                     : dependencyReference;
                 if (!ctx.gatewayRegistry.get(dependencyId)) {
                     const message = `Gateway "${gatewayId}" requires gateway "${dependencyId}" but it is not registered.`;
-                    if (metadata.required) {
+                    if (meta.required) {
                         throw new Error(message);
                     }
                     void ctx.log?.("warn", message, {

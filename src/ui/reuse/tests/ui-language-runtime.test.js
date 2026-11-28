@@ -278,7 +278,7 @@ test("offline language tables allow selected reordering, block membership change
         querySelectorAll: () => [],
         addEventListener: (name, callback) => handlers.set(name, callback),
     };
-    const { initLanguagePrefs: initLanguagePreferences } = loadTestModule(
+    const { initLanguagePreferences: initLanguagePreferences } = loadTestModule(
         new URL("../../app/settings/language-prefs.js", import.meta.url),
         {
             "../../reuse/offline-state.js": { isOffline: () => disconnected },

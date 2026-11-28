@@ -24,26 +24,26 @@ export function createTfaRoutes(
     log?: GatewayBootstrapContext["log"],
 ) {
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const logMetadata = {
             component: "tfa-gateway",
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
         };
 
         if (
             url.pathname === "/api/v1/tfa/login/resend" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const body = await readJson(request);
+            const body = await readJson(req);
             const loginAttemptId = String(body.loginAttemptId ?? "").trim();
             const methodId = String(body.methodId ?? "").trim();
             if (!loginAttemptId || !methodId) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -59,8 +59,8 @@ export function createTfaRoutes(
                 } | null
             >("tfa:getPendingLoginAttempt");
             if (!getPendingLoginAttempt) {
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "tfa_unavailable",
@@ -72,8 +72,8 @@ export function createTfaRoutes(
             }
             const pendingAttempt = getPendingLoginAttempt(loginAttemptId);
             if (!pendingAttempt) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "tfa_attempt_expired",
@@ -92,8 +92,8 @@ export function createTfaRoutes(
                     challenge.message === "method_not_configured"
                         ? "method_not_configured"
                         : "tfa_method_unavailable";
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: unavailableCode,
@@ -103,8 +103,8 @@ export function createTfaRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         challenge: {
@@ -132,14 +132,14 @@ export function createTfaRoutes(
 
         if (
             url.pathname === "/api/v1/tfa/login/verify" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const body = await readJson(request);
+            const body = await readJson(req);
             const loginAttemptId = String(body.loginAttemptId ?? "").trim();
             const methodId = String(body.methodId ?? "").trim();
             if (!loginAttemptId || !methodId) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -175,7 +175,7 @@ export function createTfaRoutes(
             >("auth:issueAccessToken");
             const buildCookie = capabilities.get<
                 (
-                    request: IncomingMessage,
+                    req: IncomingMessage,
                     rawToken: string,
                     ttlSeconds: number | null,
                 ) => string
@@ -186,8 +186,8 @@ export function createTfaRoutes(
                 !issueToken ||
                 !buildCookie
             ) {
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "tfa_unavailable",
@@ -199,8 +199,8 @@ export function createTfaRoutes(
             }
             const pendingAttempt = getPendingLoginAttempt(loginAttemptId);
             if (!pendingAttempt) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "tfa_attempt_expired",
@@ -217,8 +217,8 @@ export function createTfaRoutes(
                     message: "verification_failed",
                 }));
             if (!tfaResult.verified) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code:
@@ -249,15 +249,11 @@ export function createTfaRoutes(
                 role: pendingAttempt.role,
                 methodId,
             });
-            response.writeHead(200, {
+            res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": buildCookie(
-                    request,
-                    apiToken,
-                    accessTokenTtlSeconds,
-                ),
+                "set-cookie": buildCookie(req, apiToken, accessTokenTtlSeconds),
             });
-            response.end(
+            res.end(
                 JSON.stringify({
                     data: {
                         accountId: pendingAttempt.accountId,
@@ -283,13 +279,13 @@ export function createTfaRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/tfa/status" && request.method === "GET") {
-            const claims = requireAuth(request, response, "user");
+        if (url.pathname === "/api/v1/tfa/status" && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             const status = await gateway.getUserStatus(targetAccountId);
@@ -298,26 +294,23 @@ export function createTfaRoutes(
                 accountId: claims.sub,
                 targetAccountId,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: status }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: status }));
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/tfa/methods" &&
-            request.method === "GET"
-        ) {
-            const claims = requireAuth(request, response, "user");
+        if (url.pathname === "/api/v1/tfa/methods" && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             const status = await gateway.getUserStatus(targetAccountId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         availableMethods: status.availableMethods,
@@ -337,11 +330,11 @@ export function createTfaRoutes(
         const setupBeginMatch = url.pathname.match(
             /^\/api\/v1\/tfa\/methods\/([^/]+)\/setup\/begin$/,
         );
-        if (setupBeginMatch && request.method === "POST") {
-            const claims = requireAuth(request, response, "user");
+        if (setupBeginMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(setupBeginMatch[1]);
-            const body = await readJson(request);
+            const body = await readJson(req);
             const displayName =
                 String(body.displayName ?? claims.sub).trim() || claims.sub;
             try {
@@ -350,13 +343,13 @@ export function createTfaRoutes(
                     displayName,
                     methodId,
                 });
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: setup }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: setup }));
             } catch (error) {
                 const message =
                     error instanceof Error ? error.message : String(error);
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "setup_begin_failed",
@@ -371,8 +364,8 @@ export function createTfaRoutes(
         const setupVerifyMatch = url.pathname.match(
             /^\/api\/v1\/tfa\/methods\/([^/]+)\/setup\/verify$/,
         );
-        if (setupVerifyMatch && request.method === "POST") {
-            const claims = requireAuth(request, response, "user");
+        if (setupVerifyMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const issueToken = capabilities.get<
                 (
@@ -388,16 +381,16 @@ export function createTfaRoutes(
             >("auth:issueAccessToken");
             const buildCookie = capabilities.get<
                 (
-                    request: IncomingMessage,
+                    req: IncomingMessage,
                     rawToken: string,
                     ttlSeconds: number | null,
                 ) => string
             >("auth:buildAccessTokenCookie");
-            const body = await readJson(request);
+            const body = await readJson(req);
             const setupId = String(body.setupId ?? "").trim();
             if (!setupId) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -417,8 +410,8 @@ export function createTfaRoutes(
                 verification,
             });
             if (!result.verified) {
-                response.writeHead(422, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(422, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: result.message || "setup_verification_failed",
@@ -445,7 +438,7 @@ export function createTfaRoutes(
                     },
                 );
                 responseHeaders["set-cookie"] = buildCookie(
-                    request,
+                    req,
                     refreshedToken,
                     accessTokenTtlSeconds,
                 );
@@ -455,57 +448,57 @@ export function createTfaRoutes(
                 responseData.providerId = claims.providerId;
                 responseData.ttlSeconds = accessTokenTtlSeconds;
             }
-            response.writeHead(200, responseHeaders);
-            response.end(JSON.stringify({ data: responseData }));
+            res.writeHead(200, responseHeaders);
+            res.end(JSON.stringify({ data: responseData }));
             return true;
         }
 
         const setupCancelMatch = url.pathname.match(
             /^\/api\/v1\/tfa\/methods\/([^/]+)\/setup\/cancel$/,
         );
-        if (setupCancelMatch && request.method === "POST") {
-            const claims = requireAuth(request, response, "user");
+        if (setupCancelMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const setupId = String(body.setupId ?? "").trim();
             if (setupId) {
                 await gateway.cancelMethodSetup(claims.sub, setupId);
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { cancelled: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { cancelled: true } }));
             return true;
         }
 
         const disableMatch = url.pathname.match(
             /^\/api\/v1\/tfa\/methods\/([^/]+)\/disable$/,
         );
-        if (disableMatch && request.method === "POST") {
-            const claims = requireAuth(request, response, "user");
+        if (disableMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(disableMatch[1]);
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             await gateway.disableMethod(targetAccountId, methodId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { updated: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
         const enableMatch = url.pathname.match(
             /^\/api\/v1\/tfa\/methods\/([^/]+)\/enable$/,
         );
-        if (enableMatch && request.method === "POST") {
-            const claims = requireAuth(request, response, "user");
+        if (enableMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(enableMatch[1]);
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             const enabled = await gateway.enableMethod(
@@ -513,8 +506,8 @@ export function createTfaRoutes(
                 methodId,
             );
             if (!enabled) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "method_not_configured",
@@ -524,16 +517,16 @@ export function createTfaRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { updated: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
         const detailsMatch = url.pathname.match(
             /^\/api\/v1\/tfa\/methods\/([^/]+)\/details$/,
         );
-        if (detailsMatch && request.method === "GET") {
-            const claims = requireAuth(request, response, "user");
+        if (detailsMatch && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(detailsMatch[1]);
             const details = await gateway.getMethodDetails(
@@ -541,8 +534,8 @@ export function createTfaRoutes(
                 methodId,
             );
             if (!details) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "method_details_unavailable",
@@ -552,18 +545,18 @@ export function createTfaRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: details }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: details }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/tfa/methods/preferences" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const preferredMethodIds = Array.isArray(body.methodIds)
                 ? body.methodIds
                       .filter(
@@ -574,84 +567,84 @@ export function createTfaRoutes(
                 : [];
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             await gateway.setPreferredMethods(
                 targetAccountId,
                 preferredMethodIds,
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { updated: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/tfa/recovery-codes" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             const recoveryStatus =
                 await gateway.getRecoveryCodesStatus(targetAccountId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: recoveryStatus }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: recoveryStatus }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/tfa/recovery-codes/rotate" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             const codes = await gateway.generateRecoveryCodes(targetAccountId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { recoveryCodes: codes } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { recoveryCodes: codes } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/tfa/recovery-codes/status" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const targetAccountId = resolveTargetAccountId(claims, url);
             if (!targetAccountId) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             const available = await gateway.hasRecoveryCodes(targetAccountId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { available } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { available } }));
             return true;
         }
 
         const adminResetMatch = url.pathname.match(
             /^\/api\/v1\/tfa\/admin\/users\/([^/]+)\/reset$/,
         );
-        if (adminResetMatch && request.method === "POST") {
-            const claims = requireAuth(request, response, "admin");
+        if (adminResetMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
             const accountId = decodeURIComponent(adminResetMatch[1]);
             await gateway.resetUser(accountId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { reset: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { reset: true } }));
             log?.("warn", "Admin reset user TFA state.", {
                 ...logMetadata,
                 accountId: claims.sub,
@@ -662,27 +655,27 @@ export function createTfaRoutes(
 
         if (
             url.pathname === "/api/v1/tfa/enforcement" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = requireAuth(request, response, "admin");
+            const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
             const enforceAllUsers = await gateway.getEnforceAllUsers();
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { enforceAllUsers } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { enforceAllUsers } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/tfa/enforcement" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            const claims = requireAuth(request, response, "admin");
+            const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const enforceAllUsers = body.enforceAllUsers === true;
             await gateway.setEnforceAllUsers(enforceAllUsers);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { enforceAllUsers } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { enforceAllUsers } }));
             return true;
         }
 

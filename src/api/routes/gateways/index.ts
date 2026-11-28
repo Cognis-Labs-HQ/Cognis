@@ -34,33 +34,30 @@ export function createGatewayRoutes(
         return section.isEnabled?.() ?? true;
     }
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const logMetadata = {
             component: "api-gateways",
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
         };
-        if (url.pathname === "/api/v1/gateways" && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (url.pathname === "/api/v1/gateways" && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             log?.("debug", "Listed gateways.", {
                 ...logMetadata,
                 accountId: claims.sub,
                 count: registry.list().length,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: registry.list() }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: registry.list() }));
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/admin/sections" &&
-            request.method === "GET"
-        ) {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (url.pathname === "/api/v1/admin/sections" && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const sections = (uiRegistry?.listAdminSections() ?? []).filter(
                 (section) =>
@@ -72,16 +69,16 @@ export function createGatewayRoutes(
                 accountId: claims.sub,
                 count: sections.length,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: sections }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: sections }));
             return true;
         }
 
         const singleMatch = url.pathname.match(
             /^\/api\/v1\/gateways\/([^/]+)$/,
         );
-        if (singleMatch && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (singleMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const id = decodeURIComponent(singleMatch[1]);
             const manifest = registry.get(id);
@@ -91,8 +88,8 @@ export function createGatewayRoutes(
                     accountId: claims.sub,
                     gatewayId: id,
                 });
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -108,16 +105,16 @@ export function createGatewayRoutes(
                 gatewayId: id,
                 status: manifest.status,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: manifest }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: manifest }));
             return true;
         }
 
         const actionMatch = url.pathname.match(
             /^\/api\/v1\/gateways\/([^/]+)\/(enable|disable)$/,
         );
-        if (actionMatch && request.method === "POST") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (actionMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const id = decodeURIComponent(actionMatch[1]);
             const action = actionMatch[2] as "enable" | "disable";
@@ -133,8 +130,8 @@ export function createGatewayRoutes(
                         action,
                     },
                 );
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -150,8 +147,8 @@ export function createGatewayRoutes(
                     accountId: claims.sub,
                     gatewayId: id,
                 });
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "required_gateway",
@@ -173,8 +170,8 @@ export function createGatewayRoutes(
                 gatewayId: id,
                 status: action === "enable" ? "active" : "disabled",
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         status: action === "enable" ? "active" : "disabled",

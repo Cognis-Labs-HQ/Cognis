@@ -28,15 +28,12 @@ export function createRegistrationRoutes({
     log,
 }: RegistrationRouteDependencies): AuthGatewayRouteHandler {
     return async (
-        request,
-        response,
+        req,
+        res,
         url,
         logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
-        if (
-            url.pathname !== "/api/v1/auth/register" ||
-            request.method !== "POST"
-        ) {
+        if (url.pathname !== "/api/v1/auth/register" || req.method !== "POST") {
             return false;
         }
 
@@ -46,8 +43,8 @@ export function createRegistrationRoutes({
                 "Blocked public registration because registrations are disabled.",
                 logMetadata,
             );
-            response.writeHead(403, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "registrations_disabled",
@@ -58,7 +55,7 @@ export function createRegistrationRoutes({
             return true;
         }
 
-        const body = await readJson(request);
+        const body = await readJson(req);
         const username = String(body.username ?? "");
         const password = String(body.password ?? "");
         const email = String(body.email ?? "");
@@ -72,8 +69,8 @@ export function createRegistrationRoutes({
                     username,
                 },
             );
-            response.writeHead(400, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "bad_request",
@@ -95,8 +92,8 @@ export function createRegistrationRoutes({
                     usernameError,
                 },
             );
-            response.writeHead(400, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: usernameError,
@@ -125,8 +122,8 @@ export function createRegistrationRoutes({
                 "Blocked public registration because registration capability is unavailable.",
                 logMetadata,
             );
-            response.writeHead(403, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "registration_unavailable",
@@ -194,8 +191,8 @@ export function createRegistrationRoutes({
             hasEmail: Boolean(email),
             hasDisplayName: Boolean(displayName),
         });
-        response.writeHead(201, { "content-type": "application/json" });
-        response.end(JSON.stringify({ data: { ...result, verifyToken } }));
+        res.writeHead(201, { "content-type": "application/json" });
+        res.end(JSON.stringify({ data: { ...result, verifyToken } }));
         return true;
     };
 }

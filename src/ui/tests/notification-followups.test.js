@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -373,7 +373,7 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
     };
     context.globalThis = context;
 
-    virtualMachine.runInNewContext(testableSource, context, {
+    vm.runInNewContext(testableSource, context, {
         filename: "navbar-plugin.js",
     });
 

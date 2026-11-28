@@ -1,6 +1,6 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import {
-    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
+    buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
     type StructuredDbDialect,
@@ -77,17 +77,17 @@ class SqliteDatabaseGateway implements DatabaseGateway {
 
     async query<Row = Record<string, unknown>>(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<QueryResult<Row>> {
-        const rows = await this.client.all<Row>(statement, parameters);
+        const rows = await this.client.all<Row>(statement, params);
         return { rows, rowCount: rows.length };
     }
 
     async execute(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        const result = await this.client.run(statement, parameters);
+        const result = await this.client.run(statement, params);
         return { affectedRows: result.changes ?? 0 };
     }
 
@@ -105,4 +105,4 @@ class SqliteDatabaseGateway implements DatabaseGateway {
         }
     }
 }
-export { SqliteDatabaseGateway as SqliteDbGateway };
+export { SqliteDatabaseGateway };

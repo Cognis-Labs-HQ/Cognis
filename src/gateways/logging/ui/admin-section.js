@@ -16,17 +16,17 @@ const TIME_RANGE_MILLISECONDS_BY_KEY = {
 };
 
 function buildQuery(severity, keyword, timeRange) {
-    const parameters = new URLSearchParams();
+    const params = new URLSearchParams();
     if (severity && severity !== "all") {
-        parameters.set("severity", severity);
+        params.set("severity", severity);
     }
     if (keyword) {
-        parameters.set("keyword", keyword);
+        params.set("keyword", keyword);
     }
     if (timeRange && timeRange !== "all") {
-        parameters.set("timeRange", timeRange);
+        params.set("timeRange", timeRange);
     }
-    const query = parameters.toString();
+    const query = params.toString();
     return query ? `?${query}` : "";
 }
 

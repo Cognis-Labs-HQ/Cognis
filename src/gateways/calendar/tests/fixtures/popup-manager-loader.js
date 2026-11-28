@@ -1,9 +1,9 @@
 import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { readFile } from "node:fs/promises";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 export async function loadPopupManager() {
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         Date,
         Map,
         Set,
@@ -20,7 +20,7 @@ export async function loadPopupManager() {
 
     async function load(url) {
         if (modules.has(url)) return modules.get(url);
-        const module = new virtualMachine.SourceTextModule(
+        const module = new vm.SourceTextModule(
             await readFile(new URL(url), "utf8"),
             {
                 context,
@@ -33,7 +33,7 @@ export async function loadPopupManager() {
                 return load(new URL(specifier, parent.identifier).href);
             if (!contracts[specifier])
                 throw new Error(`Unexpected public contract: ${specifier}`);
-            return new virtualMachine.SyntheticModule(
+            return new vm.SyntheticModule(
                 contracts[specifier],
                 function () {
                     for (const name of contracts[specifier]) {

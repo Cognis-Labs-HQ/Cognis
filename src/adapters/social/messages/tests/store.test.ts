@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbMessagesStore as DatabaseMessagesStore } from "../store.js";
+import { DatabaseMessagesStore } from "../store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbSelectCommand } from "../../../../gateways/db/reuse/db-command.js";
@@ -10,7 +10,7 @@ import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-tabl
 function createRecordingExecutor() {
     const tableDefinitions: Array<StructuredDbTableDef> = [];
     const commandCalls: Array<StructuredDbCommand> = [];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable(definition: StructuredDbTableDef) {
             tableDefinitions.push(definition);
         },
@@ -19,16 +19,15 @@ function createRecordingExecutor() {
             return { rows: [] };
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
-            return callback(database);
+            return callback(db);
         },
     };
-    return { db: database, tableDefs: tableDefinitions, commandCalls };
+    return { db: db, tableDefs: tableDefinitions, commandCalls };
 }
 
 test("messages schema uses portable integer default for muted flag", async () => {
-    const { db: database, tableDefs: tableDefinitions } =
-        createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, tableDefs: tableDefinitions } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.ensureSchema();
 
@@ -59,9 +58,8 @@ test("messages schema uses portable integer default for muted flag", async () =>
 });
 
 test("messages schema includes portable integer archived member flag", async () => {
-    const { db: database, tableDefs: tableDefinitions } =
-        createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, tableDefs: tableDefinitions } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.ensureSchema();
 
@@ -83,9 +81,8 @@ test("messages schema includes portable integer archived member flag", async () 
 });
 
 test("messages schema records one-time room-key delivery per member", async () => {
-    const { db: database, tableDefs: tableDefinitions } =
-        createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, tableDefs: tableDefinitions } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.ensureSchema();
 
@@ -103,9 +100,8 @@ test("messages schema records one-time room-key delivery per member", async () =
 });
 
 test("messages schema includes request typing and reaction tables", async () => {
-    const { db: database, tableDefs: tableDefinitions } =
-        createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, tableDefs: tableDefinitions } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.ensureSchema();
 
@@ -132,8 +128,8 @@ test("messages schema includes request typing and reaction tables", async () => 
 });
 
 test("messages setMuted uses executeCommand with integer muted value", async () => {
-    const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, commandCalls } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.setMuted("room-1", "account-1", true);
 
@@ -146,8 +142,8 @@ test("messages setMuted uses executeCommand with integer muted value", async () 
 });
 
 test("messages setArchived uses executeCommand with integer archived value", async () => {
-    const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, commandCalls } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.setArchived("room-1", "account-1", true);
 
@@ -161,7 +157,7 @@ test("messages setArchived uses executeCommand with integer archived value", asy
 
 test("removing a member archives a chat for its sole remaining member", async () => {
     const commandCalls: Array<StructuredDbCommand> = [];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command) {
             commandCalls.push(command);
@@ -185,10 +181,10 @@ test("removing a member archives a chat for its sole remaining member", async ()
             return { rows: [] };
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
-            return callback(database);
+            return callback(db);
         },
     };
-    const store = new DatabaseMessagesStore(database);
+    const store = new DatabaseMessagesStore(db);
 
     const lifecycle = await store.removeMemberAndApplyLifecycle(
         "room-1",
@@ -204,8 +200,8 @@ test("removing a member archives a chat for its sole remaining member", async ()
 });
 
 test("removing the last member permanently deletes the chat", async () => {
-    const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, commandCalls } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     const lifecycle = await store.removeMemberAndApplyLifecycle(
         "room-empty",
@@ -223,7 +219,7 @@ test("removing the last member permanently deletes the chat", async () => {
 
 test("DM lookup does not expose an orphaned chat to a recreated account", async () => {
     const selectCommands: StructuredDbSelectCommand[] = [];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command) {
             if (command.option !== "SELECT") return { rows: [] };
@@ -257,12 +253,12 @@ test("DM lookup does not expose an orphaned chat to a recreated account", async 
             };
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
-            return callback(database);
+            return callback(db);
         },
     };
-    const store = new DatabaseMessagesStore(database);
+    const store = new DatabaseMessagesStore(db);
 
-    const room = await store.findDmBetween("alice", "bob");
+    const room = await store.findDirectMessageBetween("alice", "bob");
 
     assert.equal(room, null);
     assert.equal(selectCommands[0].limit, undefined);
@@ -274,7 +270,7 @@ test("DM lookup does not expose an orphaned chat to a recreated account", async 
 
 test("new DMs use distinct room ids across account incarnations", async () => {
     const insertedIds: string[] = [];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command) {
             if (command.option === "INSERT") {
@@ -295,13 +291,13 @@ test("new DMs use distinct room ids across account incarnations", async () => {
             };
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
-            return callback(database);
+            return callback(db);
         },
     };
-    const store = new DatabaseMessagesStore(database);
+    const store = new DatabaseMessagesStore(db);
 
-    await store.createDm("alice", "bob");
-    await store.createDm("bob", "alice");
+    await store.createDirectMessage("alice", "bob");
+    await store.createDirectMessage("bob", "alice");
 
     assert.notEqual(insertedIds[0], insertedIds[1]);
 });
@@ -309,7 +305,7 @@ test("new DMs use distinct room ids across account incarnations", async () => {
 test("membership changes persist their room event in the same transaction", async () => {
     const commandCalls: Array<StructuredDbCommand> = [];
     let transactionCount = 0;
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command) {
             commandCalls.push(command);
@@ -337,10 +333,10 @@ test("membership changes persist their room event in the same transaction", asyn
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
             transactionCount += 1;
-            return callback(database);
+            return callback(db);
         },
     };
-    const store = new DatabaseMessagesStore(database);
+    const store = new DatabaseMessagesStore(db);
 
     const added = await store.addMemberWithEvent({
         roomId: "room-1",
@@ -371,8 +367,8 @@ test("membership changes persist their room event in the same transaction", asyn
 });
 
 test("createMessageRequest persists room id when provided", async () => {
-    const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, commandCalls } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await assert.rejects(async () => {
         await store.createMessageRequest({
@@ -394,7 +390,7 @@ test("createMessageRequest persists room id when provided", async () => {
 test("hasApprovedMessageRequestBetween checks both request directions", async () => {
     const commandCalls: Array<StructuredDbCommand> = [];
     let selectCount = 0;
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command: StructuredDbCommand) {
             commandCalls.push(command);
@@ -406,10 +402,10 @@ test("hasApprovedMessageRequestBetween checks both request directions", async ()
             return { rows: [] };
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
-            return callback(database);
+            return callback(db);
         },
     };
-    const store = new DatabaseMessagesStore(database);
+    const store = new DatabaseMessagesStore(db);
 
     const approved = await store.hasApprovedMessageRequestBetween(
         "account-a",
@@ -424,8 +420,8 @@ test("hasApprovedMessageRequestBetween checks both request directions", async ()
 });
 
 test("incrementEmojiUsage inserts a new row when none exists", async () => {
-    const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, commandCalls } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.incrementEmojiUsage("account-1", "👍");
 
@@ -441,7 +437,7 @@ test("incrementEmojiUsage inserts a new row when none exists", async () => {
 
 test("incrementEmojiUsage updates the count for an existing row", async () => {
     const commandCalls: Array<StructuredDbCommand> = [];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command: StructuredDbCommand) {
             commandCalls.push(command);
@@ -462,10 +458,10 @@ test("incrementEmojiUsage updates the count for an existing row", async () => {
             return { rows: [] };
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
-            return callback(database);
+            return callback(db);
         },
     };
-    const store = new DatabaseMessagesStore(database);
+    const store = new DatabaseMessagesStore(db);
 
     await store.incrementEmojiUsage("account-1", "👍");
 
@@ -478,8 +474,8 @@ test("incrementEmojiUsage updates the count for an existing row", async () => {
 });
 
 test("getTopEmojiUsage queries chat_emoji_usage by account", async () => {
-    const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DatabaseMessagesStore(database);
+    const { db: db, commandCalls } = createRecordingExecutor();
+    const store = new DatabaseMessagesStore(db);
 
     await store.getTopEmojiUsage("account-1", 5);
 
@@ -499,7 +495,7 @@ test("getTopEmojiUsage queries chat_emoji_usage by account", async () => {
 
 test("unreadCount normalizes Date last_read_at to ISO before filtering", async () => {
     const commandCalls: Array<StructuredDbCommand> = [];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command: StructuredDbCommand) {
             commandCalls.push(command);
@@ -530,10 +526,10 @@ test("unreadCount normalizes Date last_read_at to ISO before filtering", async (
             return { rows: [] };
         },
         async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
-            return callback(database);
+            return callback(db);
         },
     };
-    const store = new DatabaseMessagesStore(database);
+    const store = new DatabaseMessagesStore(db);
 
     const unread = await store.unreadCount("room-1", "account-1");
 

@@ -1,12 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-    mkdtemp,
-    readFile,
-    writeFile,
-    mkdir,
-    rm as removePath,
-} from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { NamespaceFileClient } from "@cognis/core";
@@ -18,7 +12,7 @@ import type { LibraryContentPackPlan } from "../../types.js";
 
 test("saved reference images remain readable after store recreation and provider reload", async (testContext) => {
     const root = await mkdtemp(join(tmpdir(), "study-images-"));
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     const files = (): NamespaceFileClient =>
         ({
             async put(_actor, key, data) {

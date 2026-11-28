@@ -6,7 +6,7 @@ import {
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
 import type {
-    DbProfileStore,
+    DatabaseProfileStore,
     AccountProfile,
     Post,
     PostVisibility,
@@ -26,7 +26,7 @@ async function canViewPost(
     requesterRole: string | null,
     post: Post,
     author: AccountProfile,
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
 ): Promise<boolean> {
     if (requesterRole === "admin") return true;
     if (requesterId === post.accountId) return true;
@@ -59,25 +59,22 @@ async function canViewPost(
 }
 
 export function createPostRoutes(
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (
-            url.pathname === "/api/v1/social/posts" &&
-            request.method === "POST"
-        ) {
-            const claims = ctx.requireAuth(request, response, "user");
+        if (url.pathname === "/api/v1/social/posts" && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const profile = await profileStore.getProfile(claims.sub);
             if (!profile) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -87,11 +84,11 @@ export function createPostRoutes(
                 );
                 return true;
             }
-            const body = await readJson(request);
+            const body = await readJson(req);
             const content = String(body.content ?? "").trim();
             if (!content) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -103,8 +100,8 @@ export function createPostRoutes(
             }
             const rawVisibility = String(body.visibility ?? "community");
             if (!VALID_POST_VISIBILITY.has(rawVisibility as PostVisibility)) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -125,8 +122,8 @@ export function createPostRoutes(
             if (
                 postVisibilityRank(visibility) > postVisibilityRank(maxAllowed)
             ) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -140,8 +137,8 @@ export function createPostRoutes(
             try {
                 operationId = validateOperationId(body.operationId);
             } catch {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({ error: { code: "invalid_operation_id" } }),
                 );
                 return true;
@@ -162,10 +159,10 @@ export function createPostRoutes(
                         error.message !== "delivery_conflict"
                     )
                         throw error;
-                    response.writeHead(409, {
+                    res.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: { code: "delivery_conflict" },
                         }),
@@ -173,22 +170,19 @@ export function createPostRoutes(
                     return null;
                 });
             if (!post) return true;
-            response.writeHead(201, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: post }));
+            res.writeHead(201, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: post }));
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/social/posts" &&
-            request.method === "GET"
-        ) {
-            const claims = ctx.requireAuth(request, response, "user");
+        if (url.pathname === "/api/v1/social/posts" && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const scope = String(url.searchParams.get("scope") ?? "").trim();
             if (scope !== "visible") {
                 const posts = await profileStore.getPostsByAccount(claims.sub);
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: posts }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: posts }));
                 return true;
             }
             const query = String(url.searchParams.get("q") ?? "")
@@ -227,22 +221,22 @@ export function createPostRoutes(
                 if (query && !haystack.includes(query)) continue;
                 visible.push({ ...post, author });
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: visible }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: visible }));
             return true;
         }
 
         const deleteMatch = url.pathname.match(
             /^\/api\/v1\/social\/posts\/([^/]+)$/,
         );
-        if (deleteMatch && request.method === "DELETE") {
-            const claims = ctx.requireAuth(request, response, "user");
+        if (deleteMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const postId = decodeURIComponent(deleteMatch[1]);
             const post = await profileStore.getPostById(postId);
             if (!post) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "Post not found" },
                     }),
@@ -253,8 +247,8 @@ export function createPostRoutes(
                 post.accountId !== claims.sub &&
                 !hasMinRole(claims.role, "moderator")
             ) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -265,19 +259,19 @@ export function createPostRoutes(
                 return true;
             }
             await profileStore.deletePost(postId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { deleted: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { deleted: true } }));
             return true;
         }
 
         const userPostsMatch = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/posts$/,
         );
-        if (userPostsMatch && request.method === "GET") {
-            const claims = ctx.getAuthClaims(request);
+        if (userPostsMatch && req.method === "GET") {
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -290,8 +284,8 @@ export function createPostRoutes(
             const handle = decodeURIComponent(userPostsMatch[1]);
             const author = await profileStore.getProfileByHandle(handle);
             if (!author) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -299,8 +293,8 @@ export function createPostRoutes(
                 return true;
             }
             if (await profileStore.isBlocked(author.accountId, claims.sub)) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -324,8 +318,8 @@ export function createPostRoutes(
                     visible.push(post);
                 }
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: visible }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: visible }));
             return true;
         }
 

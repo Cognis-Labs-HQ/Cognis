@@ -323,17 +323,17 @@ test("GET /api/v1/ui/page-extensions/:pageId returns extensions for authenticate
     });
     const handler = createUiRoutes(undefined, uiRegistry);
 
-    const request = makeRequest("GET", userToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", userToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.equal(body.data.length, 1);
     assert.equal(body.data[0].id, "profile-widget");
 });
@@ -342,48 +342,48 @@ test("GET /api/v1/ui/page-extensions/:pageId returns 401 for unauthenticated req
     const uiRegistry = new UIRegistry();
     const handler = createUiRoutes(undefined, uiRegistry);
 
-    const request = makeRequest("GET");
-    const response = makeResponse();
+    const req = makeRequest("GET");
+    const res = makeResponse();
     await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 test("GET /api/v1/ui/page-extensions/:pageId returns empty array when no extensions registered", async () => {
     const uiRegistry = new UIRegistry();
     const handler = createUiRoutes(undefined, uiRegistry);
 
-    const request = makeRequest("GET", userToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", userToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.deepEqual(JSON.parse(response.payload).data, []);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, []);
 });
 
 test("GET /api/v1/ui/page-extensions/:pageId returns empty array without uiRegistry", async () => {
     const handler = createUiRoutes();
 
-    const request = makeRequest("GET", userToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", userToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.deepEqual(JSON.parse(response.payload).data, []);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, []);
 });
 
 test("GET /api/v1/ui/auth-typing-messages returns public messages and filters disabled gateways", async () => {
@@ -419,17 +419,17 @@ test("GET /api/v1/ui/auth-typing-messages returns public messages and filters di
         gatewayRegistry,
     );
 
-    const request = makeRequest("GET");
-    const response = makeResponse();
+    const req = makeRequest("GET");
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("http://localhost/api/v1/ui/auth-typing-messages"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.deepEqual(JSON.parse(response.payload).data, [
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, [
         {
             id: "profile-social-space",
             textKey: "ui.app.login.typing.sample.5",
@@ -465,17 +465,17 @@ test("GET /api/v1/ui/auth-typing-messages includes enabled module manifest messa
         (moduleId) => moduleId === "calendar",
     );
 
-    const request = makeRequest("GET");
-    const response = makeResponse();
+    const req = makeRequest("GET");
+    const res = makeResponse();
     const handled = await route(
-        request,
-        response,
+        req,
+        res,
         new URL("http://localhost/api/v1/ui/auth-typing-messages"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.deepEqual(JSON.parse(response.payload).data, [
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, [
         {
             id: "calendar:0",
             textKey: "module.calendar.auth_typing.welcome",

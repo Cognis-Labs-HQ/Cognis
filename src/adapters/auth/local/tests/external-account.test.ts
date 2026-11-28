@@ -1,7 +1,7 @@
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbLocalAccountStore as DatabaseLocalAccountStore } from "../store.js";
+import { DatabaseLocalAccountStore } from "../store.js";
 import { externalIdentityFingerprint } from "../../../../gateways/auth/reuse/account-store.js";
 
 test("external account persistence creates the account before its identity", async () => {

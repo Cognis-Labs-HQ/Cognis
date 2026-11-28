@@ -194,8 +194,8 @@ function highlightCode(code, language) {
         tokenBucket.push(renderedToken);
         return token;
     };
-    const wrapMarkup = (regularExpression, className) => {
-        highlighted = highlighted.replace(regularExpression, (match) =>
+    const wrapMarkup = (regex, className) => {
+        highlighted = highlighted.replace(regex, (match) =>
             tokenize(
                 `<span class="markdown-token ${className}">${match}</span>`,
             ),

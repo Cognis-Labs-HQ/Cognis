@@ -7,10 +7,10 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const exportCache = new Map();
 
-function walk(directory) {
+function walk(dir) {
     const discoveredFiles = [];
-    for (const directoryEntry of readdirSync(directory)) {
-        const entryPath = join(directory, directoryEntry);
+    for (const directoryEntry of readdirSync(dir)) {
+        const entryPath = join(dir, directoryEntry);
         const entryStat = statSync(entryPath);
         if (entryStat.isDirectory()) discoveredFiles.push(...walk(entryPath));
         else discoveredFiles.push(entryPath);
@@ -95,8 +95,8 @@ function extractDefinedCssClasses() {
     for (const root of CSS_ROOTS) {
         for (const file of walk(root)) {
             if (!file.endsWith(".css")) continue;
-            const sourceText = readFileSync(file, "utf8");
-            const stripped = sourceText
+            const src = readFileSync(file, "utf8");
+            const stripped = src
                 .replace(/\/\*[\s\S]*?\*\//g, "")
                 .replace(/@import\s+url\([^)]*\)[^;]*;/g, "");
             for (const match of stripped.matchAll(
@@ -137,8 +137,7 @@ function extractAppliedCssClasses(content) {
     for (const match of content.matchAll(
         /classList\.(?:add|remove)\([^)]+\)/g,
     )) {
-        for (const argument of match[0].matchAll(identRe))
-            classes.add(argument[1]);
+        for (const arg of match[0].matchAll(identRe)) classes.add(arg[1]);
     }
     for (const match of content.matchAll(
         new RegExp(
@@ -239,10 +238,10 @@ test("no missing named imports from relative modules", () => {
     for (const root of consumerRoots) {
         for (const file of walk(root)) {
             if (!file.endsWith(".js")) continue;
-            const sourceText = readFileSync(file, "utf8");
+            const src = readFileSync(file, "utf8");
             const fileDirectory = dirname(file);
 
-            for (const match of sourceText.matchAll(
+            for (const match of src.matchAll(
                 /^import\s*\{([^}]+)\}\s*from\s*['"](\.[^'"]+)['"]/gm,
             )) {
                 const names = match[1]

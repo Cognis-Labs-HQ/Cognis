@@ -4,11 +4,11 @@ import { mapEntry } from "../entry-row.js";
 import type { LibraryEntry } from "../types.js";
 
 export async function hydrateEntries(
-    database: DbExecutor,
+    db: DbExecutor,
     rows: Record<string, unknown>[],
 ): Promise<LibraryEntry[]> {
     if (!rows.length) return [];
-    const references = await executeReferences(database, {
+    const references = await executeReferences(db, {
         option: "SELECT",
         where: [
             {

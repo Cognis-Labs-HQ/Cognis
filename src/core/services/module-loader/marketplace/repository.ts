@@ -296,36 +296,36 @@ export class MarketplaceRepository {
     protected async attachVersions<T extends { name: string; commit: string }>(
         source: ModuleSource,
         projectPath: string,
-        references: T[],
+        refs: T[],
         headers: Record<string, string>,
     ): Promise<Array<T & { version?: string }>> {
         return Promise.all(
-            references.map(async (reference) => {
+            refs.map(async (ref) => {
                 const response = await fetchMarketplaceResource(
                     source.provider === "github"
                         ? this.resolveGithubManifestUrl(
                               source,
                               projectPath,
-                              reference.commit,
+                              ref.commit,
                           )
                         : this.resolveRepositoryAssetUrl(
                               source,
                               projectPath,
-                              reference.commit,
+                              ref.commit,
                               "manifest.json",
                           ),
                     { headers },
                 ).catch(() => undefined);
-                if (!response?.ok) return reference;
+                if (!response?.ok) return ref;
                 try {
                     return {
-                        ...reference,
+                        ...ref,
                         version: this.parseManifest(
                             await this.readRepositoryFile(source, response),
                         ).version,
                     };
                 } catch {
-                    return reference;
+                    return ref;
                 }
             }),
         );

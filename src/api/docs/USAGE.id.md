@@ -10,7 +10,7 @@ Operator menerapkan server; pembaca tidak perlu akses administrator untuk dokume
 
 Pilih Info, Penggunaan, atau Teknis serta versi; pastikan pilihan versi bertahan saat berganti tampilan.
 
-Panggil `store.diff(fromVersion, toVersion)` melalui penyimpanan yang dibuat oleh kapabilitas `docs:versionStore`. Modul runtime dapat mengembalikan hasil terstruktur melalui rute terautentikasinya sendiri, memperoleh `ui:documentDiff` melalui ctx browser, dan meneruskan hasil tersebut ke `renderDocumentDiff(diff)`.
+Panggil `store.diff(fromVersion, toVersion)` melalui penyimpanan yang dibuat oleh kapabilitas `docs:versionStore`. Modul runtime dapat mengembalikan hasil terstruktur melalui rute terautentikasinya sendiri, memperoleh `ui:documentDiff` melalui ctx browser, dan meneruskan hasil tersebut ke `renderDocumentDifference(diff)`.
 
 ## Hasil yang Diharapkan
 

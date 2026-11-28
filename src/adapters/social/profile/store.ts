@@ -663,4 +663,4 @@ class DatabaseProfileStore implements ProfileCreateStore {
         return (result.rowCount ?? 0) > 0;
     }
 }
-export { DatabaseProfileStore as DbProfileStore };
+export { DatabaseProfileStore };

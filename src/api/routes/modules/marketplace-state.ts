@@ -25,16 +25,16 @@ export function createModuleMarketplaceStateRoute({
     log?: BootstrapLog;
 }) {
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
-            request.method !== "GET" ||
+            req.method !== "GET" ||
             url.pathname !== "/api/v1/modules/marketplace-state"
         )
             return false;
-        if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (!ctx.requireAuth(req, res, "admin")) return true;
         const [sources, manifests, cached, recommendedUuids] =
             await Promise.all([
                 marketplace.listSources(),
@@ -62,9 +62,9 @@ export function createModuleMarketplaceStateRoute({
                 .digest("hex") +
             '"';
         const headers = { etag, "cache-control": "private, no-cache" };
-        if (request.headers["if-none-match"] === etag) {
-            response.writeHead(304, headers);
-            response.end();
+        if (req.headers["if-none-match"] === etag) {
+            res.writeHead(304, headers);
+            res.end();
             return true;
         }
         const prepared = await Promise.all(
@@ -72,11 +72,11 @@ export function createModuleMarketplaceStateRoute({
                 withMarketplaceAssetUrls(module, marketplace, log),
             ),
         );
-        response.writeHead(200, {
+        res.writeHead(200, {
             ...headers,
             "content-type": "application/json",
         });
-        response.end(
+        res.end(
             JSON.stringify({ data: { sources, installed, cached: prepared } }),
         );
         return true;

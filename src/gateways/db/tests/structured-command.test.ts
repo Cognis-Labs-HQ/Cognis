@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
+    buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbDialect,
 } from "../reuse/db-command.js";
 import {
-    createDbDialectHelper as createDatabaseDialectHelper,
+    createDatabaseDialectHelper,
     type DbDialectHelper,
 } from "../bootstrap.js";
 import type { DbExecutor } from "../reuse/db-executor.js";

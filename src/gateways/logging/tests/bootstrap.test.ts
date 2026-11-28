@@ -1,13 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { access, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
+import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 import {
     makeContext,
-    PreferenceDb as PreferenceDatabase,
+    PreferenceDatabase,
     RequestRecorder,
     ResponseRecorder,
 } from "./fixtures/runtime.js";
@@ -135,22 +135,22 @@ test("logging adapter level overrides reconfigure the running logger immediately
             adapterId: "console" | "file",
             config: Record<string, unknown>,
         ) => {
-            const request = new RequestRecorder(
+            const req = new RequestRecorder(
                 "PUT",
                 token,
                 JSON.stringify(config),
             );
-            const response = new ResponseRecorder();
+            const res = new ResponseRecorder();
             const handled = await adapterHandler(
-                request as any,
-                response as any,
+                req as any,
+                res as any,
                 new URL(
                     `/api/v1/gateways/logging/adapters/${adapterId}/config`,
                     "http://localhost",
                 ),
             );
             assert.equal(handled, true);
-            assert.equal(response.statusCode, 200);
+            assert.equal(res.statusCode, 200);
         };
 
         await updateAdapter("console", { level: "debug", format: "json" });
@@ -286,17 +286,17 @@ test("logging stream route requires admin auth", async () => {
 
     const handlers = ctx.routeRegistry.getHandlers();
     const streamHandler = handlers[0];
-    const request = new RequestRecorder("GET");
-    const response = new ResponseRecorder();
+    const req = new RequestRecorder("GET");
+    const res = new ResponseRecorder();
 
     const handled = await streamHandler(
-        request as any,
-        response as any,
+        req as any,
+        res as any,
         new URL("/api/v1/logging/stream", "http://localhost"),
     );
 
     assert.equal(handled, true);
-    assert.equal(response.statusCode, 401);
+    assert.equal(res.statusCode, 401);
 });
 
 test("logging stream route returns filtered event stream logs", async () => {
@@ -333,12 +333,12 @@ test("logging stream route returns filtered event stream logs", async () => {
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL(
                 "/api/v1/logging/stream?severity=error&keyword=sql",
                 "http://localhost",
@@ -346,25 +346,25 @@ test("logging stream route returns filtered event stream logs", async () => {
         );
 
         assert.equal(handled, true);
-        assert.equal(response.statusCode, 200);
+        assert.equal(res.statusCode, 200);
         assert.match(
-            response.headers["content-type"],
+            res.headers["content-type"],
             /^text\/event-stream; charset=utf-8$/,
         );
-        assert.match(response.payload, /retry: 1500/);
-        assert.match(response.payload, /event: log/);
-        assert.match(response.payload, /"level":"error"/);
-        assert.doesNotMatch(response.payload, /"level":"info"/);
+        assert.match(res.payload, /retry: 1500/);
+        assert.match(res.payload, /event: log/);
+        assert.match(res.payload, /"level":"error"/);
+        assert.doesNotMatch(res.payload, /"level":"info"/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -405,29 +405,29 @@ test("logging stream route treats severity as a threshold", async () => {
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/stream?severity=warn", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.match(response.payload, /Warning entry/);
-        assert.match(response.payload, /Error entry/);
-        assert.doesNotMatch(response.payload, /Informational entry/);
+        assert.match(res.payload, /Warning entry/);
+        assert.match(res.payload, /Error entry/);
+        assert.doesNotMatch(res.payload, /Informational entry/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -475,11 +475,11 @@ test("logging stream route ignores invalid multi-value severity thresholds", asy
             "warn,,",
         ];
         for (const invalidSeverityValue of invalidSeverityValues) {
-            const request = new RequestRecorder("GET", token);
-            const response = new ResponseRecorder();
+            const req = new RequestRecorder("GET", token);
+            const res = new ResponseRecorder();
             const handled = await streamHandler(
-                request as any,
-                response as any,
+                req as any,
+                res as any,
                 new URL(
                     `/api/v1/logging/stream?severity=${encodeURIComponent(invalidSeverityValue)}`,
                     "http://localhost",
@@ -487,12 +487,12 @@ test("logging stream route ignores invalid multi-value severity thresholds", asy
             );
 
             assert.equal(handled, true);
-            assert.equal(response.statusCode, 200);
-            assert.match(response.payload, /Informational entry/);
-            assert.match(response.payload, /Error entry/);
-            assert.doesNotMatch(response.payload, /event: snapshot_error/);
-            request.emit("close");
-            response.emit("close");
+            assert.equal(res.statusCode, 200);
+            assert.match(res.payload, /Informational entry/);
+            assert.match(res.payload, /Error entry/);
+            assert.doesNotMatch(res.payload, /event: snapshot_error/);
+            req.emit("close");
+            res.emit("close");
         }
     } finally {
         if (previousLogFile === undefined) {
@@ -500,7 +500,7 @@ test("logging stream route ignores invalid multi-value severity thresholds", asy
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -538,21 +538,21 @@ test("logging stream route is not constrained by LOG_LEVEL", async () => {
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/stream", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.match(response.payload, /Error entry/);
-        assert.match(response.payload, /Informational entry/);
+        assert.match(res.payload, /Error entry/);
+        assert.match(res.payload, /Informational entry/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
@@ -564,7 +564,7 @@ test("logging stream route is not constrained by LOG_LEVEL", async () => {
         } else {
             process.env.LOG_LEVEL = previousLogLevel;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -603,28 +603,28 @@ test("logging stream route applies time range filtering", async () => {
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/stream?timeRange=5m", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.match(response.payload, /Recent error entry/);
-        assert.doesNotMatch(response.payload, /Older error entry/);
+        assert.match(res.payload, /Recent error entry/);
+        assert.doesNotMatch(res.payload, /Older error entry/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -635,17 +635,17 @@ test("logging stream route returns false for non-matching pathname", async () =>
     const handlers = ctx.routeRegistry.getHandlers();
     const streamHandler = handlers[0];
     const token = issueAccessToken("admin-test", "admin", 300);
-    const request = new RequestRecorder("GET", token);
-    const response = new ResponseRecorder();
+    const req = new RequestRecorder("GET", token);
+    const res = new ResponseRecorder();
 
     const handled = await streamHandler(
-        request as any,
-        response as any,
+        req as any,
+        res as any,
         new URL("/api/v1/logging/unknown", "http://localhost"),
     );
 
     assert.equal(handled, false);
-    assert.equal(response.statusCode, 0);
+    assert.equal(res.statusCode, 0);
 });
 
 test("browser components can submit authenticated server log entries", async () => {
@@ -653,7 +653,7 @@ test("browser components can submit authenticated server log entries", async () 
     await bootstrap(ctx as any);
     const handler = ctx.routeRegistry.getHandlers()[0];
     const token = issueAccessToken("module-user", "user", 300);
-    const request = new RequestRecorder(
+    const req = new RequestRecorder(
         "POST",
         token,
         JSON.stringify({
@@ -662,17 +662,17 @@ test("browser components can submit authenticated server log entries", async () 
             meta: { component: "module:example" },
         }),
     );
-    const response = new ResponseRecorder();
+    const res = new ResponseRecorder();
 
     assert.equal(
         await handler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/entries", "http://localhost"),
         ),
         true,
     );
-    assert.equal(response.statusCode, 204);
+    assert.equal(res.statusCode, 204);
 });
 
 test("logging stream route returns false for non-GET method", async () => {
@@ -682,17 +682,17 @@ test("logging stream route returns false for non-GET method", async () => {
     const handlers = ctx.routeRegistry.getHandlers();
     const streamHandler = handlers[0];
     const token = issueAccessToken("admin-test", "admin", 300);
-    const request = new RequestRecorder("POST", token);
-    const response = new ResponseRecorder();
+    const req = new RequestRecorder("POST", token);
+    const res = new ResponseRecorder();
 
     const handled = await streamHandler(
-        request as any,
-        response as any,
+        req as any,
+        res as any,
         new URL("/api/v1/logging/stream", "http://localhost"),
     );
 
     assert.equal(handled, false);
-    assert.equal(response.statusCode, 0);
+    assert.equal(res.statusCode, 0);
 });
 
 test("logging stream route emits snapshot_error when log file does not exist", async () => {
@@ -710,29 +710,29 @@ test("logging stream route emits snapshot_error when log file does not exist", a
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/stream", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.equal(response.statusCode, 200);
-        assert.match(response.payload, /event: snapshot_error/);
-        assert.match(response.payload, /snapshot_unavailable/);
+        assert.equal(res.statusCode, 200);
+        assert.match(res.payload, /event: snapshot_error/);
+        assert.match(res.payload, /snapshot_unavailable/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -761,34 +761,34 @@ test("logging stream route emits reset event when log file shrinks during poll",
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/stream", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.match(response.payload, /Initial entry before rotation/);
+        assert.match(res.payload, /Initial entry before rotation/);
 
         await writeFile(logPath, "", "utf8");
 
         await new Promise((resolve) => setTimeout(resolve, 1700));
 
-        assert.match(response.payload, /event: reset/);
-        assert.match(response.payload, /log_rotated/);
+        assert.match(res.payload, /event: reset/);
+        assert.match(res.payload, /log_rotated/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -831,27 +831,27 @@ test("logging stream route applies time range filtering in hours", async () => {
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/stream?timeRange=1h", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.match(response.payload, /Recent hourly entry/);
-        assert.doesNotMatch(response.payload, /Old hourly entry/);
+        assert.match(res.payload, /Recent hourly entry/);
+        assert.doesNotMatch(res.payload, /Old hourly entry/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });

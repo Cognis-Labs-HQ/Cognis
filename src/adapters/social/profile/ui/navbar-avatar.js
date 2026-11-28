@@ -8,8 +8,7 @@ import {
 import { canLoadOwnProfile } from "./session-policy.js";
 
 export function createNavbarAvatarProvider(ctx) {
-    const log = (...argumentsList) =>
-        ctx.capabilities.get("ui:log")?.(...argumentsList);
+    const log = (...args) => ctx.capabilities.get("ui:log")?.(...args);
     return async () => {
         const handle = localStorage.getItem("cognis_account") ?? "";
         const storedDisplayName =
@@ -39,9 +38,9 @@ export function createNavbarAvatarProvider(ctx) {
         if (!canLoadOwnProfile(ctx))
             return { ...fallback, profileAvailable: false };
         try {
-            const response = await apiFetch("/api/v1/social/profile");
-            if (!response.ok) return { ...fallback, profileAvailable: true };
-            const payload = await response.json();
+            const res = await apiFetch("/api/v1/social/profile");
+            if (!res.ok) return { ...fallback, profileAvailable: true };
+            const payload = await res.json();
             const profileLabel =
                 payload?.data?.displayName ||
                 payload?.data?.handle ||

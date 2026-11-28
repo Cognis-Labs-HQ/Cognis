@@ -1,12 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    mkdtemp,
-    readFile,
-    readdir,
-    rm as removePath,
-    stat,
-} from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -203,7 +197,7 @@ test("Logger rotates and compresses old log files", async () => {
             assert.ok(archiveStats.size > 0);
         }
     } finally {
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 

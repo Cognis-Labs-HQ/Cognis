@@ -16,7 +16,7 @@
  */
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-import { linkShortCommitRefs as linkShortCommitReferences } from "../../reuse/commit-links.js";
+import { linkShortCommitReferences } from "../../reuse/commit-links.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { readPreferredLanguages } from "../../reuse/i18n.js";
 import { openPopup } from "../../reuse/popup.js";

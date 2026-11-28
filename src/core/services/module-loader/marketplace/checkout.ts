@@ -1,10 +1,10 @@
-import { execFile as executorFile } from "node:child_process";
-import { rm as removePath } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { rm } from "node:fs/promises";
 import { promisify } from "node:util";
 import type { ModuleMarketplaceLog } from "./index.js";
 import { commandFailureText } from "../../reuse/command-failure-text.js";
 
-const executorFileAsync = promisify(executorFile);
+const executorFileAsync = promisify(execFile);
 const TRANSFER_TIMEOUT_MILLISECONDS = 15 * 60 * 1000;
 const RETRY_DELAYS_MILLISECONDS = [250, 1_000];
 const TRANSIENT_FAILURE =
@@ -38,7 +38,7 @@ export async function checkoutModuleRepository(
         encoding: "utf8" as const,
     };
     for (let attempt = 0; ; attempt += 1) {
-        await removePath(root, { recursive: true, force: true });
+        await rm(root, { recursive: true, force: true });
         const startedAt = Date.now();
         let stage = "initialize";
         try {

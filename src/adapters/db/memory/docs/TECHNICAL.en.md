@@ -8,7 +8,7 @@ A non-persistent database test double that records calls without executing SQL.
 
 ## Configuration
 
-Instantiate the class in a test harness. It exports neither canHandleDbProvider nor createDbExecutor, so setting DB_TYPE=memory does not integrate it with the standard executor loader.
+Instantiate the class in a test harness. It exports neither canHandleDatabaseProvider nor createDatabaseExecutor, so setting DB_TYPE=memory does not integrate it with the standard executor loader.
 
 ## Behavior
 

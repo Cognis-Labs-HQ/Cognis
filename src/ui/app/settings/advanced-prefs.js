@@ -2,11 +2,11 @@
  * Advanced JSON preference editor for the Settings page.
  *
  * Public exports:
- *   initAdvancedPrefs(root, options) — protects, validates, and tracks edits to
+ *   initAdvancedPreferences(root, options) — protects, validates, and tracks edits to
  *     the complete UI preference document.
  *
  * Usage:
- *   const editor = initAdvancedPrefs(root, { existingPrefs, i18n, onDirtyChange });
+ *   const editor = initAdvancedPreferences(root, { existingPrefs, i18n, onDirtyChange });
  *   const preferences = editor.getPreferences();
  *
  * @param {Element} root
@@ -129,4 +129,4 @@ function initAdvancedPreferences(
         destroy: () => dirtyTracker?.destroy(),
     };
 }
-export { initAdvancedPreferences as initAdvancedPrefs };
+export { initAdvancedPreferences };

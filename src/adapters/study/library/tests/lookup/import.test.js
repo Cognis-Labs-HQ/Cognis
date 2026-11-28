@@ -2,7 +2,7 @@ import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import { LIBRARY_COMPOSER_LIMITS } from "../../ui/app/composer-limits.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { separateLookupDefinitions } from "../../ui/app/create-entry/lookup-definitions.js";
 import { resolveLookupReferences } from "../../ui/app/create-entry/lookup-references.js";
 
@@ -112,7 +112,7 @@ test("dictionary results directly import definitions, source fields, readings, g
         linkDefinition: (_form, _schema, _layer, entries, definition) =>
             entries.push(definition),
         renderStrokePatternPreviews() {},
-        showToast: (...argumentsList) => toasts.push(argumentsList),
+        showToast: (...args) => toasts.push(args),
     };
     Object.assign(
         context,
@@ -566,7 +566,7 @@ test("vocabulary lookup preserves text, token order, and selected spelling while
         renderStrokePatternPreviews() {},
         showToast() {},
     };
-    virtualMachine.createContext(context);
+    vm.createContext(context);
     Object.assign(
         context,
         loadLibraryUiModule("app/create-entry/lookup-replacement.js", context),

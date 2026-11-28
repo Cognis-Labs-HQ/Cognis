@@ -6,7 +6,7 @@ PostgreSQL の公開インターフェースと運用規則を説明します。
 
 ### アーキテクチャ
 
-`src/adapters/db/postgres/index.ts` の `PostgresDbGateway` は `pg.Pool` を所有します。通常のクエリはプールで直接実行されます。トランザクションは `BEGIN`、コールバック内の全ステートメント、`COMMIT` または `ROLLBACK` に同じクライアントを使用し、最後に解放します。アダプターは ctx の `system:lifecycle` ケイパビリティにプールの排出処理を登録し、サーバー終了時に接続を閉じます。
+`src/adapters/db/postgres/index.ts` の `PostgresDatabaseGateway` は `pg.Pool` を所有します。通常のクエリはプールで直接実行されます。トランザクションは `BEGIN`、コールバック内の全ステートメント、`COMMIT` または `ROLLBACK` に同じクライアントを使用し、最後に解放します。アダプターは ctx の `system:lifecycle` ケイパビリティにプールの排出処理を登録し、サーバー終了時に接続を閉じます。
 
 スキーマの自己修復では、欠落した列を追加するときに外部キー句を維持し、インデックスや列の修復エラーを黙って無視せず報告します。
 

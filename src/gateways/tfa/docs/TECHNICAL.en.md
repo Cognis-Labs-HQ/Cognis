@@ -10,7 +10,7 @@ The public interfaces and operational rules of Two-Factor Authentication.
 
 Bootstrap in `src/gateways/tfa/bootstrap.ts` performs this sequence:
 
-1. Create `DbTfaStore` and ensure the schema exists.
+1. Create `DatabaseTfaStore` and ensure the schema exists.
 2. Discover adapters in `src/adapters/tfa/`.
 3. Load persisted adapter configs.
 4. Register API routes and adapter admin routes.

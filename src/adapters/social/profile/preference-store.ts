@@ -68,4 +68,4 @@ class DatabaseUserPreferenceStore {
         });
     }
 }
-export { DatabaseUserPreferenceStore as DbUserPreferenceStore };
+export { DatabaseUserPreferenceStore };

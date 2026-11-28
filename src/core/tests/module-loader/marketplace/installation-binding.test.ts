@@ -1,6 +1,6 @@
 import test, { type TestContext } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, rm as removePath } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { ModuleMarketplaceService, type ModuleSource } from "../../../index.js";
@@ -23,9 +23,7 @@ async function fixture(
     const directory = await mkdtemp(
         path.join(tmpdir(), "cognis-install-binding-"),
     );
-    testContext.after(() =>
-        removePath(directory, { recursive: true, force: true }),
-    );
+    testContext.after(() => rm(directory, { recursive: true, force: true }));
     const { ctx } = createSecretContext();
     const service = new ModuleMarketplaceService(
         path.join(directory, "sources.json"),
@@ -100,7 +98,7 @@ test("GitLab sources cannot use the GitHub API-to-repository host alias", async 
 
 test("GitLab installation validates namespace within the configured deployment prefix", async (testContext) => {
     const root = await mkdtemp(path.join(tmpdir(), "cognis-gitlab-prefix-"));
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     const modulesRoot = path.join(root, "modules");
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),

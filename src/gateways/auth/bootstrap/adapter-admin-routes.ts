@@ -18,25 +18,25 @@ export function createAdapterAdminRoutes(
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const claims = getAuthClaims(request);
+        const claims = getAuthClaims(req);
         const logMetadata = {
             component: "auth-gateway",
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
             accountId: claims?.sub,
         };
-        if (url.pathname === base && request.method === "GET") {
-            if (!requireAuth(request, response, "admin")) return true;
+        if (url.pathname === base && req.method === "GET") {
+            if (!requireAuth(req, res, "admin")) return true;
             log?.("debug", "Listed auth adapters.", {
                 ...logMetadata,
                 count: authGateway.listAdapters().length,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: authGateway.listAdapters().map((adapter) => ({
                         ...adapter,
@@ -59,8 +59,8 @@ export function createAdapterAdminRoutes(
             const configContract =
                 authGateway.getAdapterConfigContract(adapterId);
 
-            if (request.method === "GET") {
-                if (!requireAuth(request, response, "admin")) return true;
+            if (req.method === "GET") {
+                if (!requireAuth(req, res, "admin")) return true;
                 if (!configContract) {
                     log?.(
                         "warn",
@@ -70,10 +70,10 @@ export function createAdapterAdminRoutes(
                             adapterId,
                         },
                     );
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -98,8 +98,8 @@ export function createAdapterAdminRoutes(
                     adapterId,
                     requiredFieldCount: requiredFields.length,
                 });
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: redactedConfig.data,
                         configuredSecretFields:
@@ -115,8 +115,8 @@ export function createAdapterAdminRoutes(
                 return true;
             }
 
-            if (request.method === "PUT") {
-                if (!requireAuth(request, response, "admin")) return true;
+            if (req.method === "PUT") {
+                if (!requireAuth(req, res, "admin")) return true;
                 if (!configContract) {
                     log?.(
                         "warn",
@@ -126,10 +126,10 @@ export function createAdapterAdminRoutes(
                             adapterId,
                         },
                     );
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -139,7 +139,7 @@ export function createAdapterAdminRoutes(
                     );
                     return true;
                 }
-                const body = await readJson(request);
+                const body = await readJson(req);
                 const previousConfig =
                     await authGateway.getPersistedConfig(adapterId);
                 await flow.run("reconcile-auth-sources", {
@@ -158,8 +158,8 @@ export function createAdapterAdminRoutes(
                     fieldCount: Object.keys(body as Record<string, unknown>)
                         .length,
                 });
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { saved: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
         }
@@ -167,14 +167,14 @@ export function createAdapterAdminRoutes(
         const testMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/test$`),
         );
-        if (testMatch && request.method === "POST") {
-            if (!requireAuth(request, response, "admin")) return true;
+        if (testMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(testMatch[1]);
             const configContract =
                 authGateway.getAdapterConfigContract(adapterId);
             if (!configContract || !configContract.supportsTest) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -184,14 +184,14 @@ export function createAdapterAdminRoutes(
                 );
                 return true;
             }
-            const body = (await readJson(request)) as Record<string, unknown>;
+            const body = (await readJson(req)) as Record<string, unknown>;
             try {
                 const data = await authGateway.testAdapterConfiguration(
                     adapterId,
                     body,
                 );
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data }));
             } catch (error) {
                 const fieldErrors =
                     error instanceof Error &&
@@ -211,8 +211,8 @@ export function createAdapterAdminRoutes(
                             ? error.cause.message
                             : undefined,
                 });
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: `${adapterId}_test_failed`,
@@ -231,8 +231,8 @@ export function createAdapterAdminRoutes(
         const enableMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
-        if (enableMatch && request.method === "POST") {
-            if (!requireAuth(request, response, "admin")) return true;
+        if (enableMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(enableMatch[1]);
             const action = enableMatch[2];
             const configContract =
@@ -246,8 +246,8 @@ export function createAdapterAdminRoutes(
                         adapterId,
                     },
                 );
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "locked_adapter",
@@ -268,8 +268,8 @@ export function createAdapterAdminRoutes(
                         action,
                     },
                 );
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -281,10 +281,10 @@ export function createAdapterAdminRoutes(
             }
             if (action === "enable") {
                 if (!authGateway.isAdapterConfigured(adapterId)) {
-                    response.writeHead(409, {
+                    res.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "setup_required",
@@ -311,8 +311,8 @@ export function createAdapterAdminRoutes(
                 ...logMetadata,
                 adapterId,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 

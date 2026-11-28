@@ -6,10 +6,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-function walk(directory) {
+function walk(dir) {
     const discoveredFiles = [];
-    for (const directoryEntry of readdirSync(directory)) {
-        const entryPath = join(directory, directoryEntry);
+    for (const directoryEntry of readdirSync(dir)) {
+        const entryPath = join(dir, directoryEntry);
         const entryStat = statSync(entryPath);
         if (entryStat.isDirectory()) discoveredFiles.push(...walk(entryPath));
         else discoveredFiles.push(entryPath);
@@ -32,8 +32,8 @@ function extractDefinedCssClasses() {
     for (const root of CSS_ROOTS) {
         for (const file of walk(root)) {
             if (!file.endsWith(".css")) continue;
-            const sourceText = readFileSync(file, "utf8");
-            const stripped = sourceText
+            const src = readFileSync(file, "utf8");
+            const stripped = src
                 .replace(/\/\*[\s\S]*?\*\//g, "")
                 .replace(/@import\s+url\([^)]*\)[^;]*;/g, "")
                 .replace(/url\([^)]*\)/g, "");
@@ -120,8 +120,8 @@ test("no dead exports in reuse modules (exported but never imported by any page 
     const dead = [];
     for (const file of walk(reusePath)) {
         if (!file.endsWith(".js")) continue;
-        const sourceText = readFileSync(file, "utf8");
-        for (const match of sourceText.matchAll(
+        const src = readFileSync(file, "utf8");
+        for (const match of src.matchAll(
             /^export\s+(?:async\s+)?function\s+(\w+)|^export\s+const\s+(\w+)/gm,
         )) {
             const name = match[1] ?? match[2];

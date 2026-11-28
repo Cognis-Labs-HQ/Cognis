@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm as removePath } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { checkoutModuleRepository } from "../../../services/module-loader/marketplace/checkout.js";
@@ -9,7 +9,7 @@ const commit = "0123456789012345678901234567890123456789";
 
 async function fixture(context: test.TestContext) {
     const root = await mkdtemp(path.join(tmpdir(), "cognis-checkout-policy-"));
-    context.after(() => removePath(root, { recursive: true, force: true }));
+    context.after(() => rm(root, { recursive: true, force: true }));
     return {
         root,
         commit,
@@ -25,13 +25,13 @@ test("checkout fetches the pinned commit with a bounded transfer and idle policy
     assert.equal(
         await checkoutModuleRepository(
             options,
-            async (file, argumentsList, commandOptions) => {
+            async (file, args, commandOptions) => {
                 assert.equal(file, "git");
                 assert.equal(commandOptions.env, options.environment);
                 assert.equal(commandOptions.timeout, 15 * 60 * 1000);
-                commands.push(argumentsList);
+                commands.push(args);
                 return {
-                    stdout: argumentsList.includes("rev-parse") ? commit : "",
+                    stdout: args.includes("rev-parse") ? commit : "",
                 };
             },
         ),
@@ -89,8 +89,8 @@ for (const scenario of [
                         logs.push(metadata ?? {});
                     },
                 },
-                async (_file, argumentsList) => {
-                    if (argumentsList.includes("fetch")) {
+                async (_file, args) => {
+                    if (args.includes("fetch")) {
                         transfers += 1;
                         throw failure;
                     }
@@ -113,8 +113,8 @@ test("checkout fails promptly on authorization errors and rejects an unexpected 
     const options = await fixture(context);
     let transfers = 0;
     await assert.rejects(
-        checkoutModuleRepository(options, async (_file, argumentsList) => {
-            if (argumentsList.includes("fetch")) {
+        checkoutModuleRepository(options, async (_file, args) => {
+            if (args.includes("fetch")) {
                 transfers += 1;
                 throw new Error("Authentication failed");
             }

@@ -1,6 +1,6 @@
 import { sourceFiles } from "../component-files.js";
 import { readFileSync, lstatSync } from "node:fs";
-import { dirname, relative, resolve, sep as separator } from "node:path";
+import { dirname, relative, resolve, sep } from "node:path";
 import structure from "./structure.json" with { type: "json" };
 import { contentIssues } from "./content.js";
 import { markdownLayout } from "./markdown-layout.js";
@@ -157,7 +157,7 @@ export function validateComponent(manifestPath, documentsDirectory = "docs") {
         })) {
             if (
                 /\.md$/i.test(path) &&
-                !path.includes(`${separator}changelog${separator}`) &&
+                !path.includes(`${sep}changelog${sep}`) &&
                 !allowed.has(relative(resolve(root, documentsDirectory), path))
             )
                 issues.push(
@@ -174,8 +174,7 @@ export function validateCoreDocumentation(directory) {
     const issues = [];
     const paths = sourceFiles(directory, { excludeDirectories: [] }).filter(
         (path) =>
-            /\.md$/i.test(path) &&
-            !path.includes(`${separator}changelog${separator}`),
+            /\.md$/i.test(path) && !path.includes(`${sep}changelog${sep}`),
     );
     const folders = new Set(paths.map(dirname));
     const names = coreDocuments;
@@ -185,7 +184,7 @@ export function validateCoreDocumentation(directory) {
         ),
     );
     for (const path of paths)
-        if (!allowed.has(path.split(separator).at(-1)))
+        if (!allowed.has(path.split(sep).at(-1)))
             issues.push(
                 `Core documentation must use a directory entry bundle: ${relative(directory, path)}`,
             );

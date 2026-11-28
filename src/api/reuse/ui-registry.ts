@@ -496,11 +496,11 @@ export class UIRegistry {
     ): { dir: string; relPath: string } | undefined {
         let bestPrefix = "";
         let bestDirectory: string | undefined;
-        for (const [prefix, directory] of this.moduleStaticDirectories) {
+        for (const [prefix, dir] of this.moduleStaticDirectories) {
             if (urlPath === prefix || urlPath.startsWith(prefix + "/")) {
                 if (prefix.length > bestPrefix.length) {
                     bestPrefix = prefix;
-                    bestDirectory = directory;
+                    bestDirectory = dir;
                 }
             }
         }

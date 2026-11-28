@@ -28,7 +28,7 @@ export class CoreAuthGateway {
 
 Bootstrap di `src/gateways/auth/bootstrap.ts` dan `src/gateways/auth/bootstrap/`:
 
-1. Menginstansiasi `DbLocalAccountStore` dari `src/adapters/auth/local/store.ts`.
+1. Menginstansiasi `DatabaseLocalAccountStore` dari `src/adapters/auth/local/store.ts`.
 2. Menginstansiasi `CoreAuthGateway` dengan DB executor dan tipe.
 3. Memuat adapter lokal melalui `setLocalAdapter()`.
 4. Memanggil `discoverAdapters(authAdaptersRoot)` untuk memuat semua adapter lainnya.

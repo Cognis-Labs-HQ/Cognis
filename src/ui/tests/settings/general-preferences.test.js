@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
-import fileSystem from "node:fs";
+import fs from "node:fs";
 import test from "node:test";
 import { renderAccountOperationButton } from "../../app/settings/search-index.js";
 
-const generalPreferencesSource = fileSystem.readFileSync(
+const generalPreferencesSource = fs.readFileSync(
     new URL("../../app/settings/general-prefs.js", import.meta.url),
     "utf8",
 );
-const settingsSource = fileSystem.readFileSync(
+const settingsSource = fs.readFileSync(
     new URL("../../app/settings/index.js", import.meta.url),
     "utf8",
 );

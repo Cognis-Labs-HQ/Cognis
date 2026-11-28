@@ -7,9 +7,16 @@ import { parsers } from "prettier/plugins/typescript";
 import abbreviations from "./ambiguous-name-words.json" with { type: "json" };
 
 const LOOP_NAMES = new Set(["i", "j", "k"]);
-const ABBREVIATED_WORDS = new Set(Object.keys(abbreviations.words));
+const CONVENTIONAL_NAMES = new Set(Object.keys(abbreviations.conventional));
+const ABBREVIATED_WORDS = new Set(
+    Object.keys(abbreviations.words).filter(
+        (word) => !CONVENTIONAL_NAMES.has(word),
+    ),
+);
 const ABBREVIATED_NAMES = new Set(
-    Object.keys(abbreviations.names).map((name) => name.toLowerCase()),
+    Object.keys(abbreviations.names)
+        .map((name) => name.toLowerCase())
+        .filter((name) => !CONVENTIONAL_NAMES.has(name)),
 );
 
 function isAbbreviated(name) {
@@ -35,6 +42,15 @@ function isAbbreviated(name) {
                 ABBREVIATED_WORDS.has(normalized.slice(0, -1)))
         );
     });
+}
+
+function expandedName(name) {
+    const words =
+        name.match(/[A-Z]+(?=[A-Z][a-z]|\d|_|$)|[A-Z]?[a-z]+|\d+/g) ?? [];
+    return words
+        .map((word) => abbreviations.words[word.toLowerCase()] ?? word)
+        .join("")
+        .toLowerCase();
 }
 
 function hasCounterUpdate(node, name) {
@@ -73,13 +89,16 @@ export function ambiguousNameIssues(source) {
             kind,
         });
     };
+    const ambiguous = (name) =>
+        (name.length <= 2 || isAbbreviated(name)) &&
+        !CONVENTIONAL_NAMES.has(name.toLowerCase());
     const binding = (node, numericCounter = false, ignoredAllowed = true) => {
         if (!node) return;
         if (node.type === "Identifier") {
             const name = node.name;
             definitions.add(node);
             if (
-                (name.length <= 2 || isAbbreviated(name)) &&
+                ambiguous(name) &&
                 !(name === "_" && ignoredAllowed) &&
                 name !== "id" &&
                 !(numericCounter && LOOP_NAMES.has(name))
@@ -126,13 +145,30 @@ export function ambiguousNameIssues(source) {
             node.params.forEach((parameter) => binding(parameter));
         if (node.type === "CatchClause") binding(node.param);
         if (
+            node.type === "ImportSpecifier" &&
+            node.importKind !== "type" &&
+            parent?.importKind !== "type" &&
+            node.local.name !== node.imported.name &&
+            expandedName(node.local.name) === expandedName(node.imported.name)
+        )
+            report(node.local, "naming-only import alias");
+
+        if (
+            node.type === "ExportSpecifier" &&
+            node.exportKind !== "type" &&
+            parent?.exportKind !== "type" &&
+            node.local.name !== node.exported.name &&
+            expandedName(node.local.name) === expandedName(node.exported.name)
+        )
+            report(node.exported, "naming-only export alias");
+
+        if (
             (node.type === "PropertyDefinition" ||
                 node.type === "MethodDefinition") &&
             (node.accessibility === "private" ||
                 node.key.type === "PrivateIdentifier") &&
             !node.computed &&
-            (String(node.key.name ?? node.key.value).length <= 2 ||
-                isAbbreviated(String(node.key.name ?? node.key.value)))
+            ambiguous(String(node.key.name ?? node.key.value))
         )
             report(node.key, "private member");
         if (

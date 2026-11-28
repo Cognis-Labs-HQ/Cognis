@@ -3,7 +3,7 @@
     "gateway": "files",
     "uuid": "c67ae40b-970c-5fc6-ba8c-06e512ffac80",
     "name": "File Storage Quotas",
-    "version": "1.0.26",
+    "version": "1.0.27",
     "publisher": "Cognis Labs HQ",
     "locked": true,
     "documentation": {

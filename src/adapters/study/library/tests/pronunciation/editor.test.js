@@ -4,7 +4,7 @@ import { pronunciationComponents } from "../../ui/app/pronunciation-components.j
 import { setGeneratedPronunciation } from "../../ui/app/create-entry/pronunciation-draft.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import {
     compositionTokenEntryId,
     compositionTokenLabel,

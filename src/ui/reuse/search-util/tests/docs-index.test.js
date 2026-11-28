@@ -14,9 +14,9 @@ test("documentation titles arrive before content, content concurrency is bounded
         enabledUiLanguages: () => ["en", "ja"],
     };
     const {
-        loadDocsBundleMarkdown: loadDocumentsBundleMarkdown,
-        loadDocsIndex: loadDocumentsIndex,
-        readDocsLanguages: readDocumentsLanguages,
+        loadDocumentsBundleMarkdown: loadDocumentsBundleMarkdown,
+        loadDocumentsIndex: loadDocumentsIndex,
+        readDocumentsLanguages: readDocumentsLanguages,
     } = loadTestModule(new URL("../../docs-client.js", import.meta.url), {
         "./ui-language-state.js": languageState,
         "./api-client.js": {
@@ -26,15 +26,15 @@ test("documentation titles arrive before content, content concurrency is bounded
         },
     });
     const {
-        collectGlobalDocsSearchGroups: collectGlobalDocumentsSearchGroups,
+        collectGlobalDocumentsSearchGroups: collectGlobalDocumentsSearchGroups,
     } = loadTestModule(
         new URL("../docs-index.js", import.meta.url),
         {
             "../capabilities.js": createDiagnosticFixture(),
             "../docs-client.js": {
-                loadDocsBundleMarkdown: loadDocumentsBundleMarkdown,
-                loadDocsIndex: loadDocumentsIndex,
-                readDocsLanguages: readDocumentsLanguages,
+                loadDocumentsBundleMarkdown: loadDocumentsBundleMarkdown,
+                loadDocumentsIndex: loadDocumentsIndex,
+                readDocumentsLanguages: readDocumentsLanguages,
             },
             "../i18n.js": { createI18n: async () => ({ t: (key) => key }) },
         },

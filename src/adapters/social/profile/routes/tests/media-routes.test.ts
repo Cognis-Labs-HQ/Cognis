@@ -4,11 +4,7 @@ import { VolatileProfileStore } from "../../store-contract.js";
 import { createProfileRoutes } from "../index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { createDefaultRouteContext } from "../../../../../api/reuse/route-context.js";
-import {
-    fakeFileGateway,
-    makeReq as makeRequest,
-    setupUser,
-} from "./route-fixtures.js";
+import { fakeFileGateway, makeRequest, setupUser } from "./route-fixtures.js";
 
 test("profile routes - avatar upload succeeds and sets avatarKey", async () => {
     const profileStore = new VolatileProfileStore();

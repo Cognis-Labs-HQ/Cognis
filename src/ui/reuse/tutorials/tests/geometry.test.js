@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    clipRect as clipRectangle,
+    clipRectangle,
     calloutViewport,
     shadeRegions,
     tutorialViewport,
-    visibleTargetRect as visibleTargetRectangle,
+    visibleTargetRectangle,
 } from "../geometry.js";
 
 const viewport = { offsetLeft: 60, offsetTop: 150, width: 390, height: 400 };

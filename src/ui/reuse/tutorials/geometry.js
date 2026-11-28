@@ -1,10 +1,10 @@
 /**
  * Computes visible tutorial geometry without changing targets or scrolling their owners.
- * Public exports: clipRect — intersects rectangles; tutorialViewport — excludes shell chrome;
- * visibleTargetRect — clips a padded target to its scrolling ancestors and viewport;
+ * Public exports: clipRectangle — intersects rectangles; tutorialViewport — excludes shell chrome;
+ * visibleTargetRectangle — clips a padded target to its scrolling ancestors and viewport;
  * calloutViewport — reclaims header space for readable explanations on short screens;
  * shadeRegions — subtracts highlight and control rectangles from the page shade.
- * @example const visible = visibleTargetRect(target, tutorialViewport(window, document, target), 8);
+ * @example const visible = visibleTargetRectangle(target, tutorialViewport(window, document, target), 8);
  */
 
 /** @param {object} rectangle Source rectangle. @param {object} bounds Clip rectangle. @returns {object|null} Visible intersection. */
@@ -24,7 +24,7 @@ function clipRectangle(rectangle, bounds) {
           }
         : null;
 }
-export { clipRectangle as clipRect };
+export { clipRectangle };
 
 /** @param {Window} window Browser window. @param {Document} document Owner document. @param {Element} target Tutorial target. @param {string} layer Target layer; overlays are not obscured by shell chrome. @returns {object} Visible page viewport. */
 export function tutorialViewport(window, document, target, layer = "page") {
@@ -134,7 +134,7 @@ function visibleTargetRectangle(target, viewport, padding = 0) {
     }
     return visible;
 }
-export { visibleTargetRectangle as visibleTargetRect };
+export { visibleTargetRectangle };
 
 /** @param {object} bounds Page bounds. @param {object[]} exclusions Unshaded rectangles. @returns {object[]} Non-overlapping shaded rectangles. */
 export function shadeRegions(bounds, exclusions) {

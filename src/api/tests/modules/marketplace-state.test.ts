@@ -41,12 +41,12 @@ function fixture() {
             },
         } as any,
         ctx: {
-            requireAuth(_request, response, minimum) {
+            requireAuth(_request, res, minimum) {
                 assert.equal(minimum, "admin");
                 if (state.role === "admin")
                     return { sub: "administrator", role: "admin" };
-                response.writeHead(403);
-                response.end();
+                res.writeHead(403);
+                res.end();
                 return null;
             },
         },

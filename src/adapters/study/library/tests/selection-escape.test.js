@@ -1,11 +1,11 @@
 import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 test("Escape clears selected cards and hides actions, respecting popup-consumed keys", () => {
     const handlers = new Map();
-    const ctx = virtualMachine.createContext({
+    const ctx = vm.createContext({
         window: {
             addEventListener: (name, handler) => handlers.set(name, handler),
         },

@@ -23,11 +23,11 @@ import {
 } from "./keys.js";
 import {
     addMember,
-    createDm as createDirectMessage,
+    createDirectMessage,
     createRoom,
     deleteRoom,
     deleteRoomForActor,
-    findDmBetween as findDirectMessageBetween,
+    findDirectMessageBetween,
     findGroupByExactMembers,
     getMember,
     getRoom,
@@ -96,7 +96,10 @@ class DatabaseMessagesStore {
         return createRoom(this.database, kind, title, createdBy);
     }
 
-    async createDm(accountA: string, accountB: string): Promise<RoomRow> {
+    async createDirectMessage(
+        accountA: string,
+        accountB: string,
+    ): Promise<RoomRow> {
         return createDirectMessage(this.database, accountA, accountB);
     }
 
@@ -227,7 +230,7 @@ class DatabaseMessagesStore {
         return listRoomsForAccount(this.database, accountId);
     }
 
-    async findDmBetween(
+    async findDirectMessageBetween(
         accountA: string,
         accountB: string,
     ): Promise<RoomRow | null> {
@@ -479,4 +482,4 @@ class DatabaseMessagesStore {
         return getTopEmojiUsage(this.database, accountId, limit);
     }
 }
-export { DatabaseMessagesStore as DbMessagesStore };
+export { DatabaseMessagesStore };

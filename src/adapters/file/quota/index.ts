@@ -267,4 +267,4 @@ class DatabaseFileQuotaStore implements FileQuotaStore {
         });
     }
 }
-export { DatabaseFileQuotaStore as DbFileQuotaStore };
+export { DatabaseFileQuotaStore };

@@ -369,7 +369,7 @@ async function runUserMenuAction(action, username) {
             type: "password",
         });
         if (!password) return;
-        const response = await apiFetch(
+        const res = await apiFetch(
             `/api/v1/users/${encodeURIComponent(username)}/password`,
             {
                 method: "POST",
@@ -378,10 +378,10 @@ async function runUserMenuAction(action, username) {
             },
         );
         showToast(
-            response.ok
+            res.ok
                 ? i18n.t("ui.app.users.password_reset_done")
                 : i18n.t("ui.reuse.save_failed"),
-            { variant: response.ok ? "success" : "error" },
+            { variant: res.ok ? "success" : "error" },
         );
         return;
     }
@@ -402,17 +402,17 @@ async function runUserMenuAction(action, username) {
             });
             return;
         }
-        const response = await uiCtx.capabilities
+        const res = await uiCtx.capabilities
             .get("notify:emailClient")
             .resendUserEmail({
                 accountId: username,
                 email: unverifiedEmail.email,
             });
         showToast(
-            response.ok
+            res.ok
                 ? i18n.t("ui.app.users.verification_resent")
                 : i18n.t("ui.reuse.save_failed"),
-            { variant: response.ok ? "success" : "error" },
+            { variant: res.ok ? "success" : "error" },
         );
         return;
     }
@@ -482,7 +482,7 @@ async function runUserMenuAction(action, username) {
 
     if (action === "set-founder" || action === "unset-founder") {
         const isFounder = action === "set-founder";
-        const response = await apiFetch(
+        const res = await apiFetch(
             `/api/v1/users/${encodeURIComponent(username)}/isfounder`,
             {
                 method: "POST",
@@ -491,16 +491,16 @@ async function runUserMenuAction(action, username) {
             },
         );
         showToast(
-            response.ok
+            res.ok
                 ? i18n.t(
                       isFounder
                           ? "ui.app.users.founder_enabled"
                           : "ui.app.users.founder_disabled",
                   )
                 : i18n.t("ui.reuse.save_failed"),
-            { variant: response.ok ? "success" : "error" },
+            { variant: res.ok ? "success" : "error" },
         );
-        if (!response.ok) return;
+        if (!res.ok) return;
         await refreshUsersAfterMutation();
         return;
     }
@@ -556,13 +556,13 @@ function bindUsersInteractions() {
                 : enabled
                   ? "disable"
                   : "enable";
-            const response = await apiFetch(
+            const res = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(username)}/${action}`,
                 {
                     method: "POST",
                 },
             );
-            if (!response.ok) {
+            if (!res.ok) {
                 showToast(i18n.t("ui.reuse.save_failed"), {
                     variant: "error",
                 });
@@ -649,7 +649,7 @@ function bindUsersInteractions() {
             const username = select.dataset.username;
             const role = select.value;
             if (!username || !role) return;
-            const response = await apiFetch(
+            const res = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(username)}/role`,
                 {
                     method: "POST",
@@ -657,13 +657,13 @@ function bindUsersInteractions() {
                     body: JSON.stringify({ role }),
                 },
             );
-            if (response.ok) {
+            if (res.ok) {
                 showToast(i18n.t("ui.app.users.role_updated"), {
                     variant: "success",
                 });
                 await refreshUsersAfterMutation();
             } else {
-                const responseBody = await response.json().catch(() => null);
+                const responseBody = await res.json().catch(() => null);
                 const responseMessage =
                     responseBody?.error?.message ??
                     i18n.t("ui.reuse.save_failed");

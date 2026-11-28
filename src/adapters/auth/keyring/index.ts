@@ -6,7 +6,7 @@ import {
     type KeyringRouteContext,
 } from "./api/routes/index.js";
 import {
-    DbKeyringVaultStore as DatabaseKeyringVaultStore,
+    DatabaseKeyringVaultStore,
     type KeyringDbExecutor,
     type KeyringVaultStore,
 } from "./store.js";
@@ -15,7 +15,7 @@ import type { FlowApi } from "@cognis/core";
 
 export {
     createKeyringRoutes,
-    DatabaseKeyringVaultStore as DbKeyringVaultStore,
+    DatabaseKeyringVaultStore,
     type KeyringVaultStore,
 };
 

@@ -18,8 +18,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
     const ctx = resolveRouteContext(dependencies.routeContext);
 
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const roomMatch = url.pathname.match(
@@ -27,7 +27,7 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
         );
         if (!roomMatch) return false;
 
-        const claims = ctx.requireAuth(request, response, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub;
         const hasBypass = hasAdminBypass(claims.role);
@@ -58,8 +58,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
 
         const room = await messagesStore.getRoom(roomId);
         if (!room) {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "not_found", message: "Room not found." },
                 }),
@@ -94,8 +94,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 ? externalWriteAccess?.authorized === true
                 : externalReadAccess?.authorized === true;
         if (!member && !isAllowedShareGuest) {
-            response.writeHead(403, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "not_member",
@@ -108,17 +108,17 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
         if (
             isAllowedShareGuest &&
             !(
-                (!operationPath && request.method === "GET") ||
+                (!operationPath && req.method === "GET") ||
                 (operationPath === "key-contribution" &&
-                    request.method === "POST" &&
+                    req.method === "POST" &&
                     hasMeetingChatAccess("chat:read")) ||
                 (operationPath === "messages" &&
                     !resourceId &&
-                    (request.method === "GET" || request.method === "POST"))
+                    (req.method === "GET" || req.method === "POST"))
             )
         ) {
-            response.writeHead(403, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "forbidden",
@@ -158,11 +158,11 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
         if (
             operationPath === "key-contribution" &&
             !resourceId &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
             if (incomingPendingRoomRequest) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "message_request_pending" },
                     }),
@@ -177,16 +177,16 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                       accountId,
                   );
             if (!roomKey) {
-                response.writeHead(409, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "room_key_already_delivered" },
                     }),
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         keyContribution: {
@@ -203,7 +203,7 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
         if (
             operationPath === "key-contribution" &&
             resourceId === "acknowledge" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
             if (!isAllowedShareGuest) {
                 await messagesStore.acknowledgeRoomKeyContribution(
@@ -211,19 +211,19 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                     accountId,
                 );
             }
-            response.writeHead(204);
-            response.end();
+            res.writeHead(204);
+            res.end();
             return true;
         }
 
-        if (!operationPath && request.method === "GET") {
+        if (!operationPath && req.method === "GET") {
             const members = await messagesStore.listMembers(roomId);
             const enrichedMembers = await enrichMembersWithProfiles(
                 members,
                 profileStore,
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         ...room,
@@ -239,11 +239,11 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
             return true;
         }
 
-        if (!operationPath && request.method === "PATCH") {
-            const body = (await readJson(request)) as { avatarKey?: unknown };
+        if (!operationPath && req.method === "PATCH") {
+            const body = (await readJson(req)) as { avatarKey?: unknown };
             if (room.kind !== "classroom") {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -255,8 +255,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 return true;
             }
             if (claims.role !== "teacher" && claims.role !== "admin") {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -275,18 +275,18 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 roomId,
                 avatarKey,
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: updated }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: updated }));
             return true;
         }
 
         if (operationPath === "messages" && !resourceId) {
-            if (request.method === "GET") {
+            if (req.method === "GET") {
                 if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
-                    response.writeHead(403, {
+                    res.writeHead(403, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "forbidden",
@@ -298,10 +298,10 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                     return true;
                 }
                 if (incomingPendingRoomRequest) {
-                    response.writeHead(200, {
+                    res.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             data: [],
                             pendingRequest: pendingRequestSummary,
@@ -478,8 +478,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                         ),
                     };
                 });
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: enrichedMessages,
                         pendingRequest: pendingRequestSummary,
@@ -487,15 +487,15 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            if (request.method === "POST") {
+            if (req.method === "POST") {
                 if (
                     isAllowedShareGuest &&
                     !hasMeetingChatAccess("chat:write")
                 ) {
-                    response.writeHead(403, {
+                    res.writeHead(403, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "forbidden",
@@ -507,10 +507,10 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                     return true;
                 }
                 if (incomingPendingRoomRequest) {
-                    response.writeHead(403, {
+                    res.writeHead(403, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "forbidden",
@@ -526,10 +526,10 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                     room.kind === "dm" &&
                     ((member?.archived ?? false) || activeMembers.length < 2);
                 if (directMessageIsArchivedForSender) {
-                    response.writeHead(409, {
+                    res.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "chat_archived",
@@ -542,26 +542,21 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 }
                 let messageInput: ReturnType<typeof readMessageInput>;
                 try {
-                    messageInput = readMessageInput(await readJson(request));
+                    messageInput = readMessageInput(await readJson(req));
                 } catch (error) {
                     const code =
                         error instanceof Error &&
                         error.message === "invalid_operation_id"
                             ? "invalid_operation_id"
                             : "bad_request";
-                    jsonError(
-                        response,
-                        400,
-                        code,
-                        "Invalid encrypted message.",
-                    );
+                    jsonError(res, 400, code, "Invalid encrypted message.");
                     return true;
                 }
                 if (!flow?.exists("send-message")) {
-                    response.writeHead(503, {
+                    res.writeHead(503, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "flow_unavailable",
@@ -583,10 +578,10 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                             error.message !== "delivery_conflict"
                         )
                             throw error;
-                        response.writeHead(409, {
+                        res.writeHead(409, {
                             "content-type": "application/json",
                         });
-                        response.end(
+                        res.end(
                             JSON.stringify({
                                 error: { code: "delivery_conflict" },
                             }),
@@ -604,10 +599,10 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                       }
                     | undefined;
                 if (!persistResult?.persisted) {
-                    response.writeHead(500, {
+                    res.writeHead(500, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "persist_failed",
@@ -617,51 +612,42 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                     );
                     return true;
                 }
-                response.writeHead(201, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: persistResult.message }));
+                res.writeHead(201, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: persistResult.message }));
                 return true;
             }
         }
 
-        if (
-            operationPath === "read" &&
-            !resourceId &&
-            request.method === "POST"
-        ) {
+        if (operationPath === "read" && !resourceId && req.method === "POST") {
             if (incomingPendingRoomRequest) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { ok: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { ok: true } }));
                 return true;
             }
-            const body = await readJson(request);
+            const body = await readJson(req);
             let readAt: string | undefined;
             try {
                 readAt = readReceiptTime(body.readAt);
             } catch {
-                jsonError(
-                    response,
-                    400,
-                    "invalid_read_time",
-                    "Invalid read time.",
-                );
+                jsonError(res, 400, "invalid_read_time", "Invalid read time.");
                 return true;
             }
             await messagesStore.markRead(roomId, accountId, readAt);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 
         if (operationPath === "typing" && !resourceId) {
-            if (request.method === "POST") {
+            if (req.method === "POST") {
                 if (incomingPendingRoomRequest) {
-                    response.writeHead(200, {
+                    res.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    response.end(JSON.stringify({ data: { ok: true } }));
+                    res.end(JSON.stringify({ data: { ok: true } }));
                     return true;
                 }
-                const body = (await readJson(request)) as {
+                const body = (await readJson(req)) as {
                     typing?: unknown;
                     ttlSeconds?: unknown;
                 };
@@ -675,16 +661,16 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                     Boolean(body.typing),
                     ttlSeconds,
                 );
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { ok: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { ok: true } }));
                 return true;
             }
-            if (request.method === "GET") {
+            if (req.method === "GET") {
                 if (incomingPendingRoomRequest) {
-                    response.writeHead(200, {
+                    res.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    response.end(JSON.stringify({ data: [] }));
+                    res.end(JSON.stringify({ data: [] }));
                     return true;
                 }
                 const typingRows = await messagesStore.listActiveTypers(roomId);
@@ -705,8 +691,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                             };
                         }),
                 );
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: enriched }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: enriched }));
                 return true;
             }
         }
@@ -714,11 +700,11 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
         if (
             operationPath === "members" &&
             !resourceId &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
             if (member.role !== "owner" && member.role !== "admin") {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -728,11 +714,11 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const body = (await readJson(request)) as { handle?: unknown };
+            const body = (await readJson(req)) as { handle?: unknown };
             const handle = typeof body.handle === "string" ? body.handle : null;
             if (!handle) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -744,8 +730,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
             }
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -759,8 +745,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 hasBypass ||
                 (await canMessage(profileStore, accountId, target.accountId));
             if (!allowed) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -775,20 +761,20 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 actorAccountId: accountId,
                 userAccountId: target.accountId,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 
         if (
             operationPath === "members" &&
             resourceId &&
-            request.method === "DELETE"
+            req.method === "DELETE"
         ) {
             const target = await profileStore.getProfileByHandle(resourceId);
             if (!target) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -801,8 +787,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
             const isSelfLeave = target.accountId === accountId;
             const isOwnerKick = member.role === "owner";
             if (!isSelfLeave && !isOwnerKick) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -817,8 +803,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 actorAccountId: accountId,
                 userAccountId: target.accountId,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 
@@ -826,11 +812,11 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
             operationPath === "messages" &&
             resourceId &&
             resourceAction === "reactions" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
             if (incomingPendingRoomRequest) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -843,8 +829,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
             }
             const message = await messagesStore.getMessage(resourceId);
             if (!message || message.chatroomId !== roomId) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -854,7 +840,7 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const body = (await readJson(request)) as {
+            const body = (await readJson(req)) as {
                 emoji?: unknown;
                 active?: unknown;
             };
@@ -862,8 +848,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                 typeof body.emoji === "string" ? body.emoji : "",
             );
             if (!emoji || emoji.length > 16) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -875,7 +861,7 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
             }
             if (body.active !== undefined && typeof body.active !== "boolean") {
                 jsonError(
-                    response,
+                    res,
                     400,
                     "invalid_reaction_state",
                     "Reaction state must be boolean.",
@@ -909,10 +895,10 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                         message.senderId,
                     );
                 if (pendingIncomingForMessageSender) {
-                    response.writeHead(200, {
+                    res.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             data: { active },
                         }),
@@ -940,8 +926,8 @@ export function createRoomHandler(dependencies: MessagesRoutesDeps) {
                     }).catch(() => undefined);
                 }
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { active } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { active } }));
             return true;
         }
 

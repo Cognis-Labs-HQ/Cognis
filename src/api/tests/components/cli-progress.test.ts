@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import http from "node:http";
 import { spawn } from "node:child_process";
-import { mkdtemp, writeFile, rm as removePath } from "node:fs/promises";
-import operatingSystem from "node:os";
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { createComponentRoutes } from "../../routes/components/index.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
@@ -14,13 +14,11 @@ test(
     { timeout: 30_000 },
     async (context) => {
         const directory = await mkdtemp(
-            path.join(operatingSystem.tmpdir(), "cognis-cli-progress-"),
+            path.join(os.tmpdir(), "cognis-cli-progress-"),
         );
         const tokenPath = path.join(directory, "token");
         await writeFile(tokenPath, "fixture-token");
-        context.after(() =>
-            removePath(directory, { recursive: true, force: true }),
-        );
+        context.after(() => rm(directory, { recursive: true, force: true }));
         let release!: () => void;
         let failed = false;
         const routeContext = createDefaultRouteContext();
@@ -86,7 +84,7 @@ test(
             () => new Promise<void>((resolve) => server.close(() => resolve())),
         );
         const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-        for (const argumentsList of [
+        for (const args of [
             ["component:upgrade", "module", "example"],
             ["-v", "component:upgrade", "module", "example"],
             ["component:upgrade", "module", "example", "-v"],
@@ -96,12 +94,7 @@ test(
             const progress = Promise.withResolvers<void>();
             const child = spawn(
                 process.execPath,
-                [
-                    "--import",
-                    "tsx",
-                    "src/tooling/cli/index.ts",
-                    ...argumentsList,
-                ],
+                ["--import", "tsx", "src/tooling/cli/index.ts", ...args],
                 {
                     env: {
                         ...process.env,
@@ -140,7 +133,7 @@ test(
                 stderr,
                 /Module example: installing selected release \(main\)/,
             );
-            if (argumentsList.includes("-v")) {
+            if (args.includes("-v")) {
                 assert.equal(
                     JSON.parse(stdout).data.results[0].status,
                     failed ? "failed" : "succeeded",
@@ -152,7 +145,7 @@ test(
                 );
                 assert.doesNotMatch(stdout, /internal-manifest-detail/);
             }
-            failed = argumentsList[0] === "-v";
+            failed = args[0] === "-v";
         }
     },
 );

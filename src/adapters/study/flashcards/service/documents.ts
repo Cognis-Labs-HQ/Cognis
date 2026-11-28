@@ -5,8 +5,8 @@ import type { StructuredDbWhereClause } from "../../../../gateways/db/reuse/db-c
 
 const TABLE = "study_deck_document_parts";
 
-export async function ensureDeckDocuments(database: DbExecutor): Promise<void> {
-    await database.ensureTable({
+export async function ensureDeckDocuments(db: DbExecutor): Promise<void> {
+    await db.ensureTable({
         name: TABLE,
         columns: [
             { name: "document_key", type: "text", notNull: true },
@@ -22,7 +22,7 @@ export async function ensureDeckDocuments(database: DbExecutor): Promise<void> {
 
 /** Base fragments and continuation rows share the caller's scheduling or save transaction. */
 export async function writeDeckDocument(
-    database: DbExecutor,
+    db: DbExecutor,
     deckId: string,
     identity: string[],
     fields: Record<string, unknown>,
@@ -41,7 +41,7 @@ export async function writeDeckDocument(
             documents.map(({ field, parts }) => [field, parts.next().value!]),
         ),
     });
-    await database.executeCommand({
+    await db.executeCommand({
         option: "DELETE",
         table: TABLE,
         where: [{ column: "document_key", value: key }],
@@ -49,7 +49,7 @@ export async function writeDeckDocument(
     for (const { field, parts } of documents) {
         let position = 1;
         for (const content of parts) {
-            await database.executeCommand({
+            await db.executeCommand({
                 option: "INSERT",
                 table: TABLE,
                 values: {
@@ -67,13 +67,13 @@ export async function writeDeckDocument(
 
 /** One joined read keeps every document on the same committed revision. */
 export async function readDeckDocuments(
-    database: DbExecutor,
+    db: DbExecutor,
     table: string,
     columns: string[],
     identity: string[],
     where: StructuredDbWhereClause[],
 ): Promise<Record<string, unknown>[]> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table,
         columns: [
@@ -121,10 +121,10 @@ export async function readDeckDocuments(
 }
 
 export async function deleteDeckDocuments(
-    database: DbExecutor,
+    db: DbExecutor,
     deckId: string,
 ): Promise<void> {
-    await database.executeCommand({
+    await db.executeCommand({
         option: "DELETE",
         table: TABLE,
         where: [{ column: "deck_id", value: deckId }],

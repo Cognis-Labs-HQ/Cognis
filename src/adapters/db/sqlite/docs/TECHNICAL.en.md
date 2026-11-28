@@ -4,7 +4,7 @@ The public interfaces and operational rules of SQLite.
 
 ## Interfaces
 
-`SqliteDbGateway(client)` implements DatabaseGateway. SqliteClient must supply all(statement, params), run(statement, params) returning changes, and exec(statement). Structured commands use SQLite placeholders and conflict clauses.
+`SqliteDatabaseGateway(client)` implements DatabaseGateway. SqliteClient must supply all(statement, params), run(statement, params) returning changes, and exec(statement). Structured commands use SQLite placeholders and conflict clauses.
 
 ## Configuration
 
@@ -18,7 +18,7 @@ The SQLite adapter provides a lightweight database gateway for SQLite-backed dep
 
 ### Responsibilities
 
-- Implement the `DatabaseGateway` interface through `SqliteDbGateway`.
+- Implement the `DatabaseGateway` interface through `SqliteDatabaseGateway`.
 - Execute queries, commands, and transactions against a provided SQLite client.
 - Support structured database commands with SQLite placeholder and conflict syntax.
 - Provide SQLite-specific auth schema helpers and SQL init/migration scripts.

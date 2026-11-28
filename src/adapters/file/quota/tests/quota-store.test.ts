@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbFileQuotaStore as DatabaseFileQuotaStore } from "../index.js";
+import { DatabaseFileQuotaStore } from "../index.js";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 
 function buildStore(): DatabaseFileQuotaStore {

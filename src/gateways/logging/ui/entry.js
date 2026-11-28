@@ -7,11 +7,11 @@ export function normalizeDiagnostic(input) {
     if (!input || !isLogLevel(input.level)) return null;
     const values = [input.message, input.meta, ...(input.details ?? [])];
     const messages = values.filter((value) => typeof value === "string");
-    const metadata = { component: "browser", operation: "diagnostic" };
+    const meta = { component: "browser", operation: "diagnostic" };
     for (const value of values) {
-        if (value instanceof Error) metadata.error = value;
+        if (value instanceof Error) meta.error = value;
         else if (value && typeof value === "object" && !Array.isArray(value))
-            Object.assign(metadata, value);
+            Object.assign(meta, value);
     }
     return {
         level: input.level,
@@ -19,6 +19,6 @@ export function normalizeDiagnostic(input) {
             0,
             2000,
         ),
-        meta: safeMetadata(metadata) ?? {},
+        meta: safeMetadata(meta) ?? {},
     };
 }

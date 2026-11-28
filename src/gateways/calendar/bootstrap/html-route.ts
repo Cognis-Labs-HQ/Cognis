@@ -11,21 +11,20 @@ export function createCalendarHtmlRoute(
     response: ServerResponse,
     url: URL,
 ) => Promise<boolean> {
-    return async (request, response, url) => {
-        if (request.method !== "GET" || url.pathname !== "/calendar")
-            return false;
-        if (!routeContext.getCookieSession(request)) {
-            response.writeHead(302, { location: "/login" });
-            response.end();
+    return async (req, res, url) => {
+        if (req.method !== "GET" || url.pathname !== "/calendar") return false;
+        if (!routeContext.getCookieSession(req)) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
             return true;
         }
-        routeContext.setPageSecurityHeaders(response);
+        routeContext.setPageSecurityHeaders(res);
         const html = await readFile(
             path.join(gatewayRoot, "ui", "index.html"),
             "utf8",
         );
-        response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        response.end(html);
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
         return true;
     };
 }

@@ -3,7 +3,7 @@ import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openImageCropPopup } from "./crop-popup.js";
-import { sourceRectToCoverObjectPositionPercent as sourceRectangleToCoverObjectPositionPercent } from "./image-crop.js";
+import { sourceRectangleToCoverObjectPositionPercent } from "./image-crop.js";
 
 const log = bindCapability("ui:log");
 
@@ -47,7 +47,7 @@ function isCropResultWithSourceRectangle(cropResult) {
         Number.isFinite(Number(sourceRectangle.sourceHeight))
     );
 }
-export { isCropResultWithSourceRectangle as isCropResultWithSourceRect };
+export { isCropResultWithSourceRectangle };
 
 export function createProfileImageUploadActions({
     getState,

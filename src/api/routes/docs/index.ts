@@ -2,9 +2,9 @@ import type { DocView } from "./sources.js";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { resolveLangs as resolveLanguages } from "../../reuse/preferred-languages.js";
+import { resolveLanguages } from "../../reuse/preferred-languages.js";
 import {
-    initializeDocsStore as initializeDocumentsStore,
+    initializeDocumentsStore,
     readStoredMarkdown,
     type StoredDoc,
 } from "./store.js";
@@ -25,7 +25,7 @@ function resolveDocumentsArchiveRoot(
     }
     return join(userHome, ".cognis", "docs-archive");
 }
-export { resolveDocumentsArchiveRoot as resolveDocsArchiveRoot };
+export { resolveDocumentsArchiveRoot };
 
 interface DocEntry extends StoredDoc {
     slug: string;
@@ -143,11 +143,11 @@ function createDocumentsRoutes(
             languages,
         );
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (request.method !== "GET") return false;
+        if (req.method !== "GET") return false;
         const languages = resolveLanguages(url);
 
         if (url.pathname === "/api/v1/docs") {
@@ -175,8 +175,8 @@ function createDocumentsRoutes(
                     views,
                 }),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
             return true;
         }
 
@@ -212,8 +212,8 @@ function createDocumentsRoutes(
         const entry = index.get(slug);
 
         if (!entry || !entry.views.includes(view)) {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(NOT_FOUND_BODY);
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(NOT_FOUND_BODY);
             return true;
         }
 
@@ -228,15 +228,15 @@ function createDocumentsRoutes(
             ));
 
         if (content === undefined) {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(NOT_FOUND_BODY);
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(NOT_FOUND_BODY);
             return true;
         }
 
         const markdown = withChangelogBranch(content, rawSlug);
 
-        response.writeHead(200, { "content-type": "application/json" });
-        response.end(
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(
             JSON.stringify({
                 data: {
                     slug,
@@ -252,4 +252,4 @@ function createDocumentsRoutes(
         return true;
     };
 }
-export { createDocumentsRoutes as createDocsRoutes };
+export { createDocumentsRoutes };

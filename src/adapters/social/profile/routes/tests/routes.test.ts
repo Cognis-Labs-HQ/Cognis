@@ -4,11 +4,7 @@ import { VolatileProfileStore } from "../../store-contract.js";
 import { createProfileRoutes } from "../index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { createDefaultRouteContext } from "../../../../../api/reuse/route-context.js";
-import {
-    fakeFileGateway,
-    makeReq as makeRequest,
-    setupUser,
-} from "./route-fixtures.js";
+import { fakeFileGateway, makeRequest, setupUser } from "./route-fixtures.js";
 
 test("profile routes - get own profile auto-creates profile when none exists", async () => {
     const profileStore = new VolatileProfileStore();
@@ -156,8 +152,8 @@ test("profile routes log profile updates", async () => {
         profileStore,
         fakeFileGateway(),
         undefined,
-        (level, message, metadata) => {
-            entries.push({ level, message, meta: metadata });
+        (level, message, meta) => {
+            entries.push({ level, message, meta: meta });
         },
     );
 

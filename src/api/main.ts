@@ -84,10 +84,10 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
             path.resolve(process.cwd(), "external-modules");
 
-        async function scanManifestDirectory(directory: string): Promise<void> {
+        async function scanManifestDirectory(dir: string): Promise<void> {
             let directoryEntries: Awaited<ReturnType<typeof readdir>>;
             try {
-                directoryEntries = await readdir(directory, {
+                directoryEntries = await readdir(dir, {
                     withFileTypes: true,
                 });
             } catch (error) {
@@ -96,7 +96,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                     "Failed to scan modules directory during bootstrap.",
                     {
                         component: "api-bootstrap",
-                        dir: directory,
+                        dir: dir,
                         error:
                             error instanceof Error
                                 ? error.message
@@ -109,7 +109,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 (directoryEntry) => directoryEntry.isDirectory(),
             )) {
                 const manifestPath = path.join(
-                    directory,
+                    dir,
                     directoryEntry.name,
                     "manifest.json",
                 );
@@ -596,7 +596,7 @@ const moduleMarketplaceService = new ModuleMarketplaceService(
         path.resolve(process.cwd(), "config", "module-sources.json"),
     process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules"),
-    (level, message, metadata) => log(level, message, metadata),
+    (level, message, meta) => log(level, message, meta),
     systemCtx,
 );
 void discoverModuleSourcesOnStartup(moduleMarketplaceService, log);

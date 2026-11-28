@@ -1,23 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
-import operatingSystem from "node:os";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
-import { createDbExecutor as createDatabaseExecutor } from "../executor.js";
+import { createDatabaseExecutor } from "../executor.js";
 
-test("createDbExecutor loads the matching adapter factory on the fly", async () => {
+test("createDatabaseExecutor loads the matching adapter factory on the fly", async () => {
     const temporaryRoot = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-db-adapter-"),
+        path.join(os.tmpdir(), "cognis-db-adapter-"),
     );
     try {
         const adapterDirectory = path.join(temporaryRoot, "db", "custom");
         await mkdir(adapterDirectory, { recursive: true });
         await writeFile(
             path.join(adapterDirectory, "index.ts"),
-            `export function canHandleDbProvider(providerId) {
+            `export function canHandleDatabaseProvider(providerId) {
                 return providerId === 'custom';
             }
-            export function createDbExecutor() {
+            export function createDatabaseExecutor() {
                 return {
                     async execute() {
                         return { rowCount: 1 };
@@ -45,6 +45,6 @@ test("createDbExecutor loads the matching adapter factory on the fly", async () 
             { rowCount: 2 },
         );
     } finally {
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });

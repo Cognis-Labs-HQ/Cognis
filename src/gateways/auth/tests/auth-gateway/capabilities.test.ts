@@ -10,7 +10,7 @@ import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { bootstrapAuthTestHost as bootstrap } from "../auth-gateway-test-helpers.js";
 import {
     contributeTestKeyring,
-    makeInMemoryDb as makeInMemoryDatabase,
+    makeInMemoryDatabase,
     type InMemoryDb,
 } from "../auth-gateway-test-helpers.js";
 function createDatabaseExecutor(): InMemoryDb {

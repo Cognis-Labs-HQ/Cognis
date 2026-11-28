@@ -42,42 +42,47 @@ for (const notifyState of ["absent", "failed", "available"]) {
                           return Response.json({ data: [] });
                       },
                   };
-        const { initGeneralPrefs: initGeneralPreferences } = loadTestModule(
-            new URL("../../app/settings/general-prefs.js", import.meta.url),
-            {
-                "../../reuse/capabilities.js": createDiagnosticFixture(),
-                "../../reuse/escape-html.js": { escapeHtml },
-                "../../reuse/ui-ctx.js": {
-                    uiCtx: { capabilities: { get: () => emailClient } },
-                },
-                "../../reuse/offline-state.js": { isOffline: () => false },
-                "../../reuse/api-client.js": {
-                    apiFetch: async (path, options) => {
-                        requests.push({ path, body: JSON.parse(options.body) });
-                        return Response.json({ data: {} });
+        const { initGeneralPreferences: initGeneralPreferences } =
+            loadTestModule(
+                new URL("../../app/settings/general-prefs.js", import.meta.url),
+                {
+                    "../../reuse/capabilities.js": createDiagnosticFixture(),
+                    "../../reuse/escape-html.js": { escapeHtml },
+                    "../../reuse/ui-ctx.js": {
+                        uiCtx: { capabilities: { get: () => emailClient } },
+                    },
+                    "../../reuse/offline-state.js": { isOffline: () => false },
+                    "../../reuse/api-client.js": {
+                        apiFetch: async (path, options) => {
+                            requests.push({
+                                path,
+                                body: JSON.parse(options.body),
+                            });
+                            return Response.json({ data: {} });
+                        },
+                    },
+                    "../../reuse/popup.js": {
+                        openPopup: async (options) => {
+                            popups.push(options);
+                        },
+                    },
+                    "../../reuse/validation-url.js": {
+                        watchToken: () =>
+                            assert.fail("no verification requested"),
+                    },
+                    "../../reuse/toast.js": {
+                        showToast: (...args) => toasts.push(args),
+                    },
+                    "../../reuse/trusted-domains.js": {
+                        matchesTrustedDomain: () => true,
                     },
                 },
-                "../../reuse/popup.js": {
-                    openPopup: async (options) => {
-                        popups.push(options);
-                    },
+                {
+                    HTMLElement: Element,
+                    HTMLInputElement: Input,
+                    window: { location: { replace() {} } },
                 },
-                "../../reuse/validation-url.js": {
-                    watchToken: () => assert.fail("no verification requested"),
-                },
-                "../../reuse/toast.js": {
-                    showToast: (...argumentsList) => toasts.push(argumentsList),
-                },
-                "../../reuse/trusted-domains.js": {
-                    matchesTrustedDomain: () => true,
-                },
-            },
-            {
-                HTMLElement: Element,
-                HTMLInputElement: Input,
-                window: { location: { replace() {} } },
-            },
-        );
+            );
         const preferences = initGeneralPreferences(root, {
             i18n: { t: (key) => key },
             username: "learner",

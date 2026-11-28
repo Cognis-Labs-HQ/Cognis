@@ -80,9 +80,9 @@ export function createSearchMatchResolver(query, options = {}) {
             const expression = normalizedOptions.wholeWord
                 ? `\\b(?:${query})\\b`
                 : query;
-            const regularExpression = new RegExp(expression, flags);
+            const regex = new RegExp(expression, flags);
             return (value) => {
-                const match = regularExpression.exec(String(value ?? ""));
+                const match = regex.exec(String(value ?? ""));
                 return match
                     ? {
                           index: match.index,
@@ -387,7 +387,7 @@ export async function collectGlobalSettingsSearchGroups({ signal } = {}) {
     return [{ category: "Settings", items }];
 }
 
-export { collectGlobalDocsSearchGroups } from "./docs-index.js";
+export { collectGlobalDocumentsSearchGroups } from "./docs-index.js";
 
 export function collectVisibleNavigationSearchGroups() {
     const items = [];

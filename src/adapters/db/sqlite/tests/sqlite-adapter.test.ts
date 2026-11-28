@@ -1,9 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    SqliteDbGateway as SqliteDatabaseGateway,
-    type SqliteClient,
-} from "../index.js";
+import { SqliteDatabaseGateway, type SqliteClient } from "../index.js";
 
 test("sqlite adapter runs query and transaction", async () => {
     const executorCalls: string[] = [];
@@ -30,12 +27,12 @@ test("sqlite adapter executes structured commands", async () => {
     const allCalls: Array<{ statement: string; params?: unknown[] }> = [];
     const runCalls: Array<{ statement: string; params?: unknown[] }> = [];
     const client: SqliteClient = {
-        async all(statement: string, parameters?: unknown[]) {
-            allCalls.push({ statement, params: parameters });
+        async all(statement: string, params?: unknown[]) {
+            allCalls.push({ statement, params: params });
             return [{ module_id: "study" }];
         },
-        async run(statement: string, parameters?: unknown[]) {
-            runCalls.push({ statement, params: parameters });
+        async run(statement: string, params?: unknown[]) {
+            runCalls.push({ statement, params: params });
             return { changes: 1 };
         },
         async exec() {},

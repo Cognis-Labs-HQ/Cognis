@@ -22,30 +22,30 @@ export function createRegistrationPageRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (request.method !== "GET") return false;
+        if (req.method !== "GET") return false;
         if (url.pathname === "/register") {
             const file = await readFile(
                 path.join(REGISTRATION_UI_ROOT, "pages", "register.html"),
             );
-            ctx.setPageSecurityHeaders(response);
-            response.writeHead(200, {
+            ctx.setPageSecurityHeaders(res);
+            res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
             });
-            response.end(file);
+            res.end(file);
             return true;
         }
         if (url.pathname !== "/invite") return false;
-        const session = ctx.getCookieSession(request);
+        const session = ctx.getCookieSession(req);
         if (!session) {
-            response.writeHead(302, {
+            res.writeHead(302, {
                 location: "/login?reason=session_expired",
             });
-            response.end();
+            res.end();
             return true;
         }
         const privileged = session.role === "admin" || session.role === "owner";
@@ -54,23 +54,23 @@ export function createRegistrationPageRoutes(
             (!privileged &&
                 (!accountStore || !(await accountStore.isFounder(session.sub))))
         ) {
-            response.writeHead(302, { location: "/dashboard" });
-            response.end();
+            res.writeHead(302, { location: "/dashboard" });
+            res.end();
             return true;
         }
         try {
             const file = await readFile(
                 path.join(REGISTRATION_UI_ROOT, "pages", "invite.html"),
             );
-            ctx.setPageSecurityHeaders(response);
-            response.writeHead(200, {
+            ctx.setPageSecurityHeaders(res);
+            res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
             });
-            response.end(file);
+            res.end(file);
         } catch {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "not_found", message: "Asset not found." },
                 }),

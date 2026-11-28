@@ -9,7 +9,7 @@
 import type { DbExecutor } from "../reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../reuse/db-table.js";
 import {
-    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
+    buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
     type StructuredDbDialect,
@@ -64,7 +64,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
     async execute(
         sql: string,
-        parameters: unknown[] = [],
+        params: unknown[] = [],
     ): Promise<{ rows?: Row[]; rowCount?: number }> {
         let parameterIndex = 1;
         const normalizedSql = sql.replace(/\?/g, () => `$${parameterIndex++}`);
@@ -84,13 +84,13 @@ export class InMemoryTestExecutor implements DbExecutor {
             return { rowCount: 0 };
         }
         if (upper.startsWith("INSERT"))
-            return this.handleInsert(trimmed, parameters);
+            return this.handleInsert(trimmed, params);
         if (upper.startsWith("SELECT"))
-            return this.handleSelect(trimmed, parameters);
+            return this.handleSelect(trimmed, params);
         if (upper.startsWith("UPDATE"))
-            return this.handleUpdate(trimmed, parameters);
+            return this.handleUpdate(trimmed, params);
         if (upper.startsWith("DELETE"))
-            return this.handleDelete(trimmed, parameters);
+            return this.handleDelete(trimmed, params);
         return { rowCount: 0 };
     }
 
@@ -301,7 +301,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
     private handleInsert(
         sql: string,
-        parameters: unknown[],
+        params: unknown[],
     ): { rows?: Row[]; rowCount: number } {
         const tableMatch = sql.match(
             /INSERT\s+(?:OR\s+IGNORE\s+)?(?:IGNORE\s+)?INTO\s+(\w+)/i,
@@ -326,7 +326,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             const valuePlaceholder = valuePlaceholders[i] ?? "";
             const phMatch = valuePlaceholder.match(/^\$(\d+)$/);
             if (phMatch) {
-                row[columns[i]] = parameters[Number(phMatch[1]) - 1];
+                row[columns[i]] = params[Number(phMatch[1]) - 1];
             } else if (
                 /^(NOW\(\)|CURRENT_TIMESTAMP)$/i.test(valuePlaceholder)
             ) {
@@ -336,11 +336,11 @@ export class InMemoryTestExecutor implements DbExecutor {
             } else if (/^FALSE$/i.test(valuePlaceholder)) {
                 row[columns[i]] = false;
             } else if (/^\?$/.test(valuePlaceholder)) {
-                row[columns[i]] = parameters[parameterIndex++];
+                row[columns[i]] = params[parameterIndex++];
             } else if (/^\d+$/.test(valuePlaceholder)) {
                 row[columns[i]] = Number(valuePlaceholder);
             } else {
-                row[columns[i]] = parameters[i] ?? null;
+                row[columns[i]] = params[i] ?? null;
             }
         }
 
@@ -385,8 +385,7 @@ export class InMemoryTestExecutor implements DbExecutor {
                             const column = valueParameterMatch[1];
                             const currentParameterIndex =
                                 Number(valueParameterMatch[2]) - 1;
-                            existing[column] =
-                                parameters[currentParameterIndex];
+                            existing[column] = params[currentParameterIndex];
                         }
                     }
                 } else {
@@ -434,7 +433,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
     private handleSelect(
         sql: string,
-        parameters: unknown[],
+        params: unknown[],
     ): { rows: Row[]; rowCount: number } {
         const fromMatch = sql.match(/FROM\s+(\w+)/i);
         if (!fromMatch) return { rows: [], rowCount: 0 };
@@ -518,13 +517,13 @@ export class InMemoryTestExecutor implements DbExecutor {
         }
 
         if (whereMatch) {
-            rows = this.applyWhere(rows, whereMatch[1].trim(), parameters);
+            rows = this.applyWhere(rows, whereMatch[1].trim(), params);
         }
 
         const limitMatch = sql.match(/LIMIT\s+\$(\d+)/i);
         const literalLimitMatch = sql.match(/LIMIT\s+(\d+)(?!\s*\$)/i);
         if (limitMatch) {
-            const limitValue = Number(parameters[Number(limitMatch[1]) - 1]);
+            const limitValue = Number(params[Number(limitMatch[1]) - 1]);
             rows = rows.slice(0, limitValue);
         } else if (literalLimitMatch) {
             rows = rows.slice(0, Number(literalLimitMatch[1]));
@@ -552,7 +551,7 @@ export class InMemoryTestExecutor implements DbExecutor {
     private applyWhere(
         rows: Row[],
         whereText: string,
-        parameters: unknown[],
+        params: unknown[],
     ): Row[] {
         const conditions = whereText.split(/\s+AND\s+/i);
         let result = rows;
@@ -563,7 +562,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             if (equalMatch) {
                 const column = equalMatch[2];
                 const parameterIndex = Number(equalMatch[3]) - 1;
-                const value = parameters[parameterIndex];
+                const value = params[parameterIndex];
                 result = result.filter((row) => row[column] === value);
                 continue;
             }
@@ -573,7 +572,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             if (neqMatch) {
                 const column = neqMatch[2];
                 const parameterIndex = Number(neqMatch[3]) - 1;
-                const value = parameters[parameterIndex];
+                const value = params[parameterIndex];
                 result = result.filter((row) => row[column] !== value);
                 continue;
             }
@@ -583,7 +582,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             if (greaterThanMatch) {
                 const column = greaterThanMatch[2];
                 const parameterIndex = Number(greaterThanMatch[3]) - 1;
-                const value = parameters[parameterIndex];
+                const value = params[parameterIndex];
                 result = result.filter(
                     (row) => String(row[column] ?? "") > String(value ?? ""),
                 );
@@ -595,7 +594,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             if (lessThanMatch) {
                 const column = lessThanMatch[2];
                 const parameterIndex = Number(lessThanMatch[3]) - 1;
-                const value = parameters[parameterIndex];
+                const value = params[parameterIndex];
                 result = result.filter(
                     (row) => String(row[column] ?? "") < String(value ?? ""),
                 );
@@ -607,7 +606,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             if (likeMatch) {
                 const column = likeMatch[2];
                 const parameterIndex = Number(likeMatch[3]) - 1;
-                const pattern = String(parameters[parameterIndex] ?? "");
+                const pattern = String(params[parameterIndex] ?? "");
                 const regularExpressionPattern = pattern
                     .replace(/[.+^${}()|[\]\\]/g, "\\$&")
                     .replace(/%/g, ".*")
@@ -641,10 +640,7 @@ export class InMemoryTestExecutor implements DbExecutor {
         return result;
     }
 
-    private handleUpdate(
-        sql: string,
-        parameters: unknown[],
-    ): { rowCount: number } {
+    private handleUpdate(sql: string, params: unknown[]): { rowCount: number } {
         const tableMatch = sql.match(/UPDATE\s+(\w+)/i);
         if (!tableMatch) return { rowCount: 0 };
         const table = tableMatch[1];
@@ -656,7 +652,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
         const whereMatch = sql.match(/WHERE\s+([\s\S]+?)$/is);
         if (whereMatch) {
-            targets = this.applyWhere(rows, whereMatch[1].trim(), parameters);
+            targets = this.applyWhere(rows, whereMatch[1].trim(), params);
         }
 
         if (!rawSetClauses) return { rowCount: 0 };
@@ -684,7 +680,7 @@ export class InMemoryTestExecutor implements DbExecutor {
                 const parameterMatch = clause.match(/(\w+)\s*=\s*\$(\d+)/);
                 if (parameterMatch) {
                     row[parameterMatch[1]] =
-                        parameters[Number(parameterMatch[2]) - 1];
+                        params[Number(parameterMatch[2]) - 1];
                     continue;
                 }
                 const expressionMatch = clause.match(
@@ -711,7 +707,7 @@ export class InMemoryTestExecutor implements DbExecutor {
     private filterByWhere(
         rows: Row[],
         whereText: string,
-        parameters: unknown[],
+        params: unknown[],
     ): Row[] {
         const subqueryMatch = whereText.match(
             /(\w+)\s*=\s*\(\s*SELECT\s+(\w+)\s+FROM\s+(\w+)\s+WHERE\s+(\w+)\s*=\s*\$(\d+)\s*\)/i,
@@ -722,7 +718,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             const subqueryTable = subqueryMatch[3];
             const subqueryWhereColumn = subqueryMatch[4];
             const subqueryParameterIndex = Number(subqueryMatch[5]) - 1;
-            const subqueryValue = parameters[subqueryParameterIndex];
+            const subqueryValue = params[subqueryParameterIndex];
 
             const subqueryRows = this.getTable(subqueryTable);
             const currentSubqueryMatch = subqueryRows.find(
@@ -733,13 +729,10 @@ export class InMemoryTestExecutor implements DbExecutor {
             return rows.filter((row) => row[outerColumn] === resolvedValue);
         }
 
-        return this.applyWhere(rows, whereText, parameters);
+        return this.applyWhere(rows, whereText, params);
     }
 
-    private handleDelete(
-        sql: string,
-        parameters: unknown[],
-    ): { rowCount: number } {
+    private handleDelete(sql: string, params: unknown[]): { rowCount: number } {
         const tableMatch = sql.match(/DELETE\s+FROM\s+(\w+)/i);
         if (!tableMatch) return { rowCount: 0 };
         const table = tableMatch[1];
@@ -752,11 +745,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             return { rowCount: count };
         }
 
-        const matching = this.applyWhere(
-            rows,
-            whereMatch[1].trim(),
-            parameters,
-        );
+        const matching = this.applyWhere(rows, whereMatch[1].trim(), params);
         const toRemoveSet = new Set(matching);
         let removedCount = 0;
         for (let i = rows.length - 1; i >= 0; i--) {

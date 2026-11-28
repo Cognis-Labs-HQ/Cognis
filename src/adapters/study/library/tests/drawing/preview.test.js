@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import {
     observeDrawingCard,
     setDrawingCard,
@@ -14,7 +14,7 @@ test("the open preview is blurred only while the pad holds its exact character a
             masked = value;
         },
     };
-    const environment = virtualMachine.createContext({
+    const environment = vm.createContext({
         uiCtx: { capabilities: { get: () => observeDrawingCard } },
     });
     Object.assign(
@@ -50,7 +50,7 @@ test("the open preview is blurred only while the pad holds its exact character a
 });
 
 test("Explore previews keep the deck order, including child cards, when opened through a flashcard link", () => {
-    const environment = virtualMachine.createContext({});
+    const environment = vm.createContext({});
     Object.assign(
         environment,
         loadTestModule(

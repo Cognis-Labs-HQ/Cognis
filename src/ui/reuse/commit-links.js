@@ -2,11 +2,11 @@
  * Formats canonical Cognis commit links with concise visible references.
  *
  * Public exports:
- * - linkShortCommitRefs(markdown) — converts Cognis commit links to Markdown
+ * - linkShortCommitReferences(markdown) — converts Cognis commit links to Markdown
  *   links labeled with their seven-character commit reference.
  *
  * Usage example:
- *   linkShortCommitRefs('https://github.com/Cognis-Labs-HQ/Cognis/commit/1234567890abcdef');
+ *   linkShortCommitReferences('https://github.com/Cognis-Labs-HQ/Cognis/commit/1234567890abcdef');
  *
  * @param {string} markdown Markdown that may contain canonical commit links.
  * @returns {string} Markdown with short commit labels and complete link targets.
@@ -28,4 +28,4 @@ function linkShortCommitReferences(markdown) {
             return `[${commitReference.slice(0, 7)}](${url})`;
         });
 }
-export { linkShortCommitReferences as linkShortCommitRefs };
+export { linkShortCommitReferences };

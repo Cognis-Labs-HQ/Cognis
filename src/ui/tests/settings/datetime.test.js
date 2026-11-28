@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { initDateTimePrefs as initDateTimePreferences } from "../../app/settings/datetime-prefs.js";
+import { initDateTimePreferences } from "../../app/settings/datetime-prefs.js";
 import {
     applyTimezoneToLocalStorage,
     formatDateTime,

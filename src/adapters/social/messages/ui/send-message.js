@@ -57,15 +57,14 @@ export function createMessageSender({
                 });
                 return;
             }
-            const { iv: initializationVector, ciphertext } =
-                await encryptMessage(key, text);
+            const { iv: iv, ciphertext } = await encryptMessage(key, text);
             const response = await apiFetch(
                 `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages`,
                 {
                     method: "POST",
                     body: JSON.stringify({
                         ciphertext,
-                        iv: initializationVector,
+                        iv: iv,
                     }),
                 },
             );

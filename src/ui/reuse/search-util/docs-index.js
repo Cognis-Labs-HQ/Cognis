@@ -1,17 +1,17 @@
 import { bindCapability } from "../capabilities.js";
 
 import {
-    loadDocsIndex as loadDocumentsIndex,
-    loadDocsBundleMarkdown as loadDocumentsBundleMarkdown,
-    readDocsLanguages as readDocumentsLanguages,
+    loadDocumentsIndex,
+    loadDocumentsBundleMarkdown,
+    readDocumentsLanguages,
 } from "../docs-client.js";
 import { createI18n } from "../i18n.js";
 
 const log = bindCapability("ui:log");
 /**
  * Documentation search emits navigation metadata before reading document bodies.
- * Public export: collectGlobalDocsSearchGroups({ signal, onResults }).
- * @example collectGlobalDocsSearchGroups({ signal, onResults: renderGroups });
+ * Public export: collectGlobalDocumentsSearchGroups({ signal, onResults }).
+ * @example collectGlobalDocumentsSearchGroups({ signal, onResults: renderGroups });
  */
 let content = new Map();
 let contentIdentity = "";
@@ -50,12 +50,12 @@ async function collectGlobalDocumentsSearchGroups({ signal, onResults } = {}) {
         signal,
         headers: token ? { authorization: `Bearer ${token}` } : {},
     };
-    const documents = await loadDocumentsIndex({
+    const docs = await loadDocumentsIndex({
         fetchDocs: (path) => fetch(path, request),
         languages,
         signal,
     });
-    const entries = documents
+    const entries = docs
         .filter((item) => String(item?.slug ?? "").trim())
         .map((item) => {
             const slug = String(item.slug).trim();
@@ -141,4 +141,4 @@ async function collectGlobalDocumentsSearchGroups({ signal, onResults } = {}) {
     );
     return groups();
 }
-export { collectGlobalDocumentsSearchGroups as collectGlobalDocsSearchGroups };
+export { collectGlobalDocumentsSearchGroups };

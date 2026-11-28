@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import virtualMachine from "node:vm";
-const client = virtualMachine.createContext({ TextEncoder, Blob });
+import vm from "node:vm";
+const client = vm.createContext({ TextEncoder, Blob });
 Object.assign(
     client,
     loadTestModule(
@@ -88,7 +88,7 @@ test("quota administration renders current defaults and saves the chosen namespa
         ],
     });
     const toasts = [];
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         ...client,
         CSS: { escape: String },
     });
@@ -104,7 +104,7 @@ test("quota administration renders current defaults and saves the chosen namespa
         i18n: { t: (key) => key },
         apiFetch: recorder.apiFetch,
         escapeHtml: String,
-        showToast: (...argumentsList) => toasts.push(argumentsList),
+        showToast: (...args) => toasts.push(args),
     });
     await section.dataReady;
     const html = section.subComposerOptions.elements[0].render();

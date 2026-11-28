@@ -7,7 +7,7 @@ import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
 import { bootstrapSocialAdapter } from "../index.js";
-import { makeTempDb as makeTemporaryDatabase } from "../routes/tests/helpers.js";
+import { makeTemporaryDatabase } from "../routes/tests/helpers.js";
 
 function makeInMemoryDatabase() {
     return {
@@ -74,18 +74,13 @@ function makeAdapterCtx(
                 }),
             registerCapabilityProvider: (provider) =>
                 uiRegistry?.registerCapabilityProvider(provider),
-            registerStaticDir: (prefix: string, directory: string) =>
-                uiRegistry?.registerStaticDir(prefix, directory),
+            registerStaticDir: (prefix: string, dir: string) =>
+                uiRegistry?.registerStaticDir(prefix, dir),
             registerAdapterStaticDir: (
                 gatewayId: string,
                 adapter: string,
-                directory: string,
-            ) =>
-                uiRegistry?.registerAdapterStaticDir(
-                    gatewayId,
-                    adapter,
-                    directory,
-                ),
+                dir: string,
+            ) => uiRegistry?.registerAdapterStaticDir(gatewayId, adapter, dir),
             registerAuthTypingMessage: (
                 message: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(message),
@@ -136,7 +131,7 @@ test("profile adapter bootstrap contributes profile capabilities", async () => {
 });
 
 test("external profile synchronization applies requested profile visibility", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -177,12 +172,12 @@ test("external profile synchronization applies requested profile visibility", as
             "private",
         );
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("profile lifecycle capability creates a profile row when missing", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -202,7 +197,7 @@ test("profile lifecycle capability creates a profile row when missing", async ()
             "archived",
         );
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
@@ -289,7 +284,7 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
 });
 
 test("user availability capability resolves calendar-aware status", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -327,12 +322,12 @@ test("user availability capability resolves calendar-aware status", async () => 
             "busy",
         );
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("registered availability URLs reach the adapter and return status without 404s", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         let requester = "viewer";
         const capabilities = new CapabilityStore();
@@ -379,12 +374,12 @@ test("registered availability URLs reach the adapter and return status without 4
         requester = "owner";
         assert.equal((await dispatch()).data.status, "free");
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("account role synchronization resolves the profile handle from the immutable account ID", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -425,6 +420,6 @@ test("account role synchronization resolves the profile handle from the immutabl
             "teacher",
         );
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });

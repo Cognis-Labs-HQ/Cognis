@@ -6,7 +6,7 @@ The public interfaces and operational rules of Storage Limits.
 
 ### Architecture
 
-`DbFileQuotaStore` in `src/adapters/file/quota/index.ts` implements the `FileQuotaStore` contract (`src/gateways/files/reuse/quota-store-contract.ts`) against four tables:
+`DatabaseFileQuotaStore` in `src/adapters/file/quota/index.ts` implements the `FileQuotaStore` contract (`src/gateways/files/reuse/quota-store-contract.ts`) against four tables:
 
 | Table                           | Purpose                                      |
 | ------------------------------- | -------------------------------------------- |
@@ -36,7 +36,7 @@ The file quota adapter is a DB-backed policy store consumed internally by the fi
 - Snapshot the current defaults into per-user override rows at account-creation time (`provisionUser`), so a user's quota reflects what applied when they registered rather than drifting with later admin changes.
 - Allow admins to edit a user's per-namespace or global quota after provisioning.
 
-Not responsible for: usage accounting (the files gateway's `DbFileObjectStore` does this) or enforcing the quota (the files gateway's `NamespaceFileService` compares usage against these values before every write).
+Not responsible for: usage accounting (the files gateway's `DatabaseFileObjectStore` does this) or enforcing the quota (the files gateway's `NamespaceFileService` compares usage against these values before every write).
 
 ### Lazy schema initialization
 

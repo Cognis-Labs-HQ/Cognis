@@ -2,13 +2,13 @@
  * Character counter: attaches a live count display to a text input or textarea.
  *
  * Public exports:
- *   attachCharCounter(inputEl, limit) — adds a counter element after `inputEl` and
+ *   attachCharacterCounter(inputEl, limit) — adds a counter element after `inputEl` and
  *     enforces the character limit by trimming input on the `input` event.
  *
  * Usage:
- *   import { attachCharCounter } from '../reuse/char-counter.js';
+ *   import { attachCharacterCounter } from '../reuse/char-counter.js';
  *   const textarea = document.getElementById('bio');
- *   attachCharCounter(textarea, 200);
+ *   attachCharacterCounter(textarea, 200);
  *
  * @param {HTMLInputElement|HTMLTextAreaElement} inputEl — the input to attach to.
  * @param {number} limit — the maximum number of characters allowed.
@@ -39,4 +39,4 @@ function attachCharacterCounter(inputElement, limit) {
     update();
     return counter;
 }
-export { attachCharacterCounter as attachCharCounter };
+export { attachCharacterCounter };

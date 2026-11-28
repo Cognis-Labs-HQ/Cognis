@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { initCheckboxPrefs as initCheckboxPreferences } from "../checkbox-prefs.js";
+import { initCheckboxPreferences } from "../checkbox-prefs.js";
 
 function createRoot() {
     let input = null;

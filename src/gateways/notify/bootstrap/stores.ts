@@ -50,22 +50,22 @@ interface NotificationPreferenceStoreCtor {
 }
 
 export async function serveHtmlPage(
-    response: ServerResponse,
+    res: ServerResponse,
     filePath: string,
 ): Promise<void> {
     try {
         const file = await readFile(filePath);
-        response.writeHead(200, {
+        res.writeHead(200, {
             "content-type": "text/html; charset=utf-8",
             "cache-control": "no-store",
             "x-content-type-options": "nosniff",
             "x-frame-options": "DENY",
             "referrer-policy": "no-referrer",
         });
-        response.end(file);
+        res.end(file);
     } catch {
-        response.writeHead(404, { "content-type": "application/json" });
-        response.end(
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
             JSON.stringify({
                 error: {
                     code: "not_found",
@@ -101,13 +101,13 @@ export async function loadNotificationStores(
         `${notificationStoreModulePath}?t=${Date.now()}`
     );
     const NotificationStoreClass =
-        notificationStoreModule.DbNotificationStore as
+        notificationStoreModule.DatabaseNotificationStore as
             | (new (
                   databaseExecutor: DbExecutor,
               ) => NotificationStoreWithSchema)
             | undefined;
     const NotificationPreferenceStoreClass =
-        notificationStoreModule.DbNotificationPreferenceStore as
+        notificationStoreModule.DatabaseNotificationPreferenceStore as
             NotificationPreferenceStoreCtor | undefined;
     if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
         throw new Error("notification_store_gateway_exports_missing");

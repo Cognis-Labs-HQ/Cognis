@@ -37,12 +37,12 @@ Gateway Profil memiliki profil pengguna, grafik sosial, postingan, dan manajemen
 
 ### Lokasi Sumber Utama
 
-| Path                                           | Tujuan                                       |
-| ---------------------------------------------- | -------------------------------------------- |
-| `src/adapters/social/profile/index.ts`         | Titik masuk bootstrap                        |
-| `src/adapters/social/profile/routes/social.ts` | Route follow, block, follower                |
-| `src/adapters/social/profile/routes/posts.ts`  | Pembuatan, daftar, dan penghapusan postingan |
-| `src/adapters/social/profile/store.ts`         | `DbProfileStore` — semua operasi SQL profil  |
+| Path                                           | Tujuan                                            |
+| ---------------------------------------------- | ------------------------------------------------- |
+| `src/adapters/social/profile/index.ts`         | Titik masuk bootstrap                             |
+| `src/adapters/social/profile/routes/social.ts` | Route follow, block, follower                     |
+| `src/adapters/social/profile/routes/posts.ts`  | Pembuatan, daftar, dan penghapusan postingan      |
+| `src/adapters/social/profile/store.ts`         | `DatabaseProfileStore` — semua operasi SQL profil |
 
 ### Pembaruan profil langsung
 

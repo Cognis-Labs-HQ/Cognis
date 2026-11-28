@@ -112,8 +112,8 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 ctx.capabilities.get<() => boolean>(
                     "notify:emailAvailable",
                 )?.() === true;
-            this.context.sendVerificationEmail = async (...argumentsList) => {
-                await send(...argumentsList);
+            this.context.sendVerificationEmail = async (...args) => {
+                await send(...args);
             };
             this.context.queueVerificationEmail = send;
         }

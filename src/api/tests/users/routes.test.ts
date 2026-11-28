@@ -305,8 +305,8 @@ test("user routes log account disable operations", async () => {
         accounts,
         preferences,
         undefined,
-        (level, message, metadata) => {
-            entries.push({ level, message, meta: metadata });
+        (level, message, meta) => {
+            entries.push({ level, message, meta: meta });
         },
         undefined,
         undefined,

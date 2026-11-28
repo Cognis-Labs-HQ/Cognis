@@ -25,9 +25,9 @@ test("new releases may replace a schema owned only by the same content pack", as
             },
         ],
     };
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (
@@ -56,7 +56,7 @@ test("new releases may replace a schema owned only by the same content pack", as
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(database).ingestContentPack({
+    await new LibraryStore(db).ingestContentPack({
         root: "/content",
         manifest: {
             id: "mock-language",
@@ -98,9 +98,9 @@ test("content pack import ignores duplicate all-key references", async () => {
             },
         ],
     };
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (
@@ -152,7 +152,7 @@ test("content pack import ignores duplicate all-key references", async () => {
         assets: [],
     };
 
-    const receipt = await new LibraryStore(database).ingestContentPack(plan);
+    const receipt = await new LibraryStore(db).ingestContentPack(plan);
 
     assert.equal(receipt.unchanged, false);
     assert.equal(receipt.newRecordCount, 3);
@@ -234,9 +234,9 @@ test("content pack import ignores duplicate all-key references", async () => {
 });
 
 test("entry reads compact sparse grouped references before sorting", async () => {
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             if (command.table === "study_library_entries") {
                 return {
@@ -282,7 +282,7 @@ test("entry reads compact sparse grouped references before sorting", async () =>
         },
     };
 
-    const entry = await new LibraryStore(database).get("entry-1");
+    const entry = await new LibraryStore(db).get("entry-1");
 
     assert.deepEqual(entry?.referenceGroups, {
         readings: [
@@ -314,9 +314,9 @@ test("authoritative content packs prune omitted records by default", async () =>
             { id: "characters", metadata: { labels: { en: "Characters" } } },
         ],
     };
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (
@@ -337,7 +337,7 @@ test("authoritative content packs prune omitted records by default", async () =>
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(database).ingestContentPack({
+    await new LibraryStore(db).ingestContentPack({
         root: "/content",
         manifest: {
             id: "study-language-ja",
@@ -405,9 +405,9 @@ test("content packs preserve provider records after a user modifies them", async
         ],
     };
     const protectedId = contentEntryId(manifest, "neko");
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (
@@ -430,7 +430,7 @@ test("content packs preserve provider records after a user modifies them", async
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(database).ingestContentPack({
+    await new LibraryStore(db).ingestContentPack({
         root: "/content",
         manifest,
         schema,
@@ -470,16 +470,16 @@ test("content packs retain omitted records only when explicitly requested", asyn
         metadata: { labels: { en: "Mock Language" } },
         layers: [],
     };
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (command.option === "SELECT") return { rows: [] };
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(database).ingestContentPack({
+    await new LibraryStore(db).ingestContentPack({
         root: "/content",
         manifest: {
             id: "study-language-ja",
@@ -545,9 +545,9 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
         plan.schema,
         plan.records[0],
     );
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (command.option !== "SELECT") return { rowCount: 1 };
@@ -559,7 +559,7 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
         },
     };
 
-    await new LibraryStore(database).ingestContentPack(plan);
+    await new LibraryStore(db).ingestContentPack(plan);
 
     assert.equal(
         commands.some(
@@ -603,9 +603,9 @@ test("unchanged content packs restore entries removed after installation", async
         records: [{ id: "a", layer: "characters", label: "A" }],
         assets: [],
     };
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (command.option !== "SELECT") return { rowCount: 1 };
@@ -620,7 +620,7 @@ test("unchanged content packs restore entries removed after installation", async
         },
     };
 
-    const receipt = await new LibraryStore(database).ingestContentPack(plan);
+    const receipt = await new LibraryStore(db).ingestContentPack(plan);
     const restoredEntries = commands.filter(
         (command) =>
             command.option === "INSERT" &&
@@ -633,9 +633,9 @@ test("unchanged content packs restore entries removed after installation", async
 
 test("entry updates replace editable fields and relationships atomically", async () => {
     const commands: StructuredDbCommand[] = [];
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(database),
+        transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
             commands.push(command);
             if (
@@ -665,7 +665,7 @@ test("entry updates replace editable fields and relationships atomically", async
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(database).update(
+    await new LibraryStore(db).update(
         "entry-1",
         {
             schemaId: "mock-language",

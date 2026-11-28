@@ -3,10 +3,10 @@ import { parseLanguageList } from "./rows.js";
 import type { StudyPreferencesRow } from "./types.js";
 
 export async function getStudyPreferences(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
 ): Promise<StudyPreferencesRow> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "study_user_preferences",
         columns: [
@@ -35,14 +35,14 @@ export async function getStudyPreferences(
 }
 
 export async function saveStudyPreferences(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
     learningLanguages: string[],
     teachingLanguages: string[],
 ): Promise<StudyPreferencesRow> {
     const learningJson = JSON.stringify(learningLanguages);
     const teachingJson = JSON.stringify(teachingLanguages);
-    await database.executeCommand({
+    await db.executeCommand({
         option: "INSERT",
         table: "study_user_preferences",
         values: {
@@ -56,5 +56,5 @@ export async function saveStudyPreferences(
             target: ["account_id"],
         },
     });
-    return getStudyPreferences(database, accountId);
+    return getStudyPreferences(db, accountId);
 }

@@ -49,8 +49,8 @@ export function createMessagesRoutes(dependencies: MessagesRoutesDeps) {
     const roomHandler = createRoomHandler(routeDependencies);
 
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (!url.pathname.startsWith("/api/v1/social/messages")) return false;
@@ -58,25 +58,25 @@ export function createMessagesRoutes(dependencies: MessagesRoutesDeps) {
 
         if (
             url.pathname === "/api/v1/social/messages/ping" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ready: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ready: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/messages/users/lookup" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(request, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const accountId = claims.sub;
             const hasBypass = hasAdminBypass(claims.role);
             const requesterProfile = await profileStore.getProfile(accountId);
             if (!hasBypass && requesterProfile?.visibility === "hidden") {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -90,8 +90,8 @@ export function createMessagesRoutes(dependencies: MessagesRoutesDeps) {
             const rawQuery = (url.searchParams.get("q") ?? "").trim();
             const query = rawQuery.replace(/^@/, "").toLowerCase();
             if (!query) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: [] }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const candidates = await profileStore.searchProfiles(query, 10, {
@@ -134,39 +134,39 @@ export function createMessagesRoutes(dependencies: MessagesRoutesDeps) {
                     requiresApproval: !canOpenDirect,
                 });
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: results }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: results }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/messages/emoji-usage" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(request, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const topEmojis = await messagesStore.getTopEmojiUsage(
                 claims.sub,
                 20,
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: topEmojis }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: topEmojis }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/messages/emoji-usage" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = ctx.requireAuth(request, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = (await readJson(request)) as { emoji?: unknown };
+            const body = (await readJson(req)) as { emoji?: unknown };
             const emoji = normalizeReactionEmoji(
                 typeof body.emoji === "string" ? body.emoji : "",
             );
             if (!emoji || emoji.length > 16) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -178,14 +178,14 @@ export function createMessagesRoutes(dependencies: MessagesRoutesDeps) {
                 return true;
             }
             await messagesStore.incrementEmojiUsage(claims.sub, emoji);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 
-        if (await roomListHandler(request, response, url)) return true;
-        if (await requestsHandler(request, response, url)) return true;
-        if (await roomHandler(request, response, url)) return true;
+        if (await roomListHandler(req, res, url)) return true;
+        if (await requestsHandler(req, res, url)) return true;
+        if (await roomHandler(req, res, url)) return true;
         return false;
     };
 }

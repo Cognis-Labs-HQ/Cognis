@@ -4,7 +4,7 @@ import { isModuleCapabilityAvailable } from "../../../reuse/module-capability-av
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { mkdir, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -374,7 +374,7 @@ test("buildServer loads external module assets before accepting requests", async
         assert.equal(await response.text(), "export {};");
     } finally {
         await close(server);
-        await removePath(externalRoot, { recursive: true, force: true });
+        await rm(externalRoot, { recursive: true, force: true });
         if (previousExternalRoot === undefined) {
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         } else {
@@ -431,10 +431,10 @@ test("buildServer returns gateway_disabled for disabled gateway prefixes", async
 
 test("buildServer serves static UI assets before registered catch-all routes", async () => {
     const routeRegistry = new RouteRegistry();
-    routeRegistry.register(async (_request, response, url) => {
+    routeRegistry.register(async (_request, res, url) => {
         if (url.pathname.startsWith("/static/")) {
-            response.writeHead(401, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(401, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "unauthorized", message: "Login required" },
                 }),

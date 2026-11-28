@@ -2,7 +2,7 @@ import { emailVerificationKey } from "../bootstrap/email-verification-key.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
-import { DbNotificationStore as DatabaseNotificationStore } from "../notification-store.js";
+import { DatabaseNotificationStore } from "../notification-store.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 import { TfaCodeService, InMemoryTfaStore } from "../../reuse/tfa-code.js";
 import {
@@ -16,8 +16,8 @@ import { issueAccessToken } from "../../auth/access-tokens.js";
 const EMAIL_PURPOSE = "test:verification";
 
 async function makeNotificationStore(): Promise<DatabaseNotificationStore> {
-    const database = new InMemoryTestExecutor();
-    const store = new DatabaseNotificationStore(database);
+    const db = new InMemoryTestExecutor();
+    const store = new DatabaseNotificationStore(db);
     await store.ensureSchema();
     return store;
 }
@@ -109,14 +109,14 @@ test("adding the first email auto-sets it as primary", async () => {
             },
         },
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         makeRequest("POST", { email: "alice@example.com" }, token),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
-    assert.equal(response.status, 201);
+    assert.equal(res.status, 201);
     assert.equal(sentEmails[0]?.purpose, EMAIL_PURPOSE);
     assert.equal(sentEmails[0]?.recipientEmail, "alice@example.com");
 
@@ -146,15 +146,15 @@ test("returns 503 when SMTP is not available and does not add the email", async 
             },
         },
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         makeRequest("POST", { email: "alice@example.com" }, token),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
-    assert.equal(response.status, 503);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 503);
+    const data = JSON.parse(res.payload);
     assert.equal(data.error.code, "email_delivery_unavailable");
 
     const emails = await notificationStore.getUserEmails("alice");
@@ -183,20 +183,20 @@ test("cannot delete primary email", async () => {
         verifyTokenService,
         makeEmailDelivery(gateway),
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
             method: "DELETE",
             headers: { authorization: `Bearer ${token}` },
         } as any,
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/emails/alice%40example.com",
         ),
     );
-    assert.equal(response.status, 409);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 409);
+    const data = JSON.parse(res.payload);
     assert.equal(data.error.code, "cannot_remove_primary_email");
 });
 
@@ -320,16 +320,16 @@ test("email verification rejects wrong code with 422", async () => {
         verifyTokenService,
         makeEmailDelivery(gateway),
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         makeRequest("POST", { code: "000000" }, token),
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/emails/alice%40example.com/verify",
         ),
     );
-    assert.equal(response.status, 422);
+    assert.equal(res.status, 422);
 });
 
 test("link verification GET redirects to /verify-email", async () => {
@@ -353,7 +353,7 @@ test("link verification GET redirects to /verify-email", async () => {
         "http://localhost",
     );
     let capturedLocation = "";
-    const response = {
+    const res = {
         writeHead(_code: number, headers?: Record<string, string>) {
             if (headers?.location) capturedLocation = headers.location;
         },
@@ -362,7 +362,7 @@ test("link verification GET redirects to /verify-email", async () => {
 
     await route(
         { method: "GET", headers: {} } as any,
-        response,
+        res,
         new URL(
             `http://localhost/api/v1/notify/users/alice/emails/alice%40example.com/verify?token=${linkToken}`,
         ),
@@ -399,15 +399,15 @@ test("POST /api/v1/notify/verify-email with valid token verifies email", async (
         verifyTokenService,
         makeEmailDelivery(gateway),
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         makeRequest("POST", { token: linkToken }, ""),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/verify-email"),
     );
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.equal(data.data.verified, true);
 
     const emails = await notificationStore.getUserEmails("alice");
@@ -483,18 +483,18 @@ test("add email issues both TFA code and verify token and includes link in email
         makeEmailDelivery(mockGateway),
         "http://localhost",
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         makeRequest("POST", { email: "alice@example.com" }, authToken),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
-    assert.equal(response.status, 201);
+    assert.equal(res.status, 201);
     assert.equal(sentEmails.length, 1);
     assert.ok(sentEmails[0].verifyUrl);
     assert.ok(sentEmails[0].verifyUrl!.includes("/verify-email?token="));
-    const data = JSON.parse(response.payload);
+    const data = JSON.parse(res.payload);
     assert.ok(
         data.data.watchToken,
         "watchToken should be returned in response",
@@ -518,17 +518,17 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
         verifyTokenService,
         makeEmailDelivery(gateway),
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         { method: "GET", headers: {} } as any,
-        response,
+        res,
         new URL(
             `http://localhost/api/v1/notify/verify-tokens/status?token=${liveToken}`,
         ),
     );
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.equal(data.data.pending, true);
 });
 
@@ -591,18 +591,18 @@ test("owner can list another user's emails", async () => {
         verifyTokenService,
         makeEmailDelivery(gateway),
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
             method: "GET",
             headers: { authorization: `Bearer ${ownerToken}` },
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.equal(data.data.length, 1);
 });
 
@@ -620,17 +620,17 @@ test("verify-tokens/status returns pending:false for an unknown token", async ()
         verifyTokenService,
         makeEmailDelivery(gateway),
     );
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         { method: "GET", headers: {} } as any,
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/verify-tokens/status?token=bogus",
         ),
     );
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.equal(data.data.pending, false);
 });
 

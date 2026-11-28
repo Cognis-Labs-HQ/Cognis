@@ -2,10 +2,10 @@
  * Registers grouped sub-pages for feature-owned routing and navigation.
  *
  * Public exports:
- * - `createSubPageRegistry` — creates an isolated grouped page registry.
+ * - `createNestedPageRegistry` — creates an isolated grouped page registry.
  *
  * @example
- * const registry = createSubPageRegistry();
+ * const registry = createNestedPageRegistry();
  * registry.register('study', {
  *   listGroups: async () => [{ id: 'ja', label: '日本語' }],
  *   listPages: async () => [{ id: 'alphabet', pageUrl: '/study/alphabet' }],
@@ -145,4 +145,4 @@ function createNestedPageRegistry() {
 
     return { register, unregister, load, resolve, invalidate };
 }
-export { createNestedPageRegistry as createSubPageRegistry };
+export { createNestedPageRegistry };

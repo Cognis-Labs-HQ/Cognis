@@ -3,18 +3,18 @@ import assert from "node:assert/strict";
 import {
     clampCropSelection,
     clampCropOffset,
-    composeCropSourceRect as composeCropSourceRectangle,
+    composeCropSourceRectangle,
     computeContainImageBounds,
-    computeMaxAspectSourceRect as computeMaxAspectSourceRectangle,
-    computeCropSourceRectFromSelection as computeCropSourceRectangleFromSelection,
-    computeCropSourceRect as computeCropSourceRectangle,
+    computeMaxAspectSourceRectangle,
+    computeCropSourceRectangleFromSelection,
+    computeCropSourceRectangle,
     computeCropViewport,
     computeMovedCropSelection,
-    panCropSourceRect as panCropSourceRectangle,
+    panCropSourceRectangle,
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
-    sourceRectToCoverObjectPositionPercent as sourceRectangleToCoverObjectPositionPercent,
+    sourceRectangleToCoverObjectPositionPercent,
 } from "../ui/image-crop.js";
 
 test("clampCropOffset limits offsets to range", () => {
@@ -40,7 +40,7 @@ test("computeCropViewport clamps drag offsets to keep frame covered", () => {
     assert.ok(viewport.renderedHeight >= viewport.frameHeight);
 });
 
-test("computeCropSourceRect moves source window opposite drag direction", () => {
+test("computeCropSourceRectangle moves source window opposite drag direction", () => {
     const centeredViewport = computeCropViewport({
         imageWidth: 1000,
         imageHeight: 500,
@@ -68,7 +68,7 @@ test("computeCropSourceRect moves source window opposite drag direction", () => 
     assert.equal(centeredSource.sourceHeight, movedSource.sourceHeight);
 });
 
-test("computeCropSourceRect stays within image bounds for landscape offsets", () => {
+test("computeCropSourceRectangle stays within image bounds for landscape offsets", () => {
     const viewport = computeCropViewport({
         imageWidth: 2400,
         imageHeight: 900,
@@ -107,7 +107,7 @@ test("computeContainImageBounds centers contained image inside frame", () => {
     assert.equal(imageBounds.top, 87.5);
 });
 
-test("computeMaxAspectSourceRect keeps full width for tall source images", () => {
+test("computeMaxAspectSourceRectangle keeps full width for tall source images", () => {
     const sourceRectangle = computeMaxAspectSourceRectangle({
         imageWidth: 900,
         imageHeight: 1200,
@@ -120,7 +120,7 @@ test("computeMaxAspectSourceRect keeps full width for tall source images", () =>
     assert.equal(sourceRectangle.sourceY, 450);
 });
 
-test("computeMaxAspectSourceRect keeps full height for wide source images", () => {
+test("computeMaxAspectSourceRectangle keeps full height for wide source images", () => {
     const sourceRectangle = computeMaxAspectSourceRectangle({
         imageWidth: 2400,
         imageHeight: 900,
@@ -133,7 +133,7 @@ test("computeMaxAspectSourceRect keeps full height for wide source images", () =
     assert.equal(sourceRectangle.sourceX, 750);
 });
 
-test("sourceRectToCoverObjectPositionPercent uses overflow distance for pan", () => {
+test("sourceRectangleToCoverObjectPositionPercent uses overflow distance for pan", () => {
     const pan = sourceRectangleToCoverObjectPositionPercent(
         {
             sourceX: 0,
@@ -149,7 +149,7 @@ test("sourceRectToCoverObjectPositionPercent uses overflow distance for pan", ()
     assert.equal(pan.panY, 33.33333333333333);
 });
 
-test("sourceRectToCoverObjectPositionPercent keeps centered crop at 50/50", () => {
+test("sourceRectangleToCoverObjectPositionPercent keeps centered crop at 50/50", () => {
     const pan = sourceRectangleToCoverObjectPositionPercent(
         {
             sourceX: 300,
@@ -220,7 +220,7 @@ test("computeResizedCropSelection resizes from east edge and preserves ratio", (
     assert.equal(resizedSelection.height, 180);
 });
 
-test("computeCropSourceRectFromSelection maps selection to source image pixels", () => {
+test("computeCropSourceRectangleFromSelection maps selection to source image pixels", () => {
     const sourceRectangle = computeCropSourceRectangleFromSelection({
         selection: { left: 100, top: 150, width: 200, height: 100 },
         imageBounds: { left: 50, top: 100, width: 400, height: 200 },
@@ -234,7 +234,7 @@ test("computeCropSourceRectFromSelection maps selection to source image pixels",
     assert.equal(sourceRectangle.sourceHeight, 400);
 });
 
-test("computeCropSourceRectFromSelection clamps overextended selection safely", () => {
+test("computeCropSourceRectangleFromSelection clamps overextended selection safely", () => {
     const sourceRectangle = computeCropSourceRectangleFromSelection({
         selection: { left: -100, top: 50, width: 700, height: 300 },
         imageBounds: { left: 0, top: 0, width: 600, height: 250 },
@@ -250,7 +250,7 @@ test("computeCropSourceRectFromSelection clamps overextended selection safely", 
     assert.ok(sourceRectangle.sourceY + sourceRectangle.sourceHeight <= 750);
 });
 
-test("composeCropSourceRect maps nested crop selection into original image", () => {
+test("composeCropSourceRectangle maps nested crop selection into original image", () => {
     const sourceRectangle = composeCropSourceRectangle({
         baseSourceRect: {
             sourceX: 200,
@@ -268,7 +268,7 @@ test("composeCropSourceRect maps nested crop selection into original image", () 
     assert.equal(sourceRectangle.sourceHeight, 300);
 });
 
-test("panCropSourceRect pans without changing zoom dimensions", () => {
+test("panCropSourceRectangle pans without changing zoom dimensions", () => {
     const pannedRectangle = panCropSourceRectangle({
         startSourceRect: {
             sourceX: 100,
@@ -288,7 +288,7 @@ test("panCropSourceRect pans without changing zoom dimensions", () => {
     assert.equal(pannedRectangle.sourceHeight, 300);
 });
 
-test("panCropSourceRect clamps pan to image bounds", () => {
+test("panCropSourceRectangle clamps pan to image bounds", () => {
     const pannedRectangle = panCropSourceRectangle({
         startSourceRect: {
             sourceX: 900,

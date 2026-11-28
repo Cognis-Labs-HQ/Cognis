@@ -64,8 +64,8 @@ const STUDY_LANGUAGE_SEEDS = [
     },
 ];
 
-export async function ensureSchema(database: DbExecutor): Promise<void> {
-    await database.ensureTable({
+export async function ensureSchema(db: DbExecutor): Promise<void> {
+    await db.ensureTable({
         name: "study_classes",
         columns: [
             { name: "id", type: "text", primaryKey: true },
@@ -80,7 +80,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "teacher_requests",
         columns: [
             { name: "id", type: "text", primaryKey: true },
@@ -110,7 +110,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         uniqueKeys: [["account_id", "language_code"]],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "teacher_assignments",
         columns: [
             { name: "account_id", type: "text", notNull: true },
@@ -126,7 +126,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         primaryKey: ["account_id", "language_code"],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "study_user_preferences",
         columns: [
             { name: "account_id", type: "text", primaryKey: true },
@@ -151,7 +151,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "class_memberships",
         columns: [
             { name: "class_id", type: "text", notNull: true },
@@ -173,7 +173,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         primaryKey: ["class_id", "student_account_id"],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "classroom_state",
         columns: [
             { name: "class_id", type: "text", primaryKey: true },
@@ -198,13 +198,13 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await ensureStudyLanguagesSchema(database);
+    await ensureStudyLanguagesSchema(db);
 }
 
 export async function ensureStudyLanguagesSchema(
-    database: DbExecutor,
+    db: DbExecutor,
 ): Promise<void> {
-    await database.ensureTable({
+    await db.ensureTable({
         name: "study_languages",
         columns: [
             { name: "code", type: "text", primaryKey: true },
@@ -232,20 +232,20 @@ export async function ensureStudyLanguagesSchema(
         ],
     });
 
-    const countResult = await database.executeCommand({
+    const countResult = await db.executeCommand({
         option: "SELECT",
         table: "study_languages",
         count: true,
     });
     const existingLanguageCount = Number(countResult.rows?.[0]?.cnt ?? 0);
     if (existingLanguageCount === 0) {
-        await seedStudyLanguages(database);
+        await seedStudyLanguages(db);
     }
 }
 
-async function seedStudyLanguages(database: DbExecutor): Promise<void> {
+async function seedStudyLanguages(db: DbExecutor): Promise<void> {
     for (const seed of STUDY_LANGUAGE_SEEDS) {
-        await database
+        await db
             .executeCommand({
                 option: "INSERT",
                 table: "study_languages",

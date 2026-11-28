@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -23,7 +23,7 @@ async function createFixture(context: test.TestContext) {
         if (previousRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousRoot;
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     });
     const systemCtx = createCtx();
     // Production route capabilities and public system capabilities use separate stores.

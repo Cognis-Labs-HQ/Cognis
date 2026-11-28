@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createDbExecutor as createDatabaseExecutor } from "../../../../gateways/db/executor.js";
-import { DbLocalAccountStore as DatabaseLocalAccountStore } from "../store.js";
+import { createDatabaseExecutor } from "../../../../gateways/db/executor.js";
+import { DatabaseLocalAccountStore } from "../store.js";
 
 const databaseUrl = process.env.COGNIS_TEST_IDENTITY_POSTGRES_URL;
 test(

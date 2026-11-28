@@ -68,8 +68,8 @@ function clientFixture({
             "/static/reuse/capabilities.js": {
                 bindCapability:
                     () =>
-                    (...argumentsList) =>
-                        logs.push(structuredClone(argumentsList)),
+                    (...args) =>
+                        logs.push(structuredClone(args)),
             },
             "/static/reuse/auth-setup-route.js": {
                 redirectToRequiredTfaSetup() {},
@@ -356,15 +356,15 @@ test("initial challenge delivery times out without retaining the resend lock", a
     const host = clientFixture({
         abortSignal: {
             any: AbortSignal.any,
-            timeout(milliseconds) {
-                deadlines.push(milliseconds);
+            timeout(ms) {
+                deadlines.push(ms);
                 const controller = new AbortController();
                 setTimeout(
                     () =>
                         controller.abort(
                             new DOMException("expired", "TimeoutError"),
                         ),
-                    milliseconds,
+                    ms,
                 );
                 return controller.signal;
             },

@@ -96,7 +96,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
             actionUrl: envelope.actionUrl,
             metadata: envelope.metadata,
         };
-        const { iv: initializationVector, ciphertext } = await encryptPayload(
+        const { iv: iv, ciphertext } = await encryptPayload(
             key,
             JSON.stringify(payload),
         );
@@ -109,7 +109,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
             values: {
                 id,
                 account_id: envelope.recipientUsername,
-                iv: initializationVector,
+                iv: iv,
                 payload_enc: ciphertext,
                 is_read: 0,
                 created_at: now,
@@ -297,4 +297,4 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
         return total;
     }
 }
-export { DatabaseInternalNotificationStore as DbInternalNotificationStore };
+export { DatabaseInternalNotificationStore };

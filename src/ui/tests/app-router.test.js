@@ -45,12 +45,12 @@ const ADAPTER_BACKED_SPA_ROUTES = [
 
 test("all dashboard pages export an async mount function", () => {
     for (const page of DASHBOARD_PAGES) {
-        const sourceText = readFileSync(
+        const src = readFileSync(
             resolve(ROOT, `src/ui/app/${page}/index.js`),
             "utf8",
         );
         assert.match(
-            sourceText,
+            src,
             /export async function mount\(/,
             `${page}/index.js must export an async mount() function`,
         );
@@ -59,17 +59,17 @@ test("all dashboard pages export an async mount function", () => {
 
 test("all dashboard pages call mount on direct browser load", () => {
     for (const page of DASHBOARD_PAGES) {
-        const sourceText = readFileSync(
+        const src = readFileSync(
             resolve(ROOT, `src/ui/app/${page}/index.js`),
             "utf8",
         );
         assert.match(
-            sourceText,
+            src,
             /import\s+\{[^}]*\bmountWhenDirect\b[^}]*\}\s+from\s+["']\.\.\/\.\.\/reuse\/page-entry\.js["'];/,
             `${page}/index.js must import mountWhenDirect for direct URL access`,
         );
         assert.match(
-            sourceText,
+            src,
             /await mountWhenDirect\(mount(?:,\s*\{[^}]*\})?\)/,
             `${page}/index.js must call mountWhenDirect(mount) for direct URL access`,
         );
@@ -77,57 +77,57 @@ test("all dashboard pages call mount on direct browser load", () => {
 });
 
 test("router exports initRouter, navigateTo and getCurrentBase", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /export function initRouter\(/,
         "app-router.js must export initRouter",
     );
     assert.match(
-        sourceText,
+        src,
         /export async function navigateTo\(/,
         "app-router.js must export navigateTo",
     );
     assert.match(
-        sourceText,
+        src,
         /export function getCurrentBase\(/,
         "app-router.js must export getCurrentBase",
     );
     assert.match(
-        sourceText,
+        src,
         /capabilities\.contribute\([\s\S]*"router:invalidateRoutes",[\s\S]*invalidateSpaRouteCache/,
         "app-router.js must expose route invalidation through uiCtx",
     );
 });
 
 test("router registers routes for all dashboard pages", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     for (const page of DASHBOARD_PAGES) {
         assert.ok(
-            sourceText.includes(`/app/${page}/index.js`),
+            src.includes(`/app/${page}/index.js`),
             `app-router.js must register a route for ${page}`,
         );
     }
 });
 
 test("router loads adapter-backed SPA routes from the UI app-routes API", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /loadSpaRoutes/,
         "app-router.js must load dynamic SPA routes from the route registry",
     );
     assert.ok(
-        sourceText.includes("/api/v1/ui/app-routes") ||
+        src.includes("/api/v1/ui/app-routes") ||
             readFileSync(
                 resolve(ROOT, "src/ui/reuse/spa-route-registry.js"),
                 "utf8",
@@ -191,32 +191,29 @@ test("route invalidation prevents in-flight anonymous loads from restoring stale
 
 test("adapters self-register SPA route metadata for the app router", () => {
     for (const route of ADAPTER_BACKED_SPA_ROUTES) {
-        const sourceText = readFileSync(
-            resolve(ROOT, route.sourceFile),
-            "utf8",
-        );
+        const src = readFileSync(resolve(ROOT, route.sourceFile), "utf8");
         assert.ok(
-            sourceText.includes("registerSpaRoute"),
+            src.includes("registerSpaRoute"),
             `${route.sourceFile} must self-register SPA routes`,
         );
         assert.ok(
-            sourceText.includes(route.id),
+            src.includes(route.id),
             `${route.sourceFile} must register SPA route id ${route.id}`,
         );
         assert.ok(
-            sourceText.includes(route.scriptUrl),
+            src.includes(route.scriptUrl),
             `${route.sourceFile} must reference ${route.scriptUrl}`,
         );
     }
 });
 
 test("router uses history.pushState for navigation", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /history\.pushState\(/,
         "app-router.js must use history.pushState for SPA navigation",
     );
@@ -235,16 +232,16 @@ test("router carries caller-owned state across guarded navigation", () => {
 });
 
 test("router protects and restores cancelled history traversal", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
-    const popstateIndex = sourceText.indexOf('addEventListener("popstate"');
-    const guardIndex = sourceText.indexOf(
+    const popstateIndex = src.indexOf('addEventListener("popstate"');
+    const guardIndex = src.indexOf(
         "requestRouteNavigation(pathWithHash, resume)",
         popstateIndex,
     );
-    const restoreIndex = sourceText.indexOf(
+    const restoreIndex = src.indexOf(
         "history.go(routerState.historyIndex - targetIndex)",
         guardIndex,
     );
@@ -252,120 +249,117 @@ test("router protects and restores cancelled history traversal", () => {
     assert.ok(popstateIndex >= 0);
     assert.ok(guardIndex > popstateIndex);
     assert.ok(restoreIndex > guardIndex);
-    assert.match(sourceText, /detail: \{ path, resume \}/);
-    assert.match(sourceText, /routerState.guardBypassPath === pathWithHash/);
+    assert.match(src, /detail: \{ path, resume \}/);
+    assert.match(src, /routerState.guardBypassPath === pathWithHash/);
 });
 
 test("router rechecks navigation freshness after authentication", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
-    const authentication = sourceText.indexOf(
+    const authentication = src.indexOf(
         'await uiCtx.runFlow("authenticate-session"',
     );
     const freshnessCheck =
         authentication +
-        sourceText
+        src
             .slice(authentication)
             .search(
                 /signal\.aborted \|\|\s*navigationSequence !== routerState\.navigationSequence/,
             );
-    const sessionProcessing = sourceText.indexOf(
-        "const session =",
-        authentication,
-    );
+    const sessionProcessing = src.indexOf("const session =", authentication);
     assert.ok(authentication >= 0);
     assert.ok(freshnessCheck > authentication);
     assert.ok(freshnessCheck < sessionProcessing);
 });
 
 test("router resets page actions and prepares retained styles before mounting", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
-    assert.match(sourceText, /capabilities\.get\("page:actions"\)\?\.reset/);
-    assert.match(sourceText, /preparePageStylesheets\(/);
+    assert.match(src, /capabilities\.get\("page:actions"\)\?\.reset/);
+    assert.match(src, /preparePageStylesheets\(/);
     assert.ok(
-        sourceText.indexOf("commitPageStylesheets()") <
-            sourceText.indexOf("await moduleExports.mount"),
+        src.indexOf("commitPageStylesheets()") <
+            src.indexOf("await moduleExports.mount"),
         "destination styles must be ready before page layout calculations",
     );
 });
 
 test("SPA route bundles match structured-content styles from direct loads", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /settings:[\s\S]*structured-content\.css[\s\S]*settings\.css/,
     );
     assert.match(
-        sourceText,
+        src,
         /pattern: \/\^\\\/administration\/[\s\S]*structured-content\.css/,
     );
 });
 
 test("router guards against re-initialisation while refreshing its root", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /routerState.initialized/,
         "app-router.js must guard initRouter against being called twice",
     );
     assert.match(
-        sourceText,
+        src,
         /if \(root\) routerState.root = root;\s*if \(routerState.initialized\) return;/,
         "app-router.js must keep the router root fresh across shell reuse",
     );
 });
 
 test("router resolves #app before mounting routes", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
 
-    assert.match(sourceText, /function resolveRouterRoot\(\)/);
+    assert.match(src, /function resolveRouterRoot\(\)/);
     assert.match(
-        sourceText,
+        src,
         /routerState.root = document\.querySelector\(["']#app["']\);/,
     );
-    assert.match(sourceText, /const routeRoot = resolveRouterRoot\(\);/);
+    assert.match(src, /const routeRoot = resolveRouterRoot\(\);/);
     assert.match(
-        sourceText,
+        src,
         /await moduleExports\.mount\(routeRoot, \{[\s\S]*signal,[\s\S]*shareContext:/,
     );
 });
 
 test("dashboard-layout initialises the router after shell setup", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /import.*initRouter.*from/,
         "dashboard-layout.js must import initRouter",
     );
     assert.match(
-        sourceText,
+        src,
         /if \(!componentWindow\) \{\s*initRouter\(root\);\s*const preferences = usePreferenceApi \? loadUiPreferences\(\) : null;\s*bindThemeToggle/,
         "dashboard-layout.js must initialize routing independently of account enhancements",
     );
     assert.doesNotMatch(
-        sourceText,
+        src,
         /await loadNavbarPlugins\(\)/,
         "dashboard-layout.js must not block initial shell render on navbar plugin loading",
     );
     assert.match(
-        sourceText,
+        src,
         /scheduleNavbarEnhancements\(\)/,
         "dashboard-layout.js must defer navbar enhancements until after the shell renders",
     );
@@ -384,24 +378,21 @@ test("dashboard layout resumes deferred login setup after rendering", () => {
 });
 
 test("docs page uses signal to clean up its popstate listener", () => {
-    const sourceText = readFileSync(
-        resolve(ROOT, "src/ui/app/docs/index.js"),
-        "utf8",
-    );
+    const src = readFileSync(resolve(ROOT, "src/ui/app/docs/index.js"), "utf8");
 
     // Verify the source contains a window.addEventListener("popstate", ...)
     // call that includes { signal } as its options object, allowing for any
     // handler body between the event name and the options. The trailing-comma
     // variant `{ signal },\n)` is explicitly tolerated.
     assert.match(
-        sourceText,
+        src,
         /window\.addEventListener\(\s*["']popstate["'][\s\S]*?\{\s*signal\s*\},?\s*\)/m,
         "docs/index.js must pass { signal } to its window popstate listener",
     );
 });
 
 test("administration page uses signal to clean up its beforeunload listener", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/app/administration/index.js"),
         "utf8",
     );
@@ -411,44 +402,44 @@ test("administration page uses signal to clean up its beforeunload listener", ()
     // handler body between the event name and the options. The trailing-comma
     // variant `{ signal },\n)` is explicitly tolerated.
     assert.match(
-        sourceText,
+        src,
         /window\.addEventListener\(\s*["']beforeunload["'][\s\S]*?\{\s*signal\s*\},?\s*\)/m,
         "administration/index.js must pass { signal } to its window beforeunload listener",
     );
 });
 
 test("router aborts the previous mount's signal on navigation", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /routerState.mountController\.abort\(\)/,
         "app-router.js must abort the previous AbortController on navigation",
     );
     assert.match(
-        sourceText,
+        src,
         /new AbortController\(\)/,
         "app-router.js must create a new AbortController for each mount",
     );
     assert.match(
-        sourceText,
+        src,
         /beginPageLoading\(\)/,
         "app-router.js must show the shared loading overlay during navigation",
     );
     assert.match(
-        sourceText,
+        src,
         /finishPageLoading\(\)/,
         "app-router.js must hide the shared loading overlay after navigation",
     );
     assert.match(
-        sourceText,
+        src,
         /finally\s*\{[\s\S]*finishPageLoading\(\)/m,
         "app-router.js must call finishPageLoading() from a finally block",
     );
     assert.match(
-        sourceText,
+        src,
         /openRuntimeErrorPopup\(/,
         "app-router.js must surface runtime route failures via the shared error popup",
     );
@@ -522,12 +513,12 @@ test("router delegates auth enforcement to the authenticate-session flow", () =>
 });
 
 test("router installs global runtime error handlers", () => {
-    const sourceText = readFileSync(
+    const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        sourceText,
+        src,
         /installRuntimeErrorHandlers\(\)/,
         "app-router.js must initialize global runtime error listeners",
     );

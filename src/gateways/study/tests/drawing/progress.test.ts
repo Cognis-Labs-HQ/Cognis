@@ -30,20 +30,17 @@ function fixture() {
     const route = createDrawingRoutes(
         service,
         {
-            requireAuth: (
-                request: IncomingMessage,
-                response: ServerResponse,
-            ) => {
-                const account = request.headers["test-account"];
+            requireAuth: (req: IncomingMessage, res: ServerResponse) => {
+                const account = req.headers["test-account"];
                 if (typeof account === "string")
                     return { sub: account, role: "user" };
-                response.writeHead(401);
-                response.end();
+                res.writeHead(401);
+                res.end();
                 return null;
             },
         } as RouteContext,
         ctx.flow,
-        (...argumentsList) => logs.push(argumentsList),
+        (...args) => logs.push(args),
         async (actor, cardId, input) => {
             recorded.push({ actor, cardId, input });
         },
@@ -64,14 +61,14 @@ function fixture() {
             body?: unknown,
             cardId = "card-a",
         ) {
-            const request = Readable.from(
+            const req = Readable.from(
                 body === undefined ? [] : [JSON.stringify(body)],
             ) as IncomingMessage;
-            request.method = method;
-            request.headers = accountId ? { "test-account": accountId } : {};
+            req.method = method;
+            req.headers = accountId ? { "test-account": accountId } : {};
             let status = 0;
             let payload = "";
-            const response = {
+            const res = {
                 writeHead: (value: number) => {
                     status = value;
                 },
@@ -81,8 +78,8 @@ function fixture() {
             } as ServerResponse;
             assert.equal(
                 await route(
-                    request,
-                    response,
+                    req,
+                    res,
                     new URL(`http://localhost/api/v1/study/drawing/${cardId}`),
                 ),
                 true,

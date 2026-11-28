@@ -41,12 +41,12 @@ test("component recovery localizes authoritative display names and restricts ope
     const ctx = {
         flowExists: (id) => core.hasFlow(id),
         registerFlow: (id, stages) => core.registerFlow({ id, stages }),
-        extendFlow: (...argumentsList) => core.flow.extend(...argumentsList),
-        runFlow: (...argumentsList) => core.flow.run(...argumentsList),
+        extendFlow: (...args) => core.flow.extend(...args),
+        runFlow: (...args) => core.flow.run(...args),
         capabilities: {
             get: (id) =>
                 id === "ui:showToast"
-                    ? (...argumentsList) => toasts.push(argumentsList)
+                    ? (...args) => toasts.push(args)
                     : undefined,
         },
     };

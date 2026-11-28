@@ -334,9 +334,9 @@ export async function bootstrapAdapters(
             isAdapterEnabled: (adapterId = entry) =>
                 gateway.isAdapterEnabled(adapterId),
             registerRoute: (handler, gatewayId) => {
-                baseCtx.registerRoute(async (request, response, url) => {
+                baseCtx.registerRoute(async (req, res, url) => {
                     if (!gateway.isAdapterEnabled(entry)) return false;
-                    return handler(request, response, url);
+                    return handler(req, res, url);
                 }, gatewayId);
             },
         };

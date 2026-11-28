@@ -1,5 +1,5 @@
 import type { BootstrapLog } from "@cognis/core";
-import type { DbMessagesStore } from "./store.js";
+import type { DatabaseMessagesStore } from "./store.js";
 import type { SocialMessagesProfileStore } from "./profile-store-contract.js";
 import type { createChatroomMembershipCapability } from "./membership.js";
 
@@ -20,7 +20,7 @@ export interface GroupChatResolution {
 }
 
 export function createGroupChatResolver(
-    messagesStore: DbMessagesStore,
+    messagesStore: DatabaseMessagesStore,
     profileStore: SocialMessagesProfileStore,
     membership: ReturnType<typeof createChatroomMembershipCapability>,
     log?: BootstrapLog,

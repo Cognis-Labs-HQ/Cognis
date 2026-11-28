@@ -8,7 +8,7 @@ import type {
 } from "@cognis/core";
 import { NamespaceRegistry } from "./namespace-registry.js";
 import { assertWithinCeiling, canAccess } from "./acl.js";
-import { DbFileObjectStore as DatabaseFileObjectStore } from "./file-object-store.js";
+import { DatabaseFileObjectStore } from "./file-object-store.js";
 import type { FileQuotaStore } from "./quota-store-contract.js";
 
 export class QuotaExceededError extends Error {

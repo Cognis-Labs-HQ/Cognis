@@ -27,8 +27,8 @@ function createHarness({
             i18n: { t: (key) => key },
             calendarUi: {
                 EVENT_RESPONSE_OPTIONS: ["accepted", "tentative", "declined"],
-                respondToEvent: async (...argumentsList) => {
-                    responded.push(argumentsList);
+                respondToEvent: async (...args) => {
+                    responded.push(args);
                     return {
                         ok: true,
                         json: async () => ({ data: {} }),

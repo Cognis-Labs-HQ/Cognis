@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { linkShortCommitRefs as linkShortCommitReferences } from "../../reuse/commit-links.js";
+import { linkShortCommitReferences } from "../../reuse/commit-links.js";
 
 const ROOT = resolve(import.meta.dirname, "../../../..");
 const OLD_DOCUMENT_FILE_URL_PATTERNS = [
@@ -158,7 +158,7 @@ test("docs page excludes changelog entries from navigation menu", () => {
         "docs page should classify changelog slugs",
     );
     assert.ok(
-        /documents\.filter\(\s*\(document\) => !isChangelogDocument\(document\),?\s*\)/.test(
+        /docs\.filter\(\s*\(document\) => !isChangelogDocument\(document\),?\s*\)/.test(
             source,
         ),
         "docs navigation should exclude changelog docs",
@@ -218,7 +218,7 @@ test("changelogs module keeps changelog-only navigation data", () => {
         "utf8",
     );
     assert.ok(
-        /documents\.filter\(\s*\(document\) =>\s*isChangelogDocument\(document\),?\s*\)/.test(
+        /docs\.filter\(\s*\(document\) =>\s*isChangelogDocument\(document\),?\s*\)/.test(
             source,
         ),
         "changelogs page navigation should include only changelog docs",
@@ -265,14 +265,14 @@ test("changelog commit links show short refs with complete hrefs", () => {
 });
 
 test("documentation markdown titles stay within 30 characters", () => {
-    const documents = listTrackedDocumentFiles().filter(
+    const docs = listTrackedDocumentFiles().filter(
         (file) =>
             (file.startsWith("src/docs/") || file.includes("/docs/")) &&
             !file.includes("/changelog/") &&
             file.endsWith(".md"),
     );
     const offenders = [];
-    for (const file of documents) {
+    for (const file of docs) {
         const content = readFileSync(join(ROOT, file), "utf8");
         const headingLine = content
             .split("\n")

@@ -4,12 +4,12 @@ import type { LibraryEntryInput } from "../types.js";
 import { insertEntryReferences } from "./reference-rows.js";
 
 export async function replaceEntryContent(
-    database: DbExecutor,
+    db: DbExecutor,
     id: string,
     input: LibraryEntryInput,
     providerModified: boolean,
 ): Promise<void> {
-    await database.executeCommand({
+    await db.executeCommand({
         option: "UPDATE",
         table: "study_library_entries",
         set: {
@@ -29,9 +29,9 @@ export async function replaceEntryContent(
         },
         where: [{ column: "id", value: id }],
     });
-    await executeReferences(database, {
+    await executeReferences(db, {
         option: "DELETE",
         where: [{ column: "source_entry_id", value: id }],
     });
-    await insertEntryReferences(database, id, input);
+    await insertEntryReferences(db, id, input);
 }

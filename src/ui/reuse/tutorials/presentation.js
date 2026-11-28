@@ -10,7 +10,7 @@ import {
     calloutViewport,
     shadeRegions,
     tutorialViewport,
-    visibleTargetRect as visibleTargetRectangle,
+    visibleTargetRectangle,
 } from "./geometry.js";
 
 const focusable =

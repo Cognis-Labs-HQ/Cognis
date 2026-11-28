@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createGridGeometry } from "../../reuse/page-composer/grid-geometry.js";
 import { createGridOverlayHandlers } from "../../reuse/page-composer/grid-overlay.js";
-import { createSubComposerHandlers as createNestedComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
+import { createNestedComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
 import { resolveElementGridSize } from "../../reuse/page-composer/grid-sizing.js";
 
 class GridElement extends EventTarget {

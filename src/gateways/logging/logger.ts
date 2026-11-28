@@ -78,10 +78,10 @@ function formatPrettyValue(value: unknown, indent = "    "): string {
 export function createLogEntry(
     level: LogLevel,
     message: string,
-    metadata?: Record<string, unknown>,
+    meta?: Record<string, unknown>,
 ): LogEntry {
-    const definedEntries = metadata
-        ? Object.entries(metadata).filter(([, value]) => value !== undefined)
+    const definedEntries = meta
+        ? Object.entries(meta).filter(([, value]) => value !== undefined)
         : [];
     return {
         ts: new Date().toISOString(),
@@ -116,10 +116,10 @@ export function formatConsoleLog(
 export function writeConsoleLog(
     level: LogLevel,
     message: string,
-    metadata?: Record<string, unknown>,
+    meta?: Record<string, unknown>,
     format: ConsoleLogFormat = "pretty",
 ): void {
-    const entry = createLogEntry(level, message, metadata);
+    const entry = createLogEntry(level, message, meta);
     const line = formatConsoleLog(entry, format);
     if (level === "error") {
         process.stderr.write(`${line}\n`);
@@ -178,12 +178,12 @@ export class Logger {
     async log(
         level: LogLevel,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ): Promise<void> {
-        const entry = createLogEntry(level, message, metadata);
+        const entry = createLogEntry(level, message, meta);
         const line = `${serializeLogEntry(entry)}\n`;
         if (LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[this.consoleLevel]) {
-            writeConsoleLog(level, message, metadata, this.consoleFormat);
+            writeConsoleLog(level, message, meta, this.consoleFormat);
         }
         if (LEVEL_PRIORITY[level] < LEVEL_PRIORITY[this.fileLevel]) {
             return;
@@ -277,19 +277,19 @@ export class Logger {
         await Promise.all(removable.map(({ file }) => unlink(file)));
     }
 
-    debug(message: string, metadata?: Record<string, unknown>): Promise<void> {
-        return this.log("debug", message, metadata);
+    debug(message: string, meta?: Record<string, unknown>): Promise<void> {
+        return this.log("debug", message, meta);
     }
 
-    info(message: string, metadata?: Record<string, unknown>): Promise<void> {
-        return this.log("info", message, metadata);
+    info(message: string, meta?: Record<string, unknown>): Promise<void> {
+        return this.log("info", message, meta);
     }
 
-    warn(message: string, metadata?: Record<string, unknown>): Promise<void> {
-        return this.log("warn", message, metadata);
+    warn(message: string, meta?: Record<string, unknown>): Promise<void> {
+        return this.log("warn", message, meta);
     }
 
-    error(message: string, metadata?: Record<string, unknown>): Promise<void> {
-        return this.log("error", message, metadata);
+    error(message: string, meta?: Record<string, unknown>): Promise<void> {
+        return this.log("error", message, meta);
     }
 }

@@ -32,7 +32,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
-import type { DbClassesStore, StudyLanguageRow } from "../store/index.js";
+import type { DatabaseClassesStore, StudyLanguageRow } from "../store/index.js";
 
 type SetRole = (username: string, role: "teacher") => Promise<void>;
 type DispatchToRole = (
@@ -75,7 +75,7 @@ function normalizeLanguageList(input: unknown): string[] {
 }
 
 export function createClassesRoutes(
-    store: DbClassesStore,
+    store: DatabaseClassesStore,
     options: ClassesRouteOptions = {},
 ): (
     request: IncomingMessage,
@@ -84,21 +84,18 @@ export function createClassesRoutes(
 ) => Promise<boolean> {
     const ctx = resolveRouteContext(options.routeContext);
     return async (
-        currentRequest: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const logMetadata = {
             component: "study-classes-routes",
-            method: currentRequest.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
         };
 
-        if (
-            url.pathname === "/api/v1/study/classes" &&
-            currentRequest.method === "GET"
-        ) {
-            const claims = ctx.requireAuth(currentRequest, response, "teacher");
+        if (url.pathname === "/api/v1/study/classes" && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const languageFilter =
                 url.searchParams.get("language") || undefined;
@@ -106,19 +103,19 @@ export function createClassesRoutes(
                 claims.sub,
                 languageFilter,
             );
-            jsonOk(response, classes);
+            jsonOk(res, classes);
             return true;
         }
 
         if (
             url.pathname === "/api/v1/study/my-classes" &&
-            currentRequest.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             try {
                 const classes = await store.getEnrolledClasses(claims.sub);
-                jsonOk(response, classes);
+                jsonOk(res, classes);
             } catch (error) {
                 options.log?.("error", "Failed to load enrolled classes.", {
                     ...logMetadata,
@@ -127,7 +124,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to load classes.",
@@ -138,9 +135,9 @@ export function createClassesRoutes(
 
         if (
             url.pathname === "/api/v1/study/available-classes" &&
-            currentRequest.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             try {
                 const languageCode =
@@ -149,7 +146,7 @@ export function createClassesRoutes(
                     languageCode,
                     claims.sub,
                 );
-                jsonOk(response, classes);
+                jsonOk(res, classes);
             } catch (error) {
                 options.log?.("error", "Failed to load available classes.", {
                     ...logMetadata,
@@ -158,7 +155,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to load classes.",
@@ -169,22 +166,22 @@ export function createClassesRoutes(
 
         if (
             url.pathname === "/api/v1/study/preferences" &&
-            currentRequest.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const preferences = await store.getStudyPreferences(claims.sub);
-            jsonOk(response, preferences);
+            jsonOk(res, preferences);
             return true;
         }
 
         if (
             url.pathname === "/api/v1/study/preferences" &&
-            currentRequest.method === "PUT"
+            req.method === "PUT"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = (await readJson(currentRequest)) as {
+            const body = (await readJson(req)) as {
                 learningLanguages?: unknown;
                 teachingLanguages?: unknown;
             };
@@ -205,18 +202,18 @@ export function createClassesRoutes(
                 learningLanguageCount: learningLanguages.length,
                 teachingLanguageCount: teachingLanguages.length,
             });
-            jsonOk(response, preferences);
+            jsonOk(res, preferences);
             return true;
         }
 
         if (
             url.pathname === "/api/v1/study/teacher-requests" &&
-            currentRequest.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
 
-            const body = (await readJson(currentRequest)) as {
+            const body = (await readJson(req)) as {
                 languageCode?: unknown;
                 reason?: unknown;
             };
@@ -227,12 +224,7 @@ export function createClassesRoutes(
             const reason =
                 typeof body?.reason === "string" ? body.reason.trim() : "";
             if (!languageCode) {
-                jsonError(
-                    response,
-                    400,
-                    "bad_request",
-                    "languageCode is required.",
-                );
+                jsonError(res, 400, "bad_request", "languageCode is required.");
                 return true;
             }
 
@@ -241,7 +233,7 @@ export function createClassesRoutes(
                 languageCode,
             );
             if (existing?.status === "pending") {
-                jsonOk(response, existing);
+                jsonOk(res, existing);
                 return true;
             }
 
@@ -266,7 +258,7 @@ export function createClassesRoutes(
                     accountId: claims.sub,
                     languageCode,
                 });
-                jsonOk(response, {
+                jsonOk(res, {
                     request,
                     class: classRow,
                     autoApproved: true,
@@ -275,7 +267,7 @@ export function createClassesRoutes(
             }
 
             if (!reason) {
-                jsonError(response, 400, "bad_request", "reason is required.");
+                jsonError(res, 400, "bad_request", "reason is required.");
                 return true;
             }
 
@@ -302,27 +294,26 @@ export function createClassesRoutes(
                 languageCode,
                 requestId: request.id,
             });
-            response.writeHead(201, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: request }));
+            res.writeHead(201, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: request }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/study/teacher-requests" &&
-            currentRequest.method === "GET"
+            req.method === "GET"
         ) {
-            if (!ctx.requireAuth(currentRequest, response, "admin"))
-                return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const pending = await store.listPendingRequests();
-            jsonOk(response, pending);
+            jsonOk(res, pending);
             return true;
         }
 
         const approveMatch = url.pathname.match(
             /^\/api\/v1\/study\/teacher-requests\/([^/]+)\/(approve|reject)$/,
         );
-        if (approveMatch && currentRequest.method === "POST") {
-            const claims = ctx.requireAuth(currentRequest, response, "admin");
+        if (approveMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
 
             const requestId = decodeURIComponent(approveMatch[1]);
@@ -335,7 +326,7 @@ export function createClassesRoutes(
                 );
                 if (!classRow) {
                     jsonError(
-                        response,
+                        res,
                         404,
                         "not_found",
                         "Request not found or already reviewed.",
@@ -354,7 +345,7 @@ export function createClassesRoutes(
                     languageCode: classRow.languageCode,
                     requestId,
                 });
-                jsonOk(response, classRow);
+                jsonOk(res, classRow);
             } else {
                 await store.rejectTeacherRequest(requestId, claims.sub);
                 options.log?.("info", "Rejected teacher request.", {
@@ -362,35 +353,33 @@ export function createClassesRoutes(
                     accountId: claims.sub,
                     requestId,
                 });
-                jsonOk(response, { rejected: true });
+                jsonOk(res, { rejected: true });
             }
             return true;
         }
 
         if (
             url.pathname === "/api/v1/study/languages" &&
-            currentRequest.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const languages = await store.listStudyLanguages(true);
-            jsonOk(response, languages);
+            jsonOk(res, languages);
             return true;
         }
 
         if (
             url.pathname === "/api/v1/study/languages" &&
-            currentRequest.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body = (await readJson(
-                currentRequest,
-            )) as Partial<StudyLanguageRow> & {
+            const body = (await readJson(req)) as Partial<StudyLanguageRow> & {
                 code?: string;
             };
             if (!body?.code || typeof body.code !== "string") {
-                jsonError(response, 400, "bad_request", "code is required.");
+                jsonError(res, 400, "bad_request", "code is required.");
                 return true;
             }
             const language = await store.upsertStudyLanguage(
@@ -401,15 +390,15 @@ export function createClassesRoutes(
                 accountId: claims.sub,
                 code: language.code,
             });
-            jsonOk(response, language);
+            jsonOk(res, language);
             return true;
         }
 
         if (
             url.pathname === "/api/v1/study/classrooms" &&
-            currentRequest.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const languageFilter =
                 url.searchParams.get("language") || undefined;
@@ -446,7 +435,7 @@ export function createClassesRoutes(
                         };
                     }),
                 );
-                jsonOk(response, snapshots);
+                jsonOk(res, snapshots);
             } catch (error) {
                 options.log?.("error", "Failed to load classroom snapshots.", {
                     ...logMetadata,
@@ -455,7 +444,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to load classroom data.",
@@ -467,11 +456,11 @@ export function createClassesRoutes(
         const classroomLayoutMatch = url.pathname.match(
             /^\/api\/v1\/study\/classrooms\/([^/]+)\/layout$/,
         );
-        if (classroomLayoutMatch && currentRequest.method === "PATCH") {
-            const claims = ctx.requireAuth(currentRequest, response, "teacher");
+        if (classroomLayoutMatch && req.method === "PATCH") {
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(classroomLayoutMatch[1]);
-            const body = (await readJson(currentRequest)) as {
+            const body = (await readJson(req)) as {
                 studentLimit?: unknown;
                 seatAssignments?: unknown;
             };
@@ -486,7 +475,7 @@ export function createClassesRoutes(
                     studentLimit > 300)
             ) {
                 jsonError(
-                    response,
+                    res,
                     400,
                     "bad_request",
                     "studentLimit must be an integer between 1 and 300.",
@@ -499,7 +488,7 @@ export function createClassesRoutes(
                     Array.isArray(seatAssignmentsRaw))
             ) {
                 jsonError(
-                    response,
+                    res,
                     400,
                     "bad_request",
                     "seatAssignments must be an object.",
@@ -527,14 +516,14 @@ export function createClassesRoutes(
                             seatAssignments,
                         },
                     );
-                jsonOk(response, classroomState);
+                jsonOk(res, classroomState);
             } catch (error) {
                 if (
                     error instanceof Error &&
                     error.message === "not_authorized"
                 ) {
                     jsonError(
-                        response,
+                        res,
                         403,
                         "forbidden",
                         "Class not found or access denied.",
@@ -546,7 +535,7 @@ export function createClassesRoutes(
                     error.message === "invalid_student_limit"
                 ) {
                     jsonError(
-                        response,
+                        res,
                         400,
                         "bad_request",
                         "studentLimit must be between 1 and 300.",
@@ -561,7 +550,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to update classroom.",
@@ -573,8 +562,8 @@ export function createClassesRoutes(
         const classroomStudentMatch = url.pathname.match(
             /^\/api\/v1\/study\/classrooms\/([^/]+)\/students\/([^/]+)$/,
         );
-        if (classroomStudentMatch && currentRequest.method === "DELETE") {
-            const claims = ctx.requireAuth(currentRequest, response, "teacher");
+        if (classroomStudentMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(classroomStudentMatch[1]);
             const studentAccountId = decodeURIComponent(
@@ -586,14 +575,14 @@ export function createClassesRoutes(
                     claims.sub,
                     studentAccountId,
                 );
-                jsonOk(response, { removed: true });
+                jsonOk(res, { removed: true });
             } catch (error) {
                 if (
                     error instanceof Error &&
                     error.message === "not_authorized"
                 ) {
                     jsonError(
-                        response,
+                        res,
                         403,
                         "forbidden",
                         "Class not found or access denied.",
@@ -609,7 +598,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to remove class member.",
@@ -621,8 +610,8 @@ export function createClassesRoutes(
         const joinMatch = url.pathname.match(
             /^\/api\/v1\/study\/classes\/([^/]+)\/join$/,
         );
-        if (joinMatch && currentRequest.method === "POST") {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+        if (joinMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const classId = decodeURIComponent(joinMatch[1]);
             try {
@@ -636,8 +625,8 @@ export function createClassesRoutes(
                     classId,
                     status: membership.status,
                 });
-                response.writeHead(201, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: membership }));
+                res.writeHead(201, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: membership }));
             } catch (error) {
                 options.log?.("error", "Failed to process join request.", {
                     ...logMetadata,
@@ -646,12 +635,7 @@ export function createClassesRoutes(
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
-                jsonError(
-                    response,
-                    500,
-                    "internal_error",
-                    "Failed to join class.",
-                );
+                jsonError(res, 500, "internal_error", "Failed to join class.");
             }
             return true;
         }
@@ -659,8 +643,8 @@ export function createClassesRoutes(
         const membershipMatch = url.pathname.match(
             /^\/api\/v1\/study\/classes\/([^/]+)\/membership$/,
         );
-        if (membershipMatch && currentRequest.method === "DELETE") {
-            const claims = ctx.requireAuth(currentRequest, response, "user");
+        if (membershipMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const classId = decodeURIComponent(membershipMatch[1]);
             try {
@@ -670,7 +654,7 @@ export function createClassesRoutes(
                     accountId: claims.sub,
                     classId,
                 });
-                jsonOk(response, { left: true });
+                jsonOk(res, { left: true });
             } catch (error) {
                 options.log?.("error", "Failed to leave class.", {
                     ...logMetadata,
@@ -679,12 +663,7 @@ export function createClassesRoutes(
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
-                jsonError(
-                    response,
-                    500,
-                    "internal_error",
-                    "Failed to leave class.",
-                );
+                jsonError(res, 500, "internal_error", "Failed to leave class.");
             }
             return true;
         }
@@ -692,8 +671,8 @@ export function createClassesRoutes(
         const membersMatch = url.pathname.match(
             /^\/api\/v1\/study\/classes\/([^/]+)\/members$/,
         );
-        if (membersMatch && currentRequest.method === "GET") {
-            const claims = ctx.requireAuth(currentRequest, response, "teacher");
+        if (membersMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(membersMatch[1]);
             const searchQuery = url.searchParams.get("search") ?? undefined;
@@ -703,14 +682,14 @@ export function createClassesRoutes(
                     claims.sub,
                     searchQuery || undefined,
                 );
-                jsonOk(response, members);
+                jsonOk(res, members);
             } catch (error) {
                 if (
                     error instanceof Error &&
                     error.message === "not_authorized"
                 ) {
                     jsonError(
-                        response,
+                        res,
                         403,
                         "forbidden",
                         "Class not found or access denied.",
@@ -725,7 +704,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to load members.",
@@ -737,8 +716,8 @@ export function createClassesRoutes(
         const joinRequestsMatch = url.pathname.match(
             /^\/api\/v1\/study\/classes\/([^/]+)\/join-requests$/,
         );
-        if (joinRequestsMatch && currentRequest.method === "GET") {
-            const claims = ctx.requireAuth(currentRequest, response, "teacher");
+        if (joinRequestsMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(joinRequestsMatch[1]);
             try {
@@ -746,14 +725,14 @@ export function createClassesRoutes(
                     classId,
                     claims.sub,
                 );
-                jsonOk(response, requests);
+                jsonOk(res, requests);
             } catch (error) {
                 if (
                     error instanceof Error &&
                     error.message === "not_authorized"
                 ) {
                     jsonError(
-                        response,
+                        res,
                         403,
                         "forbidden",
                         "Class not found or access denied.",
@@ -768,7 +747,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to load requests.",
@@ -780,32 +759,24 @@ export function createClassesRoutes(
         const inviteMatch = url.pathname.match(
             /^\/api\/v1\/study\/classes\/([^/]+)\/invite$/,
         );
-        if (inviteMatch && currentRequest.method === "POST") {
-            const claims = ctx.requireAuth(currentRequest, response, "teacher");
+        if (inviteMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(inviteMatch[1]);
-            const body = (await readJson(currentRequest)) as Record<
-                string,
-                unknown
-            >;
+            const body = (await readJson(req)) as Record<string, unknown>;
             const accountId =
                 typeof body?.accountId === "string"
                     ? body.accountId.trim()
                     : "";
             if (!accountId) {
-                jsonError(
-                    response,
-                    400,
-                    "bad_request",
-                    "accountId is required.",
-                );
+                jsonError(res, 400, "bad_request", "accountId is required.");
                 return true;
             }
             if (
                 options.accountExists &&
                 !(await options.accountExists(accountId))
             ) {
-                jsonError(response, 404, "not_found", "User not found.");
+                jsonError(res, 404, "not_found", "User not found.");
                 return true;
             }
             try {
@@ -820,14 +791,14 @@ export function createClassesRoutes(
                     classId,
                     studentAccountId: accountId,
                 });
-                jsonOk(response, membership);
+                jsonOk(res, membership);
             } catch (error) {
                 if (
                     error instanceof Error &&
                     error.message === "not_authorized"
                 ) {
                     jsonError(
-                        response,
+                        res,
                         403,
                         "forbidden",
                         "Class not found or access denied.",
@@ -842,7 +813,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to invite student.",
@@ -854,8 +825,8 @@ export function createClassesRoutes(
         const reviewRequestMatch = url.pathname.match(
             /^\/api\/v1\/study\/classes\/([^/]+)\/join-requests\/([^/]+)\/(approve|reject)$/,
         );
-        if (reviewRequestMatch && currentRequest.method === "POST") {
-            const claims = ctx.requireAuth(currentRequest, response, "teacher");
+        if (reviewRequestMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(reviewRequestMatch[1]);
             const studentAccountId = decodeURIComponent(reviewRequestMatch[2]);
@@ -873,14 +844,14 @@ export function createClassesRoutes(
                     classId,
                     studentAccountId,
                 });
-                jsonOk(response, { reviewed: true, action });
+                jsonOk(res, { reviewed: true, action });
             } catch (error) {
                 if (
                     error instanceof Error &&
                     error.message === "not_authorized"
                 ) {
                     jsonError(
-                        response,
+                        res,
                         403,
                         "forbidden",
                         "Class not found or access denied.",
@@ -896,7 +867,7 @@ export function createClassesRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
-                    response,
+                    res,
                     500,
                     "internal_error",
                     "Failed to review request.",

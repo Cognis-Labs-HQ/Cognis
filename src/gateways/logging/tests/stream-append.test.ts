@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { access, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
+import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { EventEmitter } from "node:events";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
@@ -130,17 +130,17 @@ test("logging stream route emits appended log entries during an open stream", as
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const request = new RequestRecorder("GET", token);
-        const response = new ResponseRecorder();
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
 
         const handled = await streamHandler(
-            request as any,
-            response as any,
+            req as any,
+            res as any,
             new URL("/api/v1/logging/stream", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.match(response.payload, /Initial snapshot entry/);
+        assert.match(res.payload, /Initial snapshot entry/);
 
         await writeFile(
             logPath,
@@ -161,16 +161,16 @@ test("logging stream route emits appended log entries during an open stream", as
 
         await new Promise((resolve) => setTimeout(resolve, 1700));
 
-        assert.match(response.payload, /Polled incremental entry/);
+        assert.match(res.payload, /Polled incremental entry/);
 
-        request.emit("close");
-        response.emit("close");
+        req.emit("close");
+        res.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });

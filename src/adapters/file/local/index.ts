@@ -2,7 +2,7 @@ import {
     mkdir,
     readdir,
     readFile,
-    rm as removePath,
+    rm,
     stat,
     writeFile,
 } from "node:fs/promises";
@@ -105,7 +105,7 @@ export class LocalFileGateway implements FileStorageGateway {
     async delete(namespaceId: string, key: string): Promise<boolean> {
         const target = this.objectPath(namespaceId, key);
         try {
-            await removePath(target);
+            await rm(target);
             return true;
         } catch {
             return false;

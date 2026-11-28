@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
-import { DbProfileStore as DatabaseProfileStore } from "../store.js";
+import { DatabaseProfileStore } from "../store.js";
 import { VolatileProfileStore } from "../store-contract.js";
 
 for (const role of [

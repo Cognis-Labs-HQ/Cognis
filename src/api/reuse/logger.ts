@@ -29,11 +29,11 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
 };
 
 export function createConsoleLog(minimumLevel: LogLevel = "info"): AppLog {
-    return (level, message, metadata) => {
+    return (level, message, meta) => {
         if (LOG_LEVEL_PRIORITY[level] < LOG_LEVEL_PRIORITY[minimumLevel]) {
             return;
         }
-        writeConsoleLog(level, message, metadata);
+        writeConsoleLog(level, message, meta);
     };
 }
 
@@ -46,7 +46,7 @@ export function setAppLogger(log?: AppLog): void {
 export function logAppEvent(
     level: LogLevel,
     message: string,
-    metadata?: Record<string, unknown>,
+    meta?: Record<string, unknown>,
 ): void {
-    appLogger(level, message, metadata);
+    appLogger(level, message, meta);
 }

@@ -84,8 +84,8 @@ test("authors submit global card edits as update requests", async () => {
         saveSchema: async () => {},
         get: async () => source,
         listPushRequests: async () => [],
-        createPush: async (...argumentsList: unknown[]) => {
-            captured = argumentsList;
+        createPush: async (...args: unknown[]) => {
+            captured = args;
             return { id: "update-request", status: "pending" };
         },
     };

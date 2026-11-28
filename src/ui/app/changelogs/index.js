@@ -1,14 +1,14 @@
 import { guides } from "./guides.js";
 import {
-    loadDocsIndex as loadDocumentsIndex,
-    readDocsLanguages as readDocumentsLanguages,
+    loadDocumentsIndex,
+    readDocumentsLanguages,
 } from "../../reuse/docs-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
-import { linkShortCommitRefs as linkShortCommitReferences } from "../../reuse/commit-links.js";
+import { linkShortCommitReferences } from "../../reuse/commit-links.js";
 import { createSideMenu } from "../../reuse/side-menu.js";
 
 const CHANGELOG_GROUP_KEY = "changelog";
@@ -142,8 +142,8 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
-    const documents = await loadDocumentsIndex();
-    const changelogDocuments = documents.filter((document) =>
+    const docs = await loadDocumentsIndex();
+    const changelogDocuments = docs.filter((document) =>
         isChangelogDocument(document),
     );
     const navigationMenu = createSideMenu({

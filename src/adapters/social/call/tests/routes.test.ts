@@ -5,13 +5,13 @@ import { CallStore } from "../store.js";
 import { createCallRoutes } from "../routes/index.js";
 
 function request(method: string, body?: object) {
-    const currentRequest = Readable.from(
+    const req = Readable.from(
         body ? [JSON.stringify(body)] : [],
     ) as Readable & {
         method: string;
     };
-    currentRequest.method = method;
-    return currentRequest;
+    req.method = method;
+    return req;
 }
 
 function response() {

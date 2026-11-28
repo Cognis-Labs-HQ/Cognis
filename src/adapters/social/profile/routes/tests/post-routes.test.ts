@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
-import { DbProfileStore as DatabaseProfileStore } from "../../store.js";
-import { DbLocalAccountStore as DatabaseLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
+import { DatabaseProfileStore } from "../../store.js";
+import { DatabaseLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createPostRoutes } from "../posts.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
-import { makeTempDb as makeTemporaryDatabase } from "./helpers.js";
+import { makeTemporaryDatabase } from "./helpers.js";
 
 function makeRequest(method: string, token: string | null, body?: string) {
     const chunks = body ? [Buffer.from(body)] : [];
@@ -37,7 +37,7 @@ async function setupUser(
 }
 
 test("post routes - hidden user cannot post with community visibility", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice", "hidden");
         const route = createPostRoutes(profileStore);
@@ -60,12 +60,12 @@ test("post routes - hidden user cannot post with community visibility", async ()
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - hidden user can post with only_me visibility", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice", "hidden");
         const route = createPostRoutes(profileStore);
@@ -97,12 +97,12 @@ test("post routes - hidden user can post with only_me visibility", async () => {
         assert.equal(created.content, "private note");
         assert.equal(created.visibility, "only_me");
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - unauthenticated POST /api/v1/social/posts returns 401", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -124,12 +124,12 @@ test("post routes - unauthenticated POST /api/v1/social/posts returns 401", asyn
         );
         assert.equal(status, 401);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - missing content returns 400", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -152,12 +152,12 @@ test("post routes - missing content returns 400", async () => {
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - invalid visibility returns 400", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -180,12 +180,12 @@ test("post routes - invalid visibility returns 400", async () => {
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - create and list own posts", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -233,12 +233,12 @@ test("post routes - create and list own posts", async () => {
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 1);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - list visible posts across authors for search", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
@@ -323,12 +323,12 @@ test("post routes - list visible posts across authors for search", async () => {
             ["alice"],
         );
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - delete own post", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -372,12 +372,12 @@ test("post routes - delete own post", async () => {
         assert.equal(status, 200);
         assert.match(body, /deleted/);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - cannot delete another user post without elevated role", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
@@ -428,12 +428,12 @@ test("post routes - cannot delete another user post without elevated role", asyn
         );
         assert.equal(status, 403);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - moderator can delete another user post", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -478,12 +478,12 @@ test("post routes - moderator can delete another user post", async () => {
         assert.equal(status, 200);
         assert.match(body, /deleted/);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - admin can delete another user post", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -528,12 +528,12 @@ test("post routes - admin can delete another user post", async () => {
         assert.equal(status, 200);
         assert.match(body, /deleted/);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - only_me posts not visible to others", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
@@ -586,12 +586,12 @@ test("post routes - only_me posts not visible to others", async () => {
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 0);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - blocked caller gets 404 on user posts", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
@@ -620,12 +620,12 @@ test("post routes - blocked caller gets 404 on user posts", async () => {
         );
         assert.equal(status, 404);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post routes - private account posts only visible to followers", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
@@ -697,12 +697,12 @@ test("post routes - private account posts only visible to followers", async () =
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 0);
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });
 
 test("post retries preserve identity and reject changed or cross-account payloads", async () => {
-    const { dir: directory, executor } = makeTemporaryDatabase();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const store = await setupUser(executor, "alice", "community");
         await setupUser(executor, "bob", "community");
@@ -747,6 +747,6 @@ test("post retries preserve identity and reject changed or cross-account payload
             400,
         );
     } finally {
-        rmSync(directory, { recursive: true, force: true });
+        rmSync(dir, { recursive: true, force: true });
     }
 });

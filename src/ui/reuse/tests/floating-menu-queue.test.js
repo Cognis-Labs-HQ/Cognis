@@ -106,10 +106,10 @@ test("failed queue installation rolls back and can register a working replacemen
     context.after(() => lifetime.abort());
     const state = flowHost(lifetime.signal);
     const extend = state.ctx.extendFlow;
-    state.ctx.extendFlow = (id, ...argumentsList) => {
+    state.ctx.extendFlow = (id, ...args) => {
         if (id === "ui:floatingMenu:present")
             throw new Error("registration_failed");
-        return extend(id, ...argumentsList);
+        return extend(id, ...args);
     };
     assert.throws(
         () => registerFloatingMenus(state.ctx),

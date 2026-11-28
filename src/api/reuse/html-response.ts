@@ -4,7 +4,7 @@ import type { BootstrapLog } from "@cognis/core";
 import type { RouteContext } from "./route-context.js";
 
 export async function serveHtmlPage(
-    response: ServerResponse,
+    res: ServerResponse,
     filePath: string,
     log?: BootstrapLog,
     logMetadata?: Record<string, unknown>,
@@ -12,12 +12,12 @@ export async function serveHtmlPage(
 ): Promise<void> {
     try {
         const file = await readFile(filePath);
-        routeContext?.setPageSecurityHeaders(response);
-        response.writeHead(200, {
+        routeContext?.setPageSecurityHeaders(res);
+        res.writeHead(200, {
             "content-type": "text/html; charset=utf-8",
             "cache-control": "no-store",
         });
-        response.end(file);
+        res.end(file);
     } catch (error) {
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
@@ -25,8 +25,8 @@ export async function serveHtmlPage(
             ...(logMetadata ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
-        response.writeHead(404, { "content-type": "application/json" });
-        response.end(
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
             JSON.stringify({
                 error: { code: "not_found", message: "Asset not found." },
             }),
@@ -35,7 +35,7 @@ export async function serveHtmlPage(
 }
 
 export async function serveHtmlPageWithReplacements(
-    response: ServerResponse,
+    res: ServerResponse,
     filePath: string,
     replacements: Array<{ from: string; to: string }>,
     log?: BootstrapLog,
@@ -47,12 +47,12 @@ export async function serveHtmlPageWithReplacements(
         for (const replacement of replacements) {
             html = html.replaceAll(replacement.from, replacement.to);
         }
-        routeContext?.setPageSecurityHeaders(response);
-        response.writeHead(200, {
+        routeContext?.setPageSecurityHeaders(res);
+        res.writeHead(200, {
             "content-type": "text/html; charset=utf-8",
             "cache-control": "no-store",
         });
-        response.end(html);
+        res.end(html);
     } catch (error) {
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
@@ -60,8 +60,8 @@ export async function serveHtmlPageWithReplacements(
             ...(logMetadata ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
-        response.writeHead(404, { "content-type": "text/html; charset=utf-8" });
-        response.end(
+        res.writeHead(404, { "content-type": "text/html; charset=utf-8" });
+        res.end(
             "<!doctype html><html><body><h1>Not found</h1><p>Asset not found.</p></body></html>",
         );
     }

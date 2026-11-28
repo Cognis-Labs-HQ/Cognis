@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { uiCtx } from "../../ui-ctx.js";
 import { createProviderLifecycle } from "../../provider-lifecycle.js";
 import { registerScopedUiActions } from "../../scoped-actions.js";
@@ -20,15 +20,14 @@ async function fixture(testContext) {
             throw new Error("overlay_must_escape_containing_block");
         },
     };
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         AbortController,
         AbortSignal,
         registerScopedUiActions,
         ensurePageStylesheet: async (url) => stylesLoaded.push(url),
         window: {
             innerHeight: 900,
-            addEventListener: (...argumentsList) =>
-                events.addEventListener(...argumentsList),
+            addEventListener: (...args) => events.addEventListener(...args),
         },
         document: {
             body: { append: (element) => overlays.add(element) },

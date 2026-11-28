@@ -25,8 +25,8 @@ export async function resolveModuleRoot(
 }
 
 export async function serveDeclaredModuleStrings(
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     url: URL,
     urlPath: string,
     runtime?: ModuleRuntimeGateway,
@@ -54,10 +54,10 @@ export async function serveDeclaredModuleStrings(
     );
     const assetPath = path.resolve(uiRoot, assetSegments.join("/"));
     if (!assetPath.startsWith(`${uiRoot}${path.sep}`)) return false;
-    routeContext?.setPageSecurityHeaders(response);
+    routeContext?.setPageSecurityHeaders(res);
     await serveStaticAsset(
-        request,
-        response,
+        req,
+        res,
         assetPath,
         resolveContentType(assetPath),
         undefined,
@@ -68,8 +68,8 @@ export async function serveDeclaredModuleStrings(
 }
 
 export async function serveEnabledModuleAsset(
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     url: URL,
     urlPath: string,
     runtime?: ModuleRuntimeGateway,
@@ -91,10 +91,10 @@ export async function serveEnabledModuleAsset(
     );
     const assetPath = path.resolve(uiRoot, assetSegments.join("/"));
     if (!assetPath.startsWith(`${uiRoot}${path.sep}`)) return false;
-    routeContext?.setPageSecurityHeaders(response);
+    routeContext?.setPageSecurityHeaders(res);
     await serveStaticAsset(
-        request,
-        response,
+        req,
+        res,
         assetPath,
         resolveContentType(assetPath),
         undefined,
@@ -105,7 +105,7 @@ export async function serveEnabledModuleAsset(
 }
 
 export async function validateModuleAssetRevision(
-    response: ServerResponse,
+    res: ServerResponse,
     url: URL,
     moduleId: string,
     runtime?: ModuleRuntimeGateway,
@@ -117,15 +117,13 @@ export async function validateModuleAssetRevision(
     );
     if (!manifest) return true;
     if (requestedRevision !== manifest.version) {
-        response.writeHead(409, {
+        res.writeHead(409, {
             "content-type": "application/json",
             "cache-control": "no-store",
         });
-        response.end(
-            JSON.stringify({ error: { code: "module_revision_changed" } }),
-        );
+        res.end(JSON.stringify({ error: { code: "module_revision_changed" } }));
         return false;
     }
-    response.setHeader("x-cognis-module-revision", manifest.version);
+    res.setHeader("x-cognis-module-revision", manifest.version);
     return true;
 }

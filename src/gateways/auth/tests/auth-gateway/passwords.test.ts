@@ -15,7 +15,7 @@ import {
     adminToken,
     dispatchRoute,
     HttpIncomingMessage,
-    makeInMemoryDb as makeInMemoryDatabase,
+    makeInMemoryDatabase,
     makeJsonRequest,
 } from "../auth-gateway-test-helpers.js";
 
@@ -58,7 +58,7 @@ test("GET /api/v1/auth/password-change-capability reports support for local acco
     });
 
     const token = issueAccessToken("settings-user", "user", 60);
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         {
             method: "GET",
@@ -68,8 +68,8 @@ test("GET /api/v1/auth/password-change-capability reports support for local acco
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
-    const payload = JSON.parse(response.payload) as {
+    assert.equal(res.status, 200);
+    const payload = JSON.parse(res.payload) as {
         data: {
             adapterId: string;
             adapterName: string;
@@ -85,13 +85,13 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
     });
 
     const accountStore = capabilities.get<{
@@ -105,7 +105,7 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     await accountStore?.register("password-user", "before-reset");
 
     const resetToken = issueAccessToken("password-user", "user", 60);
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -119,7 +119,7 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
 
     const oldCredentials = await accountStore?.verify(
         "password-user",
@@ -137,13 +137,13 @@ test("POST /api/v1/auth/reset-password requires current password", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
     });
 
     const accountStore = capabilities.get<{
@@ -152,7 +152,7 @@ test("POST /api/v1/auth/reset-password requires current password", async () => {
     await accountStore?.register("missing-current-pass", "before-reset");
 
     const resetToken = issueAccessToken("missing-current-pass", "user", 60);
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -163,21 +163,21 @@ test("POST /api/v1/auth/reset-password requires current password", async () => {
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 400);
-    assert.match(response.payload, /Current password is required/);
+    assert.equal(res.status, 400);
+    assert.match(res.payload, /Current password is required/);
 });
 
 test("POST /api/v1/auth/reset-password rejects incorrect current password", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
     });
 
     const accountStore = capabilities.get<{
@@ -186,7 +186,7 @@ test("POST /api/v1/auth/reset-password rejects incorrect current password", asyn
     await accountStore?.register("wrong-current-pass", "before-reset");
 
     const resetToken = issueAccessToken("wrong-current-pass", "user", 60);
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -200,9 +200,9 @@ test("POST /api/v1/auth/reset-password rejects incorrect current password", asyn
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 400);
+    assert.equal(res.status, 400);
     assert.match(
-        response.payload,
+        res.payload,
         /gateway\.auth\.security\.error\.current_password_incorrect/,
     );
 });
@@ -211,13 +211,13 @@ test("POST /api/v1/auth/reset-password rejects previously used password", async 
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
     });
 
     const accountStore = capabilities.get<{
@@ -263,13 +263,13 @@ test("POST /api/v1/auth/reset-password keeps surrounding whitespace in current p
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
     });
 
     const accountStore = capabilities.get<{
@@ -282,7 +282,7 @@ test("POST /api/v1/auth/reset-password keeps surrounding whitespace in current p
     await accountStore?.register("spacey-user", "  before-reset  ");
 
     const resetToken = issueAccessToken("spacey-user", "user", 60);
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -296,7 +296,7 @@ test("POST /api/v1/auth/reset-password keeps surrounding whitespace in current p
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     const nextCredentials = await accountStore?.verify(
         "spacey-user",
         "after-reset",
@@ -308,13 +308,13 @@ test("POST /api/v1/auth/reset-password backfills previous hash for migrated acco
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
     });
 
     const accountStore = capabilities.get<{
@@ -322,7 +322,7 @@ test("POST /api/v1/auth/reset-password backfills previous hash for migrated acco
     }>("auth:accountStore");
     await accountStore?.register("migrated-history-user", "before-reset");
 
-    await database.executeCommand({
+    await db.executeCommand({
         option: "DELETE",
         table: "local_auth_password_history",
         where: [{ column: "account_id", value: "migrated-history-user" }],
@@ -365,7 +365,7 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
 
     const dispatched: Array<{
         category: string;
@@ -389,7 +389,7 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
     });
 
     const accountStore = capabilities.get<{
@@ -398,7 +398,7 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
     await accountStore?.register("notify-reset-user", "old-pass");
 
     const resetToken = issueAccessToken("notify-reset-user", "user", 60);
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -412,7 +412,7 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     assert.ok(
         dispatched.length > 0,
         "security notification should have been dispatched",
@@ -441,19 +441,19 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
     });
 
     const userToken = issueAccessToken("regular-user", "user", 60);
-    const request = {
+    const req = {
         method: "POST",
         headers: { authorization: `Bearer ${userToken}` },
     } as unknown as HttpIncomingMessage;
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
-        request,
+        req,
         "/api/v1/auth/emergency-token",
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 403);
-    assert.match(response.payload, /forbidden/);
+    assert.equal(res.status, 403);
+    assert.match(res.payload, /forbidden/);
 });
 
 test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
@@ -475,19 +475,19 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
         },
     });
 
-    const request = {
+    const req = {
         method: "POST",
         headers: { authorization: `Bearer ${adminToken}` },
     } as unknown as HttpIncomingMessage;
-    const { handled, res: response } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
-        request,
+        req,
         "/api/v1/auth/emergency-token",
     );
 
     assert.equal(handled, true);
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload) as {
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload) as {
         data: {
             token: string;
             role: string;

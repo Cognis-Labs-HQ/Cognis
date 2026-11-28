@@ -1,10 +1,10 @@
 import { createEngagementStore } from "./reuse/engagement-store.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
-import { createDbExecutor as createDatabaseExecutor } from "./executor.js";
+import { createDatabaseExecutor } from "./executor.js";
 import {
     initializeDatabaseSchema,
-    resolveDbProviderDir as resolveDatabaseProviderDirectory,
+    resolveDatabaseProviderDirectory,
 } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor, RawDbExecutor } from "./reuse/db-executor.js";
@@ -71,7 +71,7 @@ function createDatabaseDialectHelper(executor: DbExecutor): DbDialectHelper {
         },
     };
 }
-export { createDatabaseDialectHelper as createDbDialectHelper };
+export { createDatabaseDialectHelper };
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
@@ -108,8 +108,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const createTimedExecutor = (
         rawExecutor: RawDbExecutor,
     ): RawDbExecutor => ({
-        execute: (sql, parameters) =>
-            timed(() => rawExecutor.execute(sql, parameters)),
+        execute: (sql, params) => timed(() => rawExecutor.execute(sql, params)),
         executeCommand: (command) =>
             timed(() => rawExecutor.executeCommand(command)),
         ensureTable: (definition) =>
@@ -123,8 +122,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     const executor = createTimedExecutor(providerExecutor);
     const logger = {
-        info: (message: string, metadata?: Record<string, unknown>) => {
-            void ctx.log?.("info", message, metadata);
+        info: (message: string, meta?: Record<string, unknown>) => {
+            void ctx.log?.("info", message, meta);
         },
     };
 

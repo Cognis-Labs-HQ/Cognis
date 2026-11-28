@@ -56,15 +56,15 @@ async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = makeInMemoryDatabase();
+    const db = makeInMemoryDatabase();
     const systemCtx = createCtx();
-    capabilities.contribute("db:executor", database);
+    capabilities.contribute("db:executor", db);
     capabilities.contribute("system:ctx", systemCtx);
     return {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: database,
+        db: db,
         flow: systemCtx.flow,
         systemCtx,
     };
@@ -237,21 +237,21 @@ test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", 
 
     const handlers = routeRegistry.getHandlers();
     const adapterHandler = handlers[handlers.length - 1];
-    const request = {
+    const req = {
         method: "GET",
         headers: { authorization: `Bearer ${adminToken}` },
     } as any;
-    const response = makeResponse();
+    const res = makeResponse();
 
     const handled = await adapterHandler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/adapters", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.ok(Array.isArray(body.data));
 });
 
@@ -269,16 +269,16 @@ test("gateway adapter route requires admin auth", async () => {
 
     const handlers = routeRegistry.getHandlers();
     const adapterHandler = handlers[handlers.length - 1];
-    const request = { method: "GET", headers: {} } as any;
-    const response = makeResponse();
+    const req = { method: "GET", headers: {} } as any;
+    const res = makeResponse();
 
     await adapterHandler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/adapters", "http://localhost"),
     );
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 import { access } from "node:fs/promises";

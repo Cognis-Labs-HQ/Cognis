@@ -31,8 +31,8 @@
     },
     {
         "name": "destructured short field",
-        "source": "const { iv, db } = source;",
-        "names": ["iv", "db"]
+        "source": "const { ft, gs } = source;",
+        "names": ["ft", "gs"]
     },
     {
         "name": "arrow parameters",
@@ -61,8 +61,8 @@
     },
     {
         "name": "typed declarations and parameter properties",
-        "source": "const db: Database = source; class Example { constructor(private readonly iv: string) {} }",
-        "names": ["db", "iv"]
+        "source": "const ft: Toolbar = source; class Example { constructor(private readonly gs: string) {} }",
+        "names": ["ft", "gs"]
     },
     {
         "name": "typed optional async arrow in a conditional",
@@ -116,8 +116,8 @@
     },
     {
         "name": "signature parameter labels require descriptive names",
-        "source": "type Handler<T> = (db: T) => T; interface Reader { read(a: string): void; }",
-        "names": ["db", "a"]
+        "source": "type Handler<T> = (gs: T) => T; interface Reader { read(a: string): void; }",
+        "names": ["gs", "a"]
     },
     {
         "name": "property and string text are not bindings",
@@ -142,7 +142,7 @@
     {
         "name": "import aliases and namespaces",
         "source": "import { readFile as f } from 'node:fs'; import fs from 'node:fs'; import * as vm from 'node:vm';",
-        "names": ["f", "fs", "vm"]
+        "names": ["f"]
     },
     {
         "name": "runtime function and class bindings",
@@ -171,18 +171,18 @@
     },
     {
         "name": "abbreviated words in locals and parameters",
-        "source": "const req = input; function read(res, msg, prefs) {}",
-        "names": ["req", "res", "msg", "prefs"]
+        "source": "const tgt = input; function read(orig, msg, prefs) {}",
+        "names": ["tgt", "orig", "msg", "prefs"]
     },
     {
         "name": "camel case and constant words",
-        "source": "const dbExec = source; const DEFAULT_PREFS = source; let errorMsg;",
-        "names": ["dbExec", "DEFAULT_PREFS", "errorMsg"]
+        "source": "const tgtRow = source; const DEFAULT_PREFS = source; let errorMsg;",
+        "names": ["tgtRow", "DEFAULT_PREFS", "errorMsg"]
     },
     {
         "name": "ignored prefix does not hide abbreviations",
-        "source": "function read(_req, _res, _args) {}",
-        "names": ["_req", "_res", "_args"]
+        "source": "function read(_tgt, _orig, _prefs) {}",
+        "names": ["_tgt", "_orig", "_prefs"]
     },
     {
         "name": "numbered placeholders are not descriptive roles",
@@ -191,13 +191,13 @@
     },
     {
         "name": "private storage fields",
-        "source": "class Example { private prefs: unknown; #msg; private readonly db: unknown; }",
-        "names": ["prefs", "msg", "db"]
+        "source": "class Example { private prefs: unknown; #msg; private readonly ft: unknown; }",
+        "names": ["prefs", "msg", "ft"]
     },
     {
         "name": "private accessor and method names",
-        "source": "class Example { private get db() { return source; } private readMsg() {} }",
-        "names": ["db", "readMsg"]
+        "source": "class Example { private get ft() { return source; } private readMsg() {} }",
+        "names": ["ft", "readMsg"]
     },
     {
         "name": "quoted private field",
@@ -231,8 +231,8 @@
     },
     {
         "name": "product names cannot exempt neighboring abbreviations",
-        "source": "const mariaDbConn = source; const indexedDbReq = source;",
-        "names": ["mariaDbConn", "indexedDbReq"]
+        "source": "const mariaDbConn = source; const indexedDbPrefs = source;",
+        "names": ["mariaDbConn", "indexedDbPrefs"]
     },
     {
         "name": "numeric counter update is required",
@@ -297,6 +297,41 @@
     {
         "name": "type heritage and generic identifiers are not value reads",
         "source": "interface Example<_> extends _ {} type Identity<_> = _;",
+        "names": []
+    },
+    {
+        "name": "conventional developer vocabulary",
+        "source": "function read(args, db, dn, req, res, env, opts, params, iv, tx, fs, os, vm, io, exec, init, ms, src, dir, meta, docs, diff, ref, refs, regex, prev, sep, rm, cp) {} const dbExec = exec; const TIMEOUT_MS = 1;",
+        "names": []
+    },
+    {
+        "name": "conventional private names",
+        "source": "class Store { private db: Database; private get dn() { return source; } }",
+        "names": []
+    },
+    {
+        "name": "naming-only owned export aliases",
+        "source": "class DatabaseStore {} export { DatabaseStore as DbStore };",
+        "names": ["DbStore"]
+    },
+    {
+        "name": "naming-only reexports",
+        "source": "export { createDatabaseExecutor as createDbExecutor } from './store.js';",
+        "names": ["createDbExecutor"]
+    },
+    {
+        "name": "semantic export and type aliases",
+        "source": "const render = source; export { render as mount }; export type { DatabaseStore as DbStore } from './types.js';",
+        "names": []
+    },
+    {
+        "name": "naming-only import aliases",
+        "source": "import { DbStore as DatabaseStore } from './store.js';",
+        "names": ["DatabaseStore"]
+    },
+    {
+        "name": "canonical third party imports",
+        "source": "import { execFileSync } from 'node:child_process'; import { rm, cp } from 'node:fs/promises';",
         "names": []
     }
 ]

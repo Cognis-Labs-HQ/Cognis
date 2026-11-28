@@ -57,8 +57,8 @@ class DatabaseLeaderboardStore implements LeaderboardStore {
     }
 
     async save(state: LeaderboardState): Promise<void> {
-        await this.database.transaction(async (database) => {
-            await database.executeCommand({
+        await this.database.transaction(async (db) => {
+            await db.executeCommand({
                 option: "DELETE",
                 table: "study_leaderboard_state",
                 where: [
@@ -67,7 +67,7 @@ class DatabaseLeaderboardStore implements LeaderboardStore {
             });
             let index = 0;
             for (const chunk of textChunks(JSON.stringify(state), 60_000)) {
-                await database.executeCommand({
+                await db.executeCommand({
                     option: "INSERT",
                     table: "study_leaderboard_state",
                     values: {
@@ -83,4 +83,4 @@ class DatabaseLeaderboardStore implements LeaderboardStore {
         });
     }
 }
-export { DatabaseLeaderboardStore as DbLeaderboardStore };
+export { DatabaseLeaderboardStore };

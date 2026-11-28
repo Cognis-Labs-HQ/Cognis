@@ -45,36 +45,26 @@ export function createPasswordRoutes({
     log,
 }: PasswordRouteDependencies): AuthGatewayRouteHandler {
     return async (
-        request,
-        response,
+        req,
+        res,
         url,
         logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
-        if (
-            url.pathname === "/api/v1/auth/verify" &&
-            request.method === "DELETE"
-        ) {
-            const claims = requireAuth(request, response, "user");
+        if (url.pathname === "/api/v1/auth/verify" && req.method === "DELETE") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const rawToken =
-                extractBearerToken(request) ??
-                extractCookieToken(request) ??
-                "";
+                extractBearerToken(req) ?? extractCookieToken(req) ?? "";
             if (rawToken) invalidateTokenVerification(rawToken);
-            response.writeHead(204);
-            response.end();
+            res.writeHead(204);
+            res.end();
             return true;
         }
-        if (
-            url.pathname === "/api/v1/auth/verify" &&
-            request.method === "POST"
-        ) {
-            const claims = requireAuth(request, response, "user");
+        if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const rawToken =
-                extractBearerToken(request) ??
-                extractCookieToken(request) ??
-                "";
+                extractBearerToken(req) ?? extractCookieToken(req) ?? "";
             const oneHourMilliseconds = 60 * 60 * 1000;
             if (
                 rawToken &&
@@ -88,11 +78,11 @@ export function createPasswordRoutes({
                         accountId: claims.sub,
                     },
                 );
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { verified: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { verified: true } }));
                 return true;
             }
-            const body = await readJson(request);
+            const body = await readJson(req);
             const password = String(body.password ?? "");
             const confirmPassword = capabilities.get<ConfirmPassword>(
                 "auth:confirmPassword",
@@ -105,8 +95,8 @@ export function createPasswordRoutes({
                     ...logMetadata,
                     accountId: claims.sub,
                 });
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_credentials",
@@ -123,23 +113,23 @@ export function createPasswordRoutes({
                 ...logMetadata,
                 accountId: claims.sub,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { verified: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { verified: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/account-lifecycle" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const action = String(body.action ?? "");
             const password = String(body.password ?? "");
             if (!["archive", "deactivate", "delete"].includes(action)) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -165,8 +155,8 @@ export function createPasswordRoutes({
                         action,
                     },
                 );
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_credentials",
@@ -186,10 +176,10 @@ export function createPasswordRoutes({
                     ): Promise<unknown>;
                 }>("social:profileLifecycle");
                 if (!profileLifecycle) {
-                    response.writeHead(503, {
+                    res.writeHead(503, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "account_lifecycle_unavailable",
@@ -211,20 +201,20 @@ export function createPasswordRoutes({
                 action,
                 revokedTokenCount,
             });
-            response.writeHead(200, {
+            res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie":
                     "cognis_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
             });
-            response.end(JSON.stringify({ data: { action, completed: true } }));
+            res.end(JSON.stringify({ data: { action, completed: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/password-change-capability" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const support = authGateway.getPasswordResetSupport(
                 claims.providerId,
@@ -235,23 +225,23 @@ export function createPasswordRoutes({
                 providerId: claims.providerId,
                 supported: support.supported,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: support }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: support }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/reset-password" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = requireAuth(request, response, "user");
+            const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const currentPassword = String(body.currentPassword ?? "");
             const nextPassword = String(body.password ?? "").trim();
             if (currentPassword.length === 0) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -262,8 +252,8 @@ export function createPasswordRoutes({
                 return true;
             }
             if (!nextPassword) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -274,8 +264,8 @@ export function createPasswordRoutes({
                 return true;
             }
             if (nextPassword.length < 8) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "password_too_short",
@@ -299,8 +289,8 @@ export function createPasswordRoutes({
                         reason: support.reason,
                     },
                 );
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "provider_unsupported",
@@ -328,8 +318,8 @@ export function createPasswordRoutes({
                     providerId: claims.providerId,
                     error: message,
                 });
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "password_reset_failed",
@@ -366,8 +356,8 @@ export function createPasswordRoutes({
                     );
                 });
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { updated: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 

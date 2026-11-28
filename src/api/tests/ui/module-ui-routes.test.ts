@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { mkdir, rm as removePath, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import {
     issueAccessToken,
@@ -57,7 +57,7 @@ async function createExternalModuleFixture(moduleUuid: string) {
         JSON.stringify([{ path: "/whiteboards", file: "ui/index.html" }]),
     );
     await writeFile(path.join(moduleRoot, "ui", "index.html"), "fixture");
-    return () => removePath(moduleRoot, { recursive: true, force: true });
+    return () => rm(moduleRoot, { recursive: true, force: true });
 }
 
 test("module ui routes redirect unauthenticated requests to login", async () => {

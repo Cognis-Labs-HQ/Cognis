@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-function walk(directory) {
+function walk(dir) {
     const discoveredFiles = [];
-    for (const directoryEntry of readdirSync(directory)) {
-        const entryPath = join(directory, directoryEntry);
+    for (const directoryEntry of readdirSync(dir)) {
+        const entryPath = join(dir, directoryEntry);
         const entryStat = statSync(entryPath);
         if (entryStat.isDirectory()) discoveredFiles.push(...walk(entryPath));
         else discoveredFiles.push(entryPath);
@@ -69,10 +69,8 @@ test("no hardcoded user-facing string literals in ui js", () => {
     for (const root of JS_ROOTS) {
         for (const file of walk(root)) {
             if (!file.endsWith(".js")) continue;
-            const sourceText = readFileSync(file, "utf8");
-            for (const match of sourceText.matchAll(
-                /(['"])((?:\\.|(?!\1).)*)\1/g,
-            )) {
+            const src = readFileSync(file, "utf8");
+            for (const match of src.matchAll(/(['"])((?:\\.|(?!\1).)*)\1/g)) {
                 const value = match[2];
                 if (!/[A-Za-z]/.test(value) || !/\s/.test(value)) continue;
                 if (isAllowed(value)) continue;
@@ -92,14 +90,14 @@ test("no hardcoded text nodes inside HTML template literals in ui js", () => {
     for (const root of JS_ROOTS) {
         for (const file of walk(root)) {
             if (!file.endsWith(".js")) continue;
-            const sourceText = readFileSync(file, "utf8");
+            const src = readFileSync(file, "utf8");
             // Extract simple (non-nested) template literal segments.
             // Each match captures the literal content between backticks.
             // Note: this regex does not handle escaped backticks (\`) or nested
             // template literals (template expressions containing their own backtick
             // strings). Those patterns do not currently exist in this codebase; if
             // they are introduced, this check should be updated accordingly.
-            for (const [, content] of sourceText.matchAll(/`([^`]*)`/g)) {
+            for (const [, content] of src.matchAll(/`([^`]*)`/g)) {
                 // Match literal text between a closing and opening HTML tag.
                 // The character class excludes backtick, `$`, `{`, and `}` so that
                 // interpolated expressions never produce a false positive. Quotes are

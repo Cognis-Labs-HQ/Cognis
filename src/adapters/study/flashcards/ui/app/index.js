@@ -45,9 +45,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import {
-    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
-    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
-    bindStudySubNavigation as bindStudyNestedNavigation,
+    loadStudyNestedNavigationModel,
+    createStudyNestedNavigationSlot,
+    bindStudyNestedNavigation,
     readSelectedStudyLanguageCode,
 } from "/static/gateways/study/sub-navigation.js";
 import {

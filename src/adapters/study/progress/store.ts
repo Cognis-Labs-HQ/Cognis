@@ -201,4 +201,4 @@ class DatabaseProgressStore implements ProgressStore {
         );
     }
 }
-export { DatabaseProgressStore as DbProgressStore };
+export { DatabaseProgressStore };

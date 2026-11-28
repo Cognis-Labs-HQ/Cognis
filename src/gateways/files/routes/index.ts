@@ -14,34 +14,34 @@ import type { NamespaceRegistry } from "../reuse/namespace-registry.js";
 import type { FileQuotaStore } from "../reuse/quota-store-contract.js";
 
 function writeJson(
-    response: ServerResponse,
+    res: ServerResponse,
     status: number,
     body: Record<string, unknown>,
 ): void {
-    response.writeHead(status, { "content-type": "application/json" });
-    response.end(JSON.stringify(body));
+    res.writeHead(status, { "content-type": "application/json" });
+    res.end(JSON.stringify(body));
 }
 
 function writeError(
-    response: ServerResponse,
+    res: ServerResponse,
     status: number,
     code: string,
     message: string,
 ): void {
-    writeJson(response, status, { error: { code, message } });
+    writeJson(res, status, { error: { code, message } });
 }
 
-function mapServiceError(response: ServerResponse, error: unknown): boolean {
+function mapServiceError(res: ServerResponse, error: unknown): boolean {
     if (error instanceof AccessDeniedError) {
-        writeError(response, 403, "forbidden", error.message);
+        writeError(res, 403, "forbidden", error.message);
         return true;
     }
     if (error instanceof QuotaExceededError) {
-        writeError(response, 413, "quota_exceeded", error.message);
+        writeError(res, 413, "quota_exceeded", error.message);
         return true;
     }
     if (error instanceof AclCeilingViolationError) {
-        writeError(response, 400, "acl_ceiling_violation", error.message);
+        writeError(res, 400, "acl_ceiling_violation", error.message);
         return true;
     }
     return false;
@@ -62,13 +62,13 @@ export function createFileRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const listMatch = url.pathname.match(/^\/api\/v1\/files\/([^/]+)$/);
-        if (listMatch && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "user");
+        if (listMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const namespaceId = decodeURIComponent(listMatch[1]);
             const prefix = url.searchParams.get("prefix") ?? undefined;
@@ -82,9 +82,9 @@ export function createFileRoutes(
                     },
                     prefix,
                 );
-                writeJson(response, 200, { data: entries });
+                writeJson(res, 200, { data: entries });
             } catch (error) {
-                if (!mapServiceError(response, error)) throw error;
+                if (!mapServiceError(res, error)) throw error;
             }
             return true;
         }
@@ -94,7 +94,7 @@ export function createFileRoutes(
         );
         if (!objectMatch) return false;
 
-        const claims = ctx.requireAuth(request, response, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const namespaceId = decodeURIComponent(objectMatch[1]);
         const key = decodeURIComponent(objectMatch[2]);
@@ -105,12 +105,11 @@ export function createFileRoutes(
         };
 
         try {
-            if (request.method === "PUT") {
-                const body = await readRawBody(request);
+            if (req.method === "PUT") {
+                const body = await readRawBody(req);
                 const contentType =
-                    (request.headers["content-type"] ?? "")
-                        .split(";")[0]
-                        .trim() || undefined;
+                    (req.headers["content-type"] ?? "").split(";")[0].trim() ||
+                    undefined;
                 const publicRead =
                     url.searchParams.get("publicRead") === "true";
                 const stored = await service.put(
@@ -123,7 +122,7 @@ export function createFileRoutes(
                         publicRead,
                     },
                 );
-                writeJson(response, 201, {
+                writeJson(res, 201, {
                     data: {
                         key: stored.key,
                         size: stored.size,
@@ -133,26 +132,26 @@ export function createFileRoutes(
                 return true;
             }
 
-            if (request.method === "GET") {
+            if (req.method === "GET") {
                 const content = await service.get(namespaceId, access, key);
                 if (!content) {
-                    writeError(response, 404, "not_found", "File not found.");
+                    writeError(res, 404, "not_found", "File not found.");
                     return true;
                 }
-                response.writeHead(200, {
+                res.writeHead(200, {
                     "content-type": "application/octet-stream",
                 });
-                response.end(Buffer.from(content));
+                res.end(Buffer.from(content));
                 return true;
             }
 
-            if (request.method === "DELETE") {
+            if (req.method === "DELETE") {
                 const deleted = await service.delete(namespaceId, access, key);
-                writeJson(response, 200, { data: { deleted } });
+                writeJson(res, 200, { data: { deleted } });
                 return true;
             }
         } catch (error) {
-            if (!mapServiceError(response, error)) throw error;
+            if (!mapServiceError(res, error)) throw error;
             return true;
         }
 
@@ -171,8 +170,8 @@ export function createQuotaAdminRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const quotaStore = getQuotaStore();
@@ -180,9 +179,9 @@ export function createQuotaAdminRoutes(
 
         if (
             url.pathname === "/api/v1/files/admin/namespace-defaults" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             for (const namespace of registry.list()) {
                 await quotaStore.ensureNamespaceDefault(namespace.id);
             }
@@ -197,21 +196,21 @@ export function createQuotaAdminRoutes(
                 quotaBytes: defaultsById.get(namespace.id),
             }));
             const globalDefault = await quotaStore.getGlobalDefault();
-            writeJson(response, 200, { data: { namespaces, globalDefault } });
+            writeJson(res, 200, { data: { namespaces, globalDefault } });
             return true;
         }
 
         const namespaceDefaultMatch = url.pathname.match(
             /^\/api\/v1\/files\/admin\/namespace-defaults\/([^/]+)$/,
         );
-        if (namespaceDefaultMatch && request.method === "PUT") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (namespaceDefaultMatch && req.method === "PUT") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const namespaceId = decodeURIComponent(namespaceDefaultMatch[1]);
-            const body = await readJson(request);
+            const body = await readJson(req);
             const quotaBytes = Number(body.quotaBytes);
             if (!Number.isInteger(quotaBytes) || quotaBytes <= 0) {
                 writeError(
-                    response,
+                    res,
                     400,
                     "bad_request",
                     "quotaBytes must be a positive integer.",
@@ -219,20 +218,20 @@ export function createQuotaAdminRoutes(
                 return true;
             }
             await quotaStore.setNamespaceDefault(namespaceId, quotaBytes);
-            writeJson(response, 200, { data: { namespaceId, quotaBytes } });
+            writeJson(res, 200, { data: { namespaceId, quotaBytes } });
             return true;
         }
 
         if (
             url.pathname === "/api/v1/files/admin/global-default" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
-            const body = await readJson(request);
+            if (!ctx.requireAuth(req, res, "admin")) return true;
+            const body = await readJson(req);
             const quotaBytes = Number(body.quotaBytes);
             if (!Number.isInteger(quotaBytes) || quotaBytes <= 0) {
                 writeError(
-                    response,
+                    res,
                     400,
                     "bad_request",
                     "quotaBytes must be a positive integer.",
@@ -240,34 +239,34 @@ export function createQuotaAdminRoutes(
                 return true;
             }
             await quotaStore.setGlobalDefault(quotaBytes);
-            writeJson(response, 200, { data: { quotaBytes } });
+            writeJson(res, 200, { data: { quotaBytes } });
             return true;
         }
 
         const userQuotasMatch = url.pathname.match(
             /^\/api\/v1\/files\/admin\/users\/([^/]+)\/quotas$/,
         );
-        if (userQuotasMatch && request.method === "GET") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (userQuotasMatch && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const username = decodeURIComponent(userQuotasMatch[1]);
             const namespaces = await quotaStore.listUserQuotas(username);
             const globalQuota = await quotaStore.getUserGlobalQuota(username);
-            writeJson(response, 200, { data: { namespaces, globalQuota } });
+            writeJson(res, 200, { data: { namespaces, globalQuota } });
             return true;
         }
 
         const userNamespaceQuotaMatch = url.pathname.match(
             /^\/api\/v1\/files\/admin\/users\/([^/]+)\/quotas\/([^/]+)$/,
         );
-        if (userNamespaceQuotaMatch && request.method === "PUT") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (userNamespaceQuotaMatch && req.method === "PUT") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const username = decodeURIComponent(userNamespaceQuotaMatch[1]);
             const namespaceId = decodeURIComponent(userNamespaceQuotaMatch[2]);
-            const body = await readJson(request);
+            const body = await readJson(req);
             const quotaBytes = Number(body.quotaBytes);
             if (!Number.isInteger(quotaBytes) || quotaBytes <= 0) {
                 writeError(
-                    response,
+                    res,
                     400,
                     "bad_request",
                     "quotaBytes must be a positive integer.",
@@ -283,7 +282,7 @@ export function createQuotaAdminRoutes(
                     quotaBytes,
                 );
             }
-            writeJson(response, 200, {
+            writeJson(res, 200, {
                 data: { username, namespaceId, quotaBytes },
             });
             return true;

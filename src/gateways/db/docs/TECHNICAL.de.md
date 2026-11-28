@@ -67,7 +67,7 @@ export interface DbDialectHelper {
 | Pfad                           | Zweck                                       |
 | ------------------------------ | ------------------------------------------- |
 | `src/gateways/db/gateway.ts`   | `DatabaseGateway`-Schnittstelle             |
-| `src/gateways/db/executor.ts`  | `createDbExecutor`                          |
+| `src/gateways/db/executor.ts`  | `createDatabaseExecutor`                    |
 | `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                  |
 | `src/gateways/db/bootstrap.ts` | Bootstrap-Einstiegspunkt; `DbDialectHelper` |
 

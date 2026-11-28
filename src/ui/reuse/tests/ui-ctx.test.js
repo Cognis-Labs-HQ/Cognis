@@ -10,7 +10,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
@@ -19,7 +19,7 @@ function loadUiCtxForTests() {
         console,
         BROWSER_FLOW_CONTRACTS,
         createReuseResources: () => Object.freeze({}),
-        createSubPageRegistry: () => Object.freeze({}),
+        createNestedPageRegistry: () => Object.freeze({}),
     };
     return loadTestModule(
         new URL("../ui-ctx.js", import.meta.url),

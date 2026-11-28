@@ -2,17 +2,17 @@ import { calendarSharePermission } from "./share-permission.js";
 import { timingSafeEqual } from "node:crypto";
 
 export function readSharePassphrase(
-    request: { headers?: Record<string, string | string[]> },
+    req: { headers?: Record<string, string | string[]> },
     url: URL,
 ): string {
-    const headerValue = request.headers?.["x-cognis-calendar-passphrase"];
+    const headerValue = req.headers?.["x-cognis-calendar-passphrase"];
     const headerPassphrase = Array.isArray(headerValue)
         ? String(headerValue[0] ?? "").trim()
         : String(headerValue ?? "").trim();
     if (headerPassphrase) return headerPassphrase;
-    const authorizationHeader = Array.isArray(request.headers?.authorization)
-        ? String(request.headers?.authorization[0] ?? "")
-        : String(request.headers?.authorization ?? "");
+    const authorizationHeader = Array.isArray(req.headers?.authorization)
+        ? String(req.headers?.authorization[0] ?? "")
+        : String(req.headers?.authorization ?? "");
     if (authorizationHeader.startsWith("Basic ")) {
         try {
             const decoded = Buffer.from(

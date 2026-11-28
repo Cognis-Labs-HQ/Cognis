@@ -23,7 +23,7 @@ export function hasLanguagePriorityChanged(previous, next) {
  * (so "sync from browser" correctly resets to "auto"). Otherwise the previously
  * stored/loaded mode is preserved.
  *
- * @param {ReturnType<import('./language-prefs.js').initLanguagePrefs> | undefined} languagePreferencesController
+ * @param {ReturnType<import('./language-prefs.js').initLanguagePreferences> | undefined} languagePreferencesController
  * @param {{ languagePriorityMode?: string } | null} existingPreferences
  * @param {string} storedMode
  * @returns {string}

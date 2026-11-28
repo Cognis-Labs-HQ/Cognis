@@ -1,16 +1,16 @@
 import { readFileSync } from "node:fs";
-import { dirname, relative, resolve, sep as separator } from "node:path";
+import { dirname, relative, resolve, sep } from "node:path";
 import { componentManifestFiles } from "../component-files.js";
 import { documentationBundleFiles } from "./content.js";
 
 export function documentationTargets(root) {
     const targets = new Set(["changelog"]);
-    const core = resolve(root, "src/docs") + separator;
+    const core = resolve(root, "src/docs") + sep;
     for (const path of documentationBundleFiles(root)) {
-        if (path.startsWith(core) && path.endsWith(`${separator}INFO.en.md`)) {
+        if (path.startsWith(core) && path.endsWith(`${sep}INFO.en.md`)) {
             targets.add(
                 relative(resolve(root, "src/docs"), dirname(path))
-                    .split(separator)
+                    .split(sep)
                     .join("/") || "index",
             );
         }
@@ -20,7 +20,7 @@ export function documentationTargets(root) {
         const manifest = JSON.parse(readFileSync(path, "utf8"));
         if (!manifest.documentation) continue;
         const owner = relative(resolve(root, "src"), dirname(path))
-            .split(separator)
+            .split(sep)
             .join("/");
         targets.add(
             path.endsWith("package.json") &&

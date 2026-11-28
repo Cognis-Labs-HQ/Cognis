@@ -79,14 +79,14 @@ export async function bootstrapNotifyAdapter(
     sender.test = async (emailAddress, config) => {
         await root.flow.run("smtp:testEmail", { to: emailAddress, config });
     };
-    ctx.registerRoute(async (request, response, url) => {
+    ctx.registerRoute(async (req, res, url) => {
         if (
             url.pathname !== "/api/v1/gateways/notify/adapters/smtp/test" ||
-            request.method !== "POST"
+            req.method !== "POST"
         )
             return false;
-        if (!ctx.requireAuth(request, response, "admin")) return true;
-        const body = await ctx.readJson(request);
+        if (!ctx.requireAuth(req, res, "admin")) return true;
+        const body = await ctx.readJson(req);
         const config =
             body.config &&
             typeof body.config === "object" &&
@@ -112,8 +112,8 @@ export async function bootstrapNotifyAdapter(
                 errorName: error instanceof Error ? error.name : "UnknownError",
                 ...describeSmtpFailure(error),
             });
-            response.writeHead(400, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "smtp_test_failed",
@@ -123,8 +123,8 @@ export async function bootstrapNotifyAdapter(
             );
             return true;
         }
-        response.writeHead(200, { "content-type": "application/json" });
-        response.end(JSON.stringify({ data: { sent: true } }));
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ data: { sent: true } }));
         return true;
     }, "notify");
 }

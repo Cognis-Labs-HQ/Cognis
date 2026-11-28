@@ -21,18 +21,18 @@ export function createInternalNotificationRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (!url.pathname.startsWith("/api/v1/notify/inbox")) {
             return false;
         }
 
-        const claims = ctx.getAuthClaims(request);
+        const claims = ctx.getAuthClaims(req);
         if (!claims) {
-            response.writeHead(401, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(401, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "unauthorized", message: "Login required" },
                 }),
@@ -44,49 +44,49 @@ export function createInternalNotificationRoutes(
 
         if (
             url.pathname === "/api/v1/notify/inbox" &&
-            request.method === "DELETE"
+            req.method === "DELETE"
         ) {
             const removed = await store.deleteAll(username);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { removed } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { removed } }));
             return true;
         }
 
         if (url.pathname === "/api/v1/notify/inbox") {
-            if (request.method !== "GET") return false;
+            if (req.method !== "GET") return false;
             const notifications = await store.list(username);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: notifications }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: notifications }));
             return true;
         }
 
         if (url.pathname === "/api/v1/notify/inbox/count") {
-            if (request.method !== "GET") return false;
+            if (req.method !== "GET") return false;
             const count = await store.countUnread(username);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { count } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { count } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/notify/inbox/read" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
             await store.markAllRead(username);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 
         const singleReadMatch = url.pathname.match(
             /^\/api\/v1\/notify\/inbox\/([^/]+)\/read$/,
         );
-        if (singleReadMatch && request.method === "PUT") {
+        if (singleReadMatch && req.method === "PUT") {
             const id = decodeURIComponent(singleReadMatch[1]);
             const found = await store.markRead(username, id);
             if (!found) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -96,20 +96,20 @@ export function createInternalNotificationRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 
         const deleteMatch = url.pathname.match(
             /^\/api\/v1\/notify\/inbox\/([^/]+)$/,
         );
-        if (deleteMatch && request.method === "DELETE") {
+        if (deleteMatch && req.method === "DELETE") {
             const id = decodeURIComponent(deleteMatch[1]);
             const found = await store.delete(username, id);
             if (!found) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -119,8 +119,8 @@ export function createInternalNotificationRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { ok: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 

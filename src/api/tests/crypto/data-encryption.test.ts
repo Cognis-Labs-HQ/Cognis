@@ -46,12 +46,9 @@ test("deriveScopedKey: different scopes produce different keys (encrypt/decrypt 
         "user:notifications:bob",
         "server-secret",
     );
-    const { iv: initializationVector, ciphertext } = await encryptPayload(
-        keyAlice,
-        "hello",
-    );
+    const { iv: iv, ciphertext } = await encryptPayload(keyAlice, "hello");
     await assert.rejects(
-        () => decryptPayload(keyBob, initializationVector, ciphertext),
+        () => decryptPayload(keyBob, iv, ciphertext),
         "Decrypting with a different scope's key should fail",
     );
 });
@@ -62,12 +59,12 @@ test("deriveScopedKey: different subsystems with same identifier produce differe
         "server-secret",
     );
     const mfaKey = await deriveScopedKey("user:mfa:alice", "server-secret");
-    const { iv: initializationVector, ciphertext } = await encryptPayload(
+    const { iv: iv, ciphertext } = await encryptPayload(
         notificationKey,
         "hello",
     );
     await assert.rejects(
-        () => decryptPayload(mfaKey, initializationVector, ciphertext),
+        () => decryptPayload(mfaKey, iv, ciphertext),
         "Different subsystems with the same identifier must derive distinct keys",
     );
 });
@@ -76,31 +73,17 @@ test("deriveScopedKey: same scope + secret produces equivalent keys (round-trip)
     const key1 = await deriveScopedKey("user:notifications:alice", "s3cr3t");
     const key2 = await deriveScopedKey("user:notifications:alice", "s3cr3t");
     const plaintext = JSON.stringify({ subject: "Hello", body: "World" });
-    const { iv: initializationVector, ciphertext } = await encryptPayload(
-        key1,
-        plaintext,
-    );
-    const decrypted = await decryptPayload(
-        key2,
-        initializationVector,
-        ciphertext,
-    );
+    const { iv: iv, ciphertext } = await encryptPayload(key1, plaintext);
+    const decrypted = await decryptPayload(key2, iv, ciphertext);
     assert.equal(decrypted, plaintext);
 });
 
 test("encryptPayload: returns hex iv and ciphertext", async () => {
     const key = await deriveScopedKey("user:notifications:user1", "secret");
-    const { iv: initializationVector, ciphertext } = await encryptPayload(
-        key,
-        "test message",
-    );
-    assert.match(initializationVector, /^[0-9a-f]+$/);
+    const { iv: iv, ciphertext } = await encryptPayload(key, "test message");
+    assert.match(iv, /^[0-9a-f]+$/);
     assert.match(ciphertext, /^[0-9a-f]+$/);
-    assert.equal(
-        initializationVector.length,
-        24,
-        "AES-GCM IV is 12 bytes = 24 hex chars",
-    );
+    assert.equal(iv.length, 24, "AES-GCM IV is 12 bytes = 24 hex chars");
 });
 
 test("encryptPayload + decryptPayload: round-trip preserves plaintext", async () => {
@@ -113,15 +96,8 @@ test("encryptPayload + decryptPayload: round-trip preserves plaintext", async ()
         body: "Content",
         category: "system",
     });
-    const { iv: initializationVector, ciphertext } = await encryptPayload(
-        key,
-        original,
-    );
-    const decrypted = await decryptPayload(
-        key,
-        initializationVector,
-        ciphertext,
-    );
+    const { iv: iv, ciphertext } = await encryptPayload(key, original);
+    const decrypted = await decryptPayload(key, iv, ciphertext);
     assert.equal(decrypted, original);
 });
 
@@ -147,15 +123,12 @@ test("decryptPayload: rejects tampered ciphertext", async () => {
         "user:notifications:tamper-user",
         "secret",
     );
-    const { iv: initializationVector, ciphertext } = await encryptPayload(
-        key,
-        "sensitive data",
-    );
+    const { iv: iv, ciphertext } = await encryptPayload(key, "sensitive data");
     const firstByte = Number.parseInt(ciphertext.slice(0, 2), 16) ^ 1;
     const tampered =
         firstByte.toString(16).padStart(2, "0") + ciphertext.slice(2);
     await assert.rejects(
-        () => decryptPayload(key, initializationVector, tampered),
+        () => decryptPayload(key, iv, tampered),
         "Tampered ciphertext must not decrypt",
     );
 });

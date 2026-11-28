@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import { DbProgressStore as DatabaseProgressStore } from "../store.js";
+import { DatabaseProgressStore } from "../store.js";
 import type {
     LearningEvent,
     ProgressProjection,

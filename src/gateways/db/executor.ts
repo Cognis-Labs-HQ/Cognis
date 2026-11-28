@@ -22,8 +22,8 @@ export type { DbProviderId } from "./reuse/provider-id.js";
 export type SupportedDbType = DbProviderId;
 
 interface DbExecutorFactoryModule extends AdapterContractModule {
-    canHandleDbProvider?: (providerId: DbProviderId) => boolean;
-    createDbExecutor?: (argumentsList: {
+    canHandleDatabaseProvider?: (providerId: DbProviderId) => boolean;
+    createDatabaseExecutor?: (argumentsList: {
         databaseUrl: string;
         log?: BootstrapLog;
         lifecycle?: {
@@ -82,13 +82,17 @@ async function createDatabaseExecutor(
             adapterId,
         );
         if (
-            !adapterModule?.createDbExecutor ||
-            !adapterModule.canHandleDbProvider?.(databaseType)
+            !adapterModule?.createDatabaseExecutor ||
+            !adapterModule.canHandleDatabaseProvider?.(databaseType)
         ) {
             continue;
         }
         const create = () =>
-            adapterModule.createDbExecutor!({ databaseUrl, log, lifecycle });
+            adapterModule.createDatabaseExecutor!({
+                databaseUrl,
+                log,
+                lifecycle,
+            });
         if (adapterModule.defineContracts !== undefined) {
             if (!context) throw new Error("adapter_contract_context_required");
             return bootstrapAdapter(
@@ -104,4 +108,4 @@ async function createDatabaseExecutor(
 
     throw new Error(`db_executor_adapter_missing:${databaseType}`);
 }
-export { createDatabaseExecutor as createDbExecutor };
+export { createDatabaseExecutor };

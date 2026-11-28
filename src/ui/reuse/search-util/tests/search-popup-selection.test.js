@@ -188,7 +188,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(popupSource, /search-popup-overlay--closing/);
     assert.match(popupSource, /Close search/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
-    assert.match(source, /collectGlobalDocsSearchGroups/);
+    assert.match(source, /collectGlobalDocumentsSearchGroups/);
     assert.match(source, /collectGlobalSettingsSearchGroups/);
     assert.match(popupSource, /registerSearchAvenue/);
     assert.match(popupSource, /registerSearchIndex\("global-docs"/);
@@ -701,7 +701,7 @@ test("global pages and messages indexes register from shared surfaces", () => {
     assert.match(messagesIndexSource, /resultClass: "message"/);
     assert.match(messagesIndexSource, /isOpaqueRoomLabel/);
     assert.match(messagesIndexSource, /MESSAGE_SEARCH_PAGE_SIZE/);
-    assert.match(messagesIndexSource, /parameters\.set\("before", before\)/);
+    assert.match(messagesIndexSource, /params\.set\("before", before\)/);
     assert.match(
         messagesIndexSource,
         /searchText: \[sender, messageRecord\.text\]/,

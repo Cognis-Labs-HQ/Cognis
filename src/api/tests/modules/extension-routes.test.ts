@@ -9,7 +9,7 @@ import {
     mkdtemp,
     mkdir,
     readFile,
-    rm as removePath,
+    rm,
     writeFile,
     copyFile,
 } from "node:fs/promises";
@@ -60,7 +60,7 @@ test("uninstall imports the resolved bootstrap entrypoint", async () => {
         } else {
             process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
         }
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -142,7 +142,7 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
         if (previousModulesRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -235,7 +235,7 @@ test("provider routes require an explicit privileged module declaration", async 
         if (previousModulesRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -301,7 +301,7 @@ test("module assurance detects installed-file tampering", async () => {
         if (previousModulesRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -448,7 +448,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         } else {
             process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
         }
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -511,8 +511,8 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             ],
         } as any,
         () => true,
-        (level, message, metadata) =>
-            logEntries.push({ level, message, meta: metadata }),
+        (level, message, meta) =>
+            logEntries.push({ level, message, meta: meta }),
         {
             routeContext: createDefaultRouteContext({
                 getCapability: (id) =>
@@ -602,7 +602,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             process.env.COGNIS_EXTERNAL_MODULES_ROOT =
                 previousExternalModulesRoot;
         }
-        await removePath(externalModulesRoot, { recursive: true, force: true });
+        await rm(externalModulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -686,7 +686,7 @@ test("study language modules register their canonical capability and API space",
             process.env.COGNIS_EXTERNAL_MODULES_ROOT =
                 previousExternalModulesRoot;
         }
-        await removePath(externalModulesRoot, { recursive: true, force: true });
+        await rm(externalModulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -752,7 +752,7 @@ test("unprivileged modules cooperate through provider-owned capabilities", async
         } else {
             process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
         }
-        await removePath(modulesRoot, { recursive: true, force: true });
+        await rm(modulesRoot, { recursive: true, force: true });
     }
 });
 
@@ -765,7 +765,7 @@ test("namespace grants cannot replace reserved authentication routes", async (co
         if (previous === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previous;
-        await removePath(root, { recursive: true, force: true });
+        await rm(root, { recursive: true, force: true });
     });
     const uuid = "d49288a3-106e-43d8-a5a4-cd7a142a6fc7";
     await mkdir(path.join(root, uuid));

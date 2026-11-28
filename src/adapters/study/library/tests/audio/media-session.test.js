@@ -1,14 +1,14 @@
 import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 test("system media metadata names the playing card and layer, publishes Cognis artwork and owns controls until disposal", async () => {
     const handlers = new Map();
     const session = {
         setActionHandler: (action, handler) => handlers.set(action, handler),
     };
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         URL,
         window: { location: { origin: "https://cognis.example" } },
         navigator: { mediaSession: session },

@@ -8,7 +8,7 @@ Pengganti basis data untuk pengujian yang mencatat panggilan tanpa menjalankan S
 
 ## Konfigurasi
 
-Buat kelas dalam harness uji. Kelas tidak mengekspor canHandleDbProvider atau createDbExecutor; DB_TYPE=memory tidak menghubungkannya ke pemuat standar.
+Buat kelas dalam harness uji. Kelas tidak mengekspor canHandleDatabaseProvider atau createDatabaseExecutor; DB_TYPE=memory tidak menghubungkannya ke pemuat standar.
 
 ## Perilaku
 

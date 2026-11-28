@@ -167,7 +167,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
         async hasApprovedMessageRequestBetween() {
             return false;
         },
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return null;
         },
         async findPendingMessageRequest() {
@@ -229,13 +229,13 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
     });
     let statusCode = 0;
     let responseBody = "";
-    const request = makeRequest("POST", token);
-    request[Symbol.asyncIterator] = async function* () {
+    const req = makeRequest("POST", token);
+    req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
 
     const handled = await route(
-        request,
+        req,
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -274,7 +274,7 @@ test("POST /messages/rooms does not resend an existing message-request notificat
         async hasApprovedMessageRequestBetween() {
             return false;
         },
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return { id: "room-existing", kind: "dm" };
         },
         async setArchived() {},
@@ -315,14 +315,14 @@ test("POST /messages/rooms does not resend an existing message-request notificat
         },
         isAdapterEnabled: () => true,
     });
-    const request = makeRequest("POST", token);
-    request[Symbol.asyncIterator] = async function* () {
+    const req = makeRequest("POST", token);
+    req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
     let responseBody = "";
 
     await route(
-        request,
+        req,
         {
             writeHead() {},
             end(payload: string) {
@@ -460,8 +460,8 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
     });
     let statusCode = 0;
     let responseBody = "";
-    const request = makeRequest("POST", token);
-    request[Symbol.asyncIterator] = async function* () {
+    const req = makeRequest("POST", token);
+    req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(
             JSON.stringify({
                 ciphertext: "aa",
@@ -473,7 +473,7 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
     };
 
     const handled = await route(
-        request,
+        req,
         {
             writeHead(status: number) {
                 statusCode = status;

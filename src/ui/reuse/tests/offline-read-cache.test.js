@@ -32,8 +32,8 @@ function fixture(options = {}) {
     return {
         read: module.createOfflineReadCache(options),
         values,
-        advance: (milliseconds) => {
-            clock += milliseconds;
+        advance: (ms) => {
+            clock += ms;
         },
         disconnect: () => {
             offline = true;

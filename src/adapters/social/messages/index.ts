@@ -7,7 +7,7 @@ import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
-import { DbMessagesStore as DatabaseMessagesStore } from "./store.js";
+import { DatabaseMessagesStore } from "./store.js";
 import { createMessagesRoutes } from "./routes/index.js";
 import {
     resolveRouteContext,
@@ -50,11 +50,11 @@ function createMessagesPageRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (request.method && request.method !== "GET") return false;
+        if (req.method && req.method !== "GET") return false;
         if (!isAdapterEnabled()) return false;
         if (
             url.pathname !== "/messages" &&
@@ -62,24 +62,24 @@ function createMessagesPageRoutes(
         ) {
             return false;
         }
-        if (!ctx.getCookieSession(request)) {
-            response.writeHead(302, { location: "/login" });
-            response.end();
+        if (!ctx.getCookieSession(req)) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
             return true;
         }
         try {
             const file = await readFile(
                 path.join(ADAPTER_UI_ROOT, "index.html"),
             );
-            ctx.setPageSecurityHeaders(response);
-            response.writeHead(200, {
+            ctx.setPageSecurityHeaders(res);
+            res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
             });
-            response.end(file);
+            res.end(file);
         } catch {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "not_found", message: "Page not found." },
                 }),

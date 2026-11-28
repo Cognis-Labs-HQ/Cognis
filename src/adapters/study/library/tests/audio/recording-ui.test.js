@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 function fixture({ getUserMedia, recorderAvailable = true } = {}) {
     let activeRecorder;
@@ -68,10 +68,10 @@ function fixture({ getUserMedia, recorderAvailable = true } = {}) {
             uploads.push(file);
             return { value: "file:uploads/alice/recording.audio" };
         },
-        showToast: (...argumentsList) => toasts.push(argumentsList),
+        showToast: (...args) => toasts.push(args),
     };
     if (!recorderAvailable) delete context.MediaRecorder;
-    virtualMachine.createContext(context);
+    vm.createContext(context);
     Object.assign(
         context,
         loadTestModule(

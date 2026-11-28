@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 function fixture(entry = { label: "dog", fields: {} }) {
     const listeners = {};
@@ -54,8 +54,8 @@ function fixture(entry = { label: "dog", fields: {} }) {
             deleted.push(value);
             return { discarded: true };
         },
-        fetchLibraryImageUrl: async (...argumentsList) => {
-            fetched.push(argumentsList);
+        fetchLibraryImageUrl: async (...args) => {
+            fetched.push(args);
             return "blob:bundled";
         },
     };

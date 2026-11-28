@@ -127,8 +127,7 @@ const startMarketplacePolling = createModulesPagePolling({
         pendingDependencyChecks.size > 0,
     loadKnownModules: (signal) => loadKnownModules(false, signal),
     discoverSources: (signal) => discoverConfiguredSources(false, signal),
-    log: (...argumentsList) =>
-        uiCtx.capabilities.get("ui:log")?.(...argumentsList),
+    log: (...args) => uiCtx.capabilities.get("ui:log")?.(...args),
     translate: (key) => i18n.t(key),
 });
 

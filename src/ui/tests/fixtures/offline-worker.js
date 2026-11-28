@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 export function workerFixture({
     bootAssets = ["/assets/entry-ABCDEFGH.js"],
@@ -53,7 +53,7 @@ export function workerFixture({
             return stores.delete(name);
         },
     };
-    virtualMachine.runInNewContext(
+    vm.runInNewContext(
         readFileSync(new URL("../../public/sw.js", import.meta.url), "utf8"),
         {
             URL,
@@ -110,8 +110,8 @@ export function workerFixture({
         failWrites: (value) => {
             failWrites = value;
         },
-        advance: (milliseconds) => {
-            clock += milliseconds;
+        advance: (ms) => {
+            clock += ms;
         },
         serve: (callback) => {
             serveAsset = callback;

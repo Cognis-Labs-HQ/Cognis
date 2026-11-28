@@ -286,7 +286,7 @@ test("all Library reads, dictionary steps, requests and media mutations use thei
             .sort(),
     );
     const stages = [];
-    for (const [name, argumentsList] of Object.entries(cases)) {
+    for (const [name, args] of Object.entries(cases)) {
         for (const stage of ["before", "after"])
             uiCtx.extendFlow(
                 `study:library:${name}`,
@@ -294,7 +294,7 @@ test("all Library reads, dictionary steps, requests and media mutations use thei
                 { id: "extension" },
                 () => stages.push(`${name}:${stage}`),
             );
-        const result = await client[name](...argumentsList);
+        const result = await client[name](...args);
         if (typeof result === "string" && result.startsWith("blob:"))
             URL.revokeObjectURL(result);
         assert.deepEqual(stages.splice(0), [`${name}:before`, `${name}:after`]);

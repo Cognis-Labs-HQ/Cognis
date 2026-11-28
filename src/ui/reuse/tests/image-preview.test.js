@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { uiCtx } from "../ui-ctx.js";
 import { createProviderLifecycle } from "../provider-lifecycle.js";
 import { registerScopedUiActions } from "../scoped-actions.js";
@@ -35,7 +35,7 @@ async function fixture(testContext) {
             click = listener;
         },
     };
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         showToast: (...values) => failures.push(values),
         escapeHtml,
         uiCtx,
@@ -219,7 +219,7 @@ test("the preview provider waits for its shared stylesheet before publishing con
     const stylesheet = new Promise((resolve) => {
         finishStylesheet = resolve;
     });
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         uiCtx,
         registerScopedUiActions,
         ensurePageStylesheet: (url) => {

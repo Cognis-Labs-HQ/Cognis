@@ -1,11 +1,5 @@
 import assert from "node:assert/strict";
-import {
-    mkdtemp,
-    mkdir,
-    rm as removePath,
-    symlink,
-    writeFile,
-} from "node:fs/promises";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -51,7 +45,7 @@ test("module integrity resolves safe file symlinks within a module", async () =>
             true,
         );
     } finally {
-        await removePath(root, { recursive: true, force: true });
+        await rm(root, { recursive: true, force: true });
     }
 });
 
@@ -63,7 +57,7 @@ test("module integrity rejects symlinks that escape the module", async () => {
         await symlink(external, path.join(root, "AGENTS.md"));
         assert.equal(await resolveModuleIntegrityFile(root, "AGENTS.md"), null);
     } finally {
-        await removePath(root, { recursive: true, force: true });
-        await removePath(external, { force: true });
+        await rm(root, { recursive: true, force: true });
+        await rm(external, { force: true });
     }
 });

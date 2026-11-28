@@ -177,7 +177,7 @@ class DatabaseFileObjectStore {
         return sumSizes(result.rows as FileObjectRow[] | undefined);
     }
 }
-export { DatabaseFileObjectStore as DbFileObjectStore };
+export { DatabaseFileObjectStore };
 
 function sumSizes(rows: FileObjectRow[] | undefined): number {
     if (!rows) return 0;

@@ -21,13 +21,13 @@ test("createNotificationSender returns a sender when host is configured", () => 
     assert.equal(sender.senderId, "smtp");
 });
 test("createNotificationSender applies defaults for port, secure mode, and from address", () => {
-    const environment = { COGNIS_SMTP_HOST: "smtp.example.com" };
-    const sender = createNotificationSender(environment);
+    const env = { COGNIS_SMTP_HOST: "smtp.example.com" };
+    const sender = createNotificationSender(env);
     assert.ok(sender !== null);
     assert.equal(sender.senderId, "smtp");
 });
 test("createNotificationSender accepts explicit port, secure mode, and credentials", () => {
-    const environment = {
+    const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
         COGNIS_SMTP_PORT: "465",
         COGNIS_SMTP_SECURE: "tls",
@@ -35,7 +35,7 @@ test("createNotificationSender accepts explicit port, secure mode, and credentia
         COGNIS_SMTP_USER: "user@example.com",
         COGNIS_SMTP_PASS: "s3cret",
     };
-    const sender = createNotificationSender(environment);
+    const sender = createNotificationSender(env);
     assert.ok(sender instanceof SmtpNotificationSender);
     assert.equal(sender.senderId, "smtp");
 });
@@ -147,14 +147,14 @@ test("SmtpNotificationSender.enqueueEmail returns a waiting rate-limit entry imm
 });
 
 test("createNotificationSender.getEnvValues returns env snapshot fields", () => {
-    const environment = {
+    const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
         COGNIS_SMTP_PORT: "465",
         COGNIS_SMTP_FROM: "no-reply@example.com",
         COGNIS_SMTP_USER: "user@example.com",
         COGNIS_SMTP_SECURE: "tls",
     };
-    const sender = createNotificationSender(environment);
+    const sender = createNotificationSender(env);
     const environmentValues = sender.getEnvValues();
     assert.equal(environmentValues["host"], "smtp.example.com");
     assert.equal(environmentValues["port"], "465");
@@ -250,9 +250,9 @@ function createMockSmtpServer(
                 host: "127.0.0.1",
                 port: address.port,
                 close: () =>
-                    new Promise<void>((currentResolve, reject) =>
+                    new Promise<void>((res, reject) =>
                         server.close((error) =>
-                            error ? reject(error) : currentResolve(),
+                            error ? reject(error) : res(),
                         ),
                     ),
             });

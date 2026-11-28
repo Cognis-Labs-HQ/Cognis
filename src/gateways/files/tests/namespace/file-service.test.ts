@@ -6,7 +6,7 @@ import type {
     StoredObject,
 } from "@cognis/core";
 import { NamespaceRegistry } from "../../reuse/namespace-registry.js";
-import { DbFileObjectStore as DatabaseFileObjectStore } from "../../reuse/file-object-store.js";
+import { DatabaseFileObjectStore } from "../../reuse/file-object-store.js";
 import {
     AccessDeniedError,
     NamespaceFileService,

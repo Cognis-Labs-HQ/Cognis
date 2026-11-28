@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-file-quota",
-    "version": "1.0.26",
+    "version": "1.0.27",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.6.4",
-        "@cognis/gateways": "<=0.4.5"
+        "@cognis/core": "<=0.6.5",
+        "@cognis/gateways": "<=0.4.6"
     }
 }

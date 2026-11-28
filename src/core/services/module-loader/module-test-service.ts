@@ -1,9 +1,9 @@
-import { execFile as executorFile } from "node:child_process";
+import { execFile } from "node:child_process";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 
-const executorFileAsync = promisify(executorFile);
+const executorFileAsync = promisify(execFile);
 const TEST_FILE_PATTERN = /\.test\.(?:[cm]?[jt]s)$/;
 const TSX_IMPORT_URL = import.meta.resolve("tsx");
 

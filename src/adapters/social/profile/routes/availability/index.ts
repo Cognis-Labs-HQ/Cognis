@@ -148,28 +148,28 @@ export function createAvailabilityRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/social/availability/presence" &&
-            request.method === "PUT"
+            req.method === "PUT"
         ) {
-            const claims = ctx.requireAuth(request, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const sessionId = String(body.sessionId ?? "").trim();
             if (!sessionId || typeof body.active !== "boolean") {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({ error: { code: "invalid_presence" } }),
                 );
                 return true;
             }
             presenceStore.update(claims.sub, sessionId, body.active);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
@@ -177,7 +177,7 @@ export function createAvailabilityRoutes(
             /^\/api\/v1\/social\/availability(?:\/([^/]+))?$/,
         );
         if (!match) return false;
-        const claims = ctx.requireAuth(request, response, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
 
         const requestedHandle = match[1]
@@ -186,13 +186,13 @@ export function createAvailabilityRoutes(
         const profile = requestedHandle
             ? await profileStore.getProfileByHandle(requestedHandle)
             : await profileStore.getProfile(claims.sub);
-        if (request.method === "GET") {
+        if (req.method === "GET") {
             if (
                 !profile ||
                 !(await canViewAvailability(claims.sub, profile, profileStore))
             ) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: { handle: requestedHandle, status: "unknown" },
                     }),
@@ -213,8 +213,8 @@ export function createAvailabilityRoutes(
                 calendarAvailability,
             );
             const idle = presenceStore.isIdle(profile.accountId);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         handle: profile.handle,
@@ -230,16 +230,16 @@ export function createAvailabilityRoutes(
         }
 
         if (!profile) {
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(JSON.stringify({ error: { code: "not_found" } }));
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: { code: "not_found" } }));
             return true;
         }
 
-        if (request.method === "PUT" && profile.accountId === claims.sub) {
-            const body = await readJson(request);
+        if (req.method === "PUT" && profile.accountId === claims.sub) {
+            const body = await readJson(req);
             if (!VALID_STATUSES.has(body.status)) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_status",
@@ -257,8 +257,8 @@ export function createAvailabilityRoutes(
                     updatedAt: new Date().toISOString(),
                 }),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

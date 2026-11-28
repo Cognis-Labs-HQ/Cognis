@@ -157,14 +157,14 @@ export function canAccessUserData(
     return claims.sub === targetUsername || hasMinRole(claims.role, "admin");
 }
 
-export function getAuthClaims(request: IncomingMessage): AuthClaims | null {
-    const token = extractBearerToken(request) ?? extractCookieToken(request);
+export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
+    const token = extractBearerToken(req) ?? extractCookieToken(req);
     if (!token) return null;
     const access =
         verifyAccessToken(token) ??
         verifyAccessToken(token, { purpose: "share" });
     if (!access) return null;
-    const requestPath = String(request.url ?? "").split("?")[0] || "/";
+    const requestPath = String(req.url ?? "").split("?")[0] || "/";
     if (
         access.setupPending &&
         !isTfaSetupPendingPathAllowed(requestPath, access.sub) &&
@@ -182,18 +182,17 @@ export function getAuthClaims(request: IncomingMessage): AuthClaims | null {
 }
 
 export function requireAuth(
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     minRole: AccessRole = "user",
 ) {
-    const claims = getAuthClaims(request);
+    const claims = getAuthClaims(req);
     if (!claims) {
-        const token =
-            extractBearerToken(request) ?? extractCookieToken(request) ?? "";
+        const token = extractBearerToken(req) ?? extractCookieToken(req) ?? "";
         const access = token ? verifyAccessToken(token) : null;
         if (access?.setupPending) {
-            response.writeHead(403, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "tfa_setup_required",
@@ -204,8 +203,8 @@ export function requireAuth(
             );
             return null;
         }
-        response.writeHead(401, { "content-type": "application/json" });
-        response.end(
+        res.writeHead(401, { "content-type": "application/json" });
+        res.end(
             JSON.stringify({
                 error: { code: "unauthorized", message: "Login required" },
             }),
@@ -213,8 +212,8 @@ export function requireAuth(
         return null;
     }
     if (!hasMinRole(claims.role, minRole)) {
-        response.writeHead(403, { "content-type": "application/json" });
-        response.end(
+        res.writeHead(403, { "content-type": "application/json" });
+        res.end(
             JSON.stringify({
                 error: {
                     code: "forbidden",
@@ -228,17 +227,17 @@ export function requireAuth(
 }
 
 export function requireRoleAccess(
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     policy: RoleAccessPolicy,
 ): AuthClaims | null {
-    const claims = requireAuth(request, response, policy.minRole ?? "user");
+    const claims = requireAuth(req, res, policy.minRole ?? "user");
     if (!claims) return null;
     if (!policy.onlyRole || claims.role === policy.onlyRole) {
         return claims;
     }
-    response.writeHead(403, { "content-type": "application/json" });
-    response.end(
+    res.writeHead(403, { "content-type": "application/json" });
+    res.end(
         JSON.stringify({
             error: {
                 code: "forbidden",
@@ -254,8 +253,8 @@ export function requireRoleAccess(
  * visitor is not logged in or the token is invalid. Used by page-serving
  * routes to gate HTML delivery behind authentication.
  */
-export function getCookieSession(request: IncomingMessage): AuthClaims | null {
-    const cookie = request.headers.cookie ?? "";
+export function getCookieSession(req: IncomingMessage): AuthClaims | null {
+    const cookie = req.headers.cookie ?? "";
     const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
     if (!match) return null;
     const token = decodeURIComponent(match[1]);
@@ -273,11 +272,11 @@ export function getCookieSession(request: IncomingMessage): AuthClaims | null {
  * Applies the standard security response headers for pages served as HTML.
  * Call this before writing a 200 response body for any HTML page route.
  */
-export function setPageSecurityHeaders(response: ServerResponse): void {
-    response.setHeader("x-content-type-options", "nosniff");
-    response.setHeader("x-frame-options", "DENY");
-    response.setHeader("referrer-policy", "no-referrer");
-    response.setHeader(
+export function setPageSecurityHeaders(res: ServerResponse): void {
+    res.setHeader("x-content-type-options", "nosniff");
+    res.setHeader("x-frame-options", "DENY");
+    res.setHeader("referrer-policy", "no-referrer");
+    res.setHeader(
         "content-security-policy",
         [
             "default-src 'self'",

@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { uiCtx } from "../../../../../ui/reuse/ui-ctx.js";
 
 test("the floating practice preference restores the saved mode, confirms session resets and persists only accepted changes", async () => {
@@ -17,7 +17,7 @@ test("the floating practice preference restores the saved mode, confirms session
             handler = callback;
         },
     };
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         uiCtx,
         loadUiPreferences: async () => {
             loaded++;

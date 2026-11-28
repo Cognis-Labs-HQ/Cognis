@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { createProviderLifecycle } from "../../../ui/reuse/provider-lifecycle.js";
 
@@ -23,7 +23,7 @@ async function fixture(
     testContext.after(() =>
         uiCtx.capabilities.remove("ui:navbarLinks", navbar),
     );
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         apiFetch: async (url, { signal }) => {
             assert.equal(url, "/api/v1/study/registered-languages");
             assert.equal(signal.aborted, false);

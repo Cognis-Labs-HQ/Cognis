@@ -21,7 +21,7 @@ async function session(
 ) {
     const storage = structuredStore();
     let transactionDepth = 0;
-    const database: DbExecutor = {
+    const db: DbExecutor = {
         ...storage.db,
         transaction: (callback) =>
             storage.db.transaction(async (executor) => {
@@ -33,7 +33,7 @@ async function session(
                 }
             }),
     };
-    const store = new DeckStore(database);
+    const store = new DeckStore(db);
     await store.initialize();
     const ctx = createCtx();
     registerDeckFlows(ctx);

@@ -6,7 +6,7 @@
 
 ### アーキテクチャ
 
-`src/adapters/auth/local/store.ts` の `DbLocalAccountStore` がローカルユーザーアカウントの唯一の永続化レイヤーです。
+`src/adapters/auth/local/store.ts` の `DatabaseLocalAccountStore` がローカルユーザーアカウントの唯一の永続化レイヤーです。
 
 ## 設定
 
@@ -27,7 +27,7 @@
 - `crypto.scrypt` を使用してローカル管理の認証情報を保存・検証する。
 - アカウント作成に使用される `register()` を提供する。
 - 最終ログイン時刻のトラッキング用に `updateLastLogin()` を提供する。
-- `LocalAccountStore` 実装として `DbLocalAccountStore` を提供する。
+- `LocalAccountStore` 実装として `DatabaseLocalAccountStore` を提供する。
 
 ### パスワードハッシュ化
 

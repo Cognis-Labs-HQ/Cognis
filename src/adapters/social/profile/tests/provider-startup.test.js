@@ -28,9 +28,7 @@ function fixture() {
         return Response.json({ data: { status: "free" } });
     });
     host.ctx.capabilities.contribute("session:isAuthenticated", () => true);
-    host.ctx.capabilities.contribute("ui:log", (...argumentsList) =>
-        errors.push(argumentsList),
-    );
+    host.ctx.capabilities.contribute("ui:log", (...args) => errors.push(args));
     const window = new EventTarget();
     window.location = { pathname: "/administration/modules" };
     window.crypto = webcrypto;

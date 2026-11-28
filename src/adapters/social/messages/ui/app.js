@@ -54,9 +54,9 @@ import { renderMessagesSidebar } from "./sidebar.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
 import {
     LAST_OPENED_ROOM_KEY,
-    LIVE_REFRESH_INTERVAL_MS as LIVE_REFRESH_INTERVAL_MILLISECONDS,
-    TYPING_IDLE_RESET_MS as TYPING_IDLE_RESET_MILLISECONDS,
-    TYPING_SEND_DEBOUNCE_MS as TYPING_SEND_DEBOUNCE_MILLISECONDS,
+    LIVE_REFRESH_INTERVAL_MILLISECONDS,
+    TYPING_IDLE_RESET_MILLISECONDS,
+    TYPING_SEND_DEBOUNCE_MILLISECONDS,
     TYPING_TTL_SECONDS,
 } from "./runtime-config.js";
 import {

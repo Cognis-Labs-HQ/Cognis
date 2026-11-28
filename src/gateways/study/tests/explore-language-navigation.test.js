@@ -4,7 +4,7 @@ import { replaceMountScope } from "../../../ui/reuse/mount-scope.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { readFileSync } from "node:fs";
 import {
     exploreLayers,
@@ -76,7 +76,7 @@ function navigationContext({
     pending = [],
     admin = false,
 } = {}) {
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         languageExploreUrl,
         languageFlashcardsUrl,
         replaceMountScope,
@@ -146,7 +146,7 @@ function navigationContext({
 
 test("language choices resolve shared host pages even when provider child pages are empty", async () => {
     const context = navigationContext();
-    const model = await context.loadStudySubNavigationModel({
+    const model = await context.loadStudyNestedNavigationModel({
         fallbackLanguageCode: "ja",
     });
     assert.equal(
@@ -154,7 +154,7 @@ test("language choices resolve shared host pages even when provider child pages 
         "/study/explore/en/letter-combinations",
     );
     context.window.location.pathname = "/study/flashcards/deck";
-    const deck = await context.loadStudySubNavigationModel({
+    const deck = await context.loadStudyNestedNavigationModel({
         fallbackLanguageCode: "en",
     });
     assert.equal(deck.languagePageUrlsByCode.get("en"), "/study/en/flashcards");
@@ -187,10 +187,10 @@ test("Study renders Requests from route translations without an adapter locale b
         context.window.location.pathname = "/study";
         const preferred = localeStrings(locale.split("-")[0]);
         const lookups = [];
-        const model = await context.loadStudySubNavigationModel({
+        const model = await context.loadStudyNestedNavigationModel({
             fallbackLanguageCode: "ja",
         });
-        const slot = context.createStudySubNavigationSlot(model, {
+        const slot = context.createStudyNestedNavigationSlot(model, {
             t(key) {
                 lookups.push(key);
                 const value = preferred.get(key) || english.get(key);
@@ -247,11 +247,11 @@ test("Study management links follow connectivity while Explore remains available
             { base: "/study/explore" },
         ],
     });
-    const model = await context.loadStudySubNavigationModel({
+    const model = await context.loadStudyNestedNavigationModel({
         fallbackLanguageCode: "ja",
     });
     const english = localeStrings("en");
-    const slot = context.createStudySubNavigationSlot(model, {
+    const slot = context.createStudyNestedNavigationSlot(model, {
         t: (key) => {
             const text = english.get(key);
             assert.ok(text, key);
@@ -263,7 +263,7 @@ test("Study management links follow connectivity while Explore remains available
     assert.match(slot.render(), /href="\/study\/library" aria-disabled="true"/);
     assert.doesNotMatch(slot.render(), /href="\/study\/explore" aria-disabled/);
     assert.match(slot.render(), /href="\/study\/explore"/);
-    const offline = await context.loadStudySubNavigationModel({
+    const offline = await context.loadStudyNestedNavigationModel({
         fallbackLanguageCode: "ja",
     });
     assert.deepEqual(
@@ -293,7 +293,7 @@ test("an already mounted Study menu disables management links on disconnect and 
     root.querySelectorAll = (selector) =>
         selector.startsWith("a[") ? [link] : [];
     const scope = new AbortController();
-    context.bindStudySubNavigation(root, { signal: scope.signal });
+    context.bindStudyNestedNavigation(root, { signal: scope.signal });
     assert.equal(attributes.has("aria-disabled"), false);
     context.offline = true;
     events.dispatchEvent(new Event("cognis:connectivity-changed"));
@@ -321,10 +321,10 @@ test("disabled Study language links cannot bypass the router through their state
     const navigated = [];
     context.uiCtx.capabilities.get =
         () =>
-        (...argumentsList) =>
-            navigated.push(argumentsList);
+        (...args) =>
+            navigated.push(args);
     const scope = new AbortController();
-    context.bindStudySubNavigation(root, { signal: scope.signal });
+    context.bindStudyNestedNavigation(root, { signal: scope.signal });
     let disabled = true;
     const link = {
         dataset: { languageCode: "ja" },

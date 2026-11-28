@@ -69,7 +69,7 @@ test("notification route dispatches to registered sender when prefs match", asyn
 
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         requestWithBody(
@@ -83,12 +83,12 @@ test("notification route dispatches to registered sender when prefs match", asyn
             },
             adminToken,
         ),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/send"),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.deepEqual(data.data.dispatched, ["test-sender"]);
     assert.equal(sender.received.length, 1);
     assert.equal(sender.received[0].recipientUsername, "alice");
@@ -102,7 +102,7 @@ test("notification route returns empty dispatched array when no prefs configured
 
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         requestWithBody(
@@ -115,12 +115,12 @@ test("notification route returns empty dispatched array when no prefs configured
             },
             adminToken,
         ),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/send"),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.deepEqual(data.data.dispatched, []);
 });
 
@@ -129,16 +129,16 @@ test("notification route returns 400 when required fields are missing", async ()
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         requestWithBody("POST", { category: "account_alert" }, adminToken),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/send"),
     );
 
-    assert.equal(response.status, 400);
-    assert.match(response.payload, /missing_fields/);
+    assert.equal(res.status, 400);
+    assert.match(res.payload, /missing_fields/);
 });
 
 test("notification route returns 401 without authentication", async () => {
@@ -219,7 +219,7 @@ test("GET /api/v1/notify/providers returns sender list to admin", async () => {
     gateway.registerSender(new CapturingSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -227,12 +227,12 @@ test("GET /api/v1/notify/providers returns sender list to admin", async () => {
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/providers"),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.ok(Array.isArray(data.data));
     assert.equal(data.data.length, 1);
     assert.equal(data.data[0].senderId, "smtp");
@@ -244,7 +244,7 @@ test("GET /api/v1/notify/providers returns sender list to non-admin user", async
     gateway.registerSender(new CapturingSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -252,12 +252,12 @@ test("GET /api/v1/notify/providers returns sender list to non-admin user", async
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/providers"),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.ok(Array.isArray(data.data));
 });
 
@@ -265,7 +265,7 @@ test("GET /api/v1/notify/providers returns 401 without auth", async () => {
     const preferenceStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -273,11 +273,11 @@ test("GET /api/v1/notify/providers returns 401 without auth", async () => {
             headers: {},
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/providers"),
     );
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 test("GET /api/v1/notify/categories returns categories to authenticated user", async () => {
@@ -286,7 +286,7 @@ test("GET /api/v1/notify/categories returns categories to authenticated user", a
     gateway.registerCategory("system", "System");
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -294,12 +294,12 @@ test("GET /api/v1/notify/categories returns categories to authenticated user", a
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/categories"),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.ok(Array.isArray(data.data));
     assert.ok(
         data.data.some((category: { id: string }) => category.id === "system"),
@@ -310,7 +310,7 @@ test("GET /api/v1/notify/categories returns 401 without auth", async () => {
     const preferenceStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -318,11 +318,11 @@ test("GET /api/v1/notify/categories returns 401 without auth", async () => {
             headers: {},
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/categories"),
     );
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 test("GET /api/v1/notify/providers/:id/config returns 404 for unknown sender", async () => {
@@ -330,7 +330,7 @@ test("GET /api/v1/notify/providers/:id/config returns 404 for unknown sender", a
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -338,11 +338,11 @@ test("GET /api/v1/notify/providers/:id/config returns 404 for unknown sender", a
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/providers/unknown/config"),
     );
 
-    assert.equal(response.status, 404);
+    assert.equal(res.status, 404);
 });
 
 test("POST /api/v1/notify/providers/:id/test returns 400 when sender has no sendTestEmail", async () => {
@@ -351,23 +351,23 @@ test("POST /api/v1/notify/providers/:id/test returns 400 when sender has no send
     gateway.registerSender(new CapturingSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         requestWithBody("POST", { to: "test@example.com" }, adminToken),
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/providers/smtp/test"),
     );
 
-    assert.equal(response.status, 400);
-    assert.match(response.payload, /not_supported/);
+    assert.equal(res.status, 400);
+    assert.match(res.payload, /not_supported/);
 });
 
 test("GET /api/v1/notify/users/:username/notification-prefs returns 401 without auth", async () => {
     const preferenceStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -375,13 +375,13 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 401 without 
             headers: {},
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
         ),
     );
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 test("GET /api/v1/notify/users/:username/notification-prefs returns 403 for different user", async () => {
@@ -389,7 +389,7 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 403 for diff
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("bob", "user", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -397,13 +397,13 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 403 for diff
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
         ),
     );
 
-    assert.equal(response.status, 403);
+    assert.equal(res.status, 403);
 });
 
 test("GET /api/v1/notify/users/:username/notification-prefs returns empty array without notifStore", async () => {
@@ -411,7 +411,7 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns empty array 
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -419,14 +419,14 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns empty array 
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
         ),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.deepEqual(data.data, []);
 });
 
@@ -435,7 +435,7 @@ test("PUT /api/v1/notify/users/:username/notification-prefs returns 200 without 
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         requestWithBody(
@@ -443,13 +443,13 @@ test("PUT /api/v1/notify/users/:username/notification-prefs returns 200 without 
             [{ category: "system", senderId: "smtp", enabled: true }],
             userToken,
         ),
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
         ),
     );
 
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
 });
 
 test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entries for always-on senders", async () => {
@@ -485,7 +485,7 @@ test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entr
 
     const route = createNotificationRoutes(gateway, mockStore as any);
     const userToken = issueAccessToken("alice", "user", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         requestWithBody(
@@ -496,13 +496,13 @@ test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entr
             ],
             userToken,
         ),
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
         ),
     );
 
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     assert.equal(
         savedPreferences.length,
         1,
@@ -539,7 +539,7 @@ test("GET /api/v1/notify/providers/:id/config includes requiredFields when sende
     gateway.registerSender(new ConfiguredSender());
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -547,12 +547,12 @@ test("GET /api/v1/notify/providers/:id/config includes requiredFields when sende
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/providers/smtp/config"),
     );
 
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.deepEqual(body.requiredFields, ["host", "from"]);
 });
 
@@ -573,7 +573,7 @@ test("GET /api/v1/notify/providers/:id/config returns empty requiredFields when 
     gateway.registerSender(new MinimalSender());
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -581,12 +581,12 @@ test("GET /api/v1/notify/providers/:id/config returns empty requiredFields when 
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/providers/smtp/config"),
     );
 
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.deepEqual(body.requiredFields, []);
 });
 
@@ -595,7 +595,7 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 200 for owne
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const ownerToken = issueAccessToken("owner-account", "owner", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -603,14 +603,14 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 200 for owne
             headers: { authorization: `Bearer ${ownerToken}` },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
         ),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.deepEqual(data.data, []);
 });
 

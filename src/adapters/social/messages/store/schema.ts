@@ -1,7 +1,7 @@
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 
-export async function ensureSchema(database: DbExecutor): Promise<void> {
-    await database.ensureTable({
+export async function ensureSchema(db: DbExecutor): Promise<void> {
+    await db.ensureTable({
         name: "chatrooms",
         columns: [
             { name: "id", type: "text", primaryKey: true },
@@ -26,7 +26,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "chatroom_members",
         columns: [
             { name: "chatroom_id", type: "text", notNull: true },
@@ -57,7 +57,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "chat_messages",
         columns: [
             { name: "id", type: "text", primaryKey: true },
@@ -87,7 +87,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "chatroom_keys",
         columns: [
             { name: "chatroom_id", type: "text", primaryKey: true },
@@ -102,7 +102,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "chat_message_requests",
         columns: [
             { name: "id", type: "text", primaryKey: true },
@@ -136,7 +136,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "chatroom_typing",
         columns: [
             { name: "chatroom_id", type: "text", notNull: true },
@@ -152,7 +152,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "chat_message_reactions",
         columns: [
             { name: "chatroom_id", type: "text", notNull: true },
@@ -175,7 +175,7 @@ export async function ensureSchema(database: DbExecutor): Promise<void> {
         ],
     });
 
-    await database.ensureTable({
+    await db.ensureTable({
         name: "chat_emoji_usage",
         columns: [
             { name: "account_id", type: "text", notNull: true },

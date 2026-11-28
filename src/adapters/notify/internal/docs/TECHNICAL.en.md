@@ -4,7 +4,7 @@ The public interfaces and operational rules of In-App Notifications.
 
 ## Interfaces
 
-createNotificationSender resolves the current store lazily. bootstrapNotifyAdapter registers the always-on sender, authenticated inbox routes and the browser bell. With db:executor it initializes DbInternalNotificationStore; without it a warning identifies volatile in-memory storage.
+createNotificationSender resolves the current store lazily. bootstrapNotifyAdapter registers the always-on sender, authenticated inbox routes and the browser bell. With db:executor it initializes DatabaseInternalNotificationStore; without it a warning identifies volatile in-memory storage.
 
 | Method   | Path                            | Description                              | Auth |
 | -------- | ------------------------------- | ---------------------------------------- | ---- |

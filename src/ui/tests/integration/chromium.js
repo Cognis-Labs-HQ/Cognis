@@ -1,8 +1,8 @@
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtemp, readFile, rm as removePath } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
+import { setTimeout } from "node:timers/promises";
 
 export function findChromium() {
     return [
@@ -66,7 +66,7 @@ export async function launchChromium(executable) {
                 resolve();
             else processHandle.once("exit", resolve);
         });
-        await removePath(directory, {
+        await rm(directory, {
             recursive: true,
             force: true,
             maxRetries: 3,
@@ -96,7 +96,7 @@ export async function launchChromium(executable) {
                 break;
             } catch (error) {
                 if (error.code !== "ENOENT") throw error;
-                await delay(50);
+                await setTimeout(50);
             }
         }
         if (!port)
@@ -110,7 +110,7 @@ export async function launchChromium(executable) {
             ).json();
             target = targets.find((candidate) => candidate.type === "page");
             if (target) break;
-            await delay(50);
+            await setTimeout(50);
         }
         if (!target) throw new Error("Chromium did not create a page target.");
         socket = new WebSocket(target.webSocketDebuggerUrl);
@@ -129,7 +129,7 @@ export async function launchChromium(executable) {
                 else request.resolve(message.result);
             } else events.push(message);
         });
-        function command(method, parameters = {}) {
+        function command(method, params = {}) {
             return new Promise((resolve, reject) => {
                 const id = ++sequence;
                 const timeout = setTimeout(() => {
@@ -137,7 +137,7 @@ export async function launchChromium(executable) {
                     reject(new Error(`Chromium command timed out: ${method}`));
                 }, 10000);
                 pending.set(id, { resolve, reject, timeout });
-                socket.send(JSON.stringify({ id, method, params: parameters }));
+                socket.send(JSON.stringify({ id, method, params: params }));
             });
         }
         function valueFromResult(result) {
@@ -158,7 +158,7 @@ export async function launchChromium(executable) {
                 }),
             );
         }
-        async function callFunction(functionDeclaration, argumentsList = []) {
+        async function callFunction(functionDeclaration, args = []) {
             const global = await command("Runtime.evaluate", {
                 expression: "globalThis",
             });
@@ -166,7 +166,7 @@ export async function launchChromium(executable) {
                 await command("Runtime.callFunctionOn", {
                     objectId: global.result.objectId,
                     functionDeclaration,
-                    arguments: argumentsList.map((value) => ({ value })),
+                    arguments: args.map((value) => ({ value })),
                     awaitPromise: true,
                     returnByValue: true,
                 }),
@@ -184,7 +184,7 @@ export async function launchChromium(executable) {
                     angle: width > height ? 90 : 0,
                 },
             });
-            await delay(180);
+            await setTimeout(180);
         }
         async function waitFor(
             expression,
@@ -193,7 +193,7 @@ export async function launchChromium(executable) {
             const deadline = Date.now() + timeoutMilliseconds;
             while (Date.now() < deadline) {
                 if (await evaluate(expression)) return;
-                await delay(50);
+                await setTimeout(50);
             }
             throw new Error(
                 `Browser condition did not become true: ${expression}`,

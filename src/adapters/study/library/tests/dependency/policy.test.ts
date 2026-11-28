@@ -127,13 +127,13 @@ function harness(records: LibraryEntry[], requests: object[] = []) {
     };
 }
 
-const reference = (id: string) => ({ entryId: id, relation: "parts" });
+const ref = (id: string) => ({ entryId: id, relation: "parts" });
 const input = (label: string, id: string): LibraryEntryInput => ({
     schemaId: schema.id,
     layer: "units",
     label,
     fields: {},
-    references: [reference(id)],
+    references: [ref(id)],
 });
 
 test("creation and edits enforce scope visibility and ACLs for flat and grouped dependencies", async () => {
@@ -213,7 +213,7 @@ test("creation and edits enforce scope visibility and ACLs for flat and grouped 
 test("publication and update requests reject private dependencies before queuing", async () => {
     const component = entry("private", { scope: "user", scopeId: "alice" });
     const source = entry("source", { scope: "user", scopeId: "alice" }, [
-        reference(component.id),
+        ref(component.id),
     ]);
     const global = entry("global", { scope: "global", scopeId: "global" });
     const { library, mutations, prepare } = harness([
@@ -243,7 +243,7 @@ test("publication and update requests reject private dependencies before queuing
 test("approval rechecks dependencies changed after request submission", async () => {
     const component = entry("component", { scope: "user", scopeId: "alice" });
     const source = entry("source", { scope: "user", scopeId: "alice" }, [
-        reference(component.id),
+        ref(component.id),
     ]);
     const request = {
         id: "request",
@@ -272,7 +272,7 @@ test("shared dependencies stay available while a private relocation awaits revie
         scopeId: "global",
     });
     const source = entry("source", { scope: "global", scopeId: "global" }, [
-        reference(component.id),
+        ref(component.id),
     ]);
     const testHarness = harness([component, source]);
     await testHarness.prepare();
@@ -315,7 +315,7 @@ test("scope validation checks every edge and rejects composition cycles during e
     const invalidGlobal = entry(
         "global",
         { scope: "global", scopeId: "global" },
-        [reference(personal.id)],
+        [ref(personal.id)],
     );
     const records = new Map(
         [personal, invalidGlobal].map((value) => [value.id, value]),
@@ -328,7 +328,7 @@ test("scope validation checks every edge and rejects composition cycles during e
         ),
         /reference_visibility_too_low/,
     );
-    personal.references = [reference(invalidGlobal.id)];
+    personal.references = [ref(invalidGlobal.id)];
     await assert.rejects(
         validateDependencyVisibility(
             input("cycle", personal.id),
@@ -346,7 +346,7 @@ test("class-scoped publication succeeds with compatible components and permissio
         scopeId: "class-a",
     });
     const source = entry("source", { scope: "user", scopeId: "alice" }, [
-        reference(component.id),
+        ref(component.id),
     ]);
     const testHarness = harness([source, component]);
     await testHarness.prepare();

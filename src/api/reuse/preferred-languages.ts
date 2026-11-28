@@ -27,4 +27,4 @@ function resolveLanguages(url: URL): string[] {
     if (!seen.has(DEFAULT_LANGUAGE)) result.push(DEFAULT_LANGUAGE);
     return result;
 }
-export { resolveLanguages as resolveLangs };
+export { resolveLanguages };

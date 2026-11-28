@@ -14,8 +14,7 @@ export function installTutorials(ctx) {
     if (ctx.capabilities.get("ui:tutorials"))
         return ctx.capabilities.get("ui:tutorials");
     let page;
-    const log = (...argumentsList) =>
-        ctx.capabilities.get("ui:log")?.(...argumentsList);
+    const log = (...args) => ctx.capabilities.get("ui:log")?.(...args);
     const prepareStyles = () =>
         ctx.capabilities
             .get("ui:reuse")

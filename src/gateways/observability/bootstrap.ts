@@ -86,26 +86,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             eventLoopDelay.disable();
         });
 
-    ctx.routeRegistry.register(async (request, response, url) => {
+    ctx.routeRegistry.register(async (req, res, url) => {
         if (
             url.pathname !== "/api/v1/observability/client" ||
-            request.method !== "POST"
+            req.method !== "POST"
         ) {
             return false;
         }
-        const claims = routeContext?.requireAuth(request, response, "user");
+        const claims = routeContext?.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = String(claims.sub);
         const now = Date.now();
         const submission = clientSubmissions.get(accountId);
         if (submission && submission.resetAt > now && submission.count >= 6) {
-            response.writeHead(429, {
+            res.writeHead(429, {
                 "cache-control": "private, no-store",
                 "retry-after": String(
                     Math.ceil((submission.resetAt - now) / 1_000),
                 ),
             });
-            response.end();
+            res.end();
             return true;
         }
         clientSubmissions.set(accountId, {
@@ -119,13 +119,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     : now + 60_000,
         });
         let body = "";
-        for await (const chunk of request) {
+        for await (const chunk of req) {
             body += chunk;
             if (body.length > 16_384) {
-                response.writeHead(413, {
+                res.writeHead(413, {
                     "cache-control": "private, no-store",
                 });
-                response.end();
+                res.end();
                 return true;
             }
         }
@@ -136,13 +136,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         try {
             payload = JSON.parse(body) as typeof payload;
         } catch {
-            response.writeHead(400, { "cache-control": "private, no-store" });
-            response.end();
+            res.writeHead(400, { "cache-control": "private, no-store" });
+            res.end();
             return true;
         }
         if (!Array.isArray(payload.metrics) || payload.metrics.length > 16) {
-            response.writeHead(400, { "cache-control": "private, no-store" });
-            response.end();
+            res.writeHead(400, { "cache-control": "private, no-store" });
+            res.end();
             return true;
         }
         for (const metric of payload.metrics ?? []) {
@@ -150,8 +150,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 navigation: payload.navigation === "spa" ? "spa" : "document",
             });
         }
-        response.writeHead(204, { "cache-control": "private, no-store" });
-        response.end();
+        res.writeHead(204, { "cache-control": "private, no-store" });
+        res.end();
         return true;
     }, "observability");
     ctx.routeRegistry.registerPrefix("/api/v1/observability", "observability");

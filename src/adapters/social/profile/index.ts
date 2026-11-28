@@ -2,8 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { DbProfileStore as DatabaseProfileStore } from "./store.js";
-import { DbUserPreferenceStore as DatabaseUserPreferenceStore } from "./preference-store.js";
+import { DatabaseProfileStore } from "./store.js";
+import { DatabaseUserPreferenceStore } from "./preference-store.js";
 import { createProfileRoutes } from "./routes/index.js";
 import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
@@ -66,26 +66,25 @@ export function createProfilePageRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        currentRequest: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (currentRequest.method && currentRequest.method !== "GET")
-            return false;
+        if (req.method && req.method !== "GET") return false;
 
         if (isAdapterEnabled && !isAdapterEnabled()) return false;
 
         if (url.pathname === "/profile") {
-            const session = ctx.getCookieSession(currentRequest);
+            const session = ctx.getCookieSession(req);
             if (!session) {
-                response.writeHead(302, { location: "/login" });
-                response.end();
+                res.writeHead(302, { location: "/login" });
+                res.end();
                 return true;
             }
-            response.writeHead(302, {
+            res.writeHead(302, {
                 location: `/profile/${encodeURIComponent(session.sub)}`,
             });
-            response.end();
+            res.end();
             return true;
         }
 
@@ -93,23 +92,23 @@ export function createProfilePageRoutes(
             url.pathname.startsWith("/profile/") &&
             url.pathname.length > "/profile/".length
         ) {
-            if (!ctx.getCookieSession(currentRequest)) {
-                response.writeHead(302, { location: "/login" });
-                response.end();
+            if (!ctx.getCookieSession(req)) {
+                res.writeHead(302, { location: "/login" });
+                res.end();
                 return true;
             }
             try {
                 const filePath = path.join(ADAPTER_UI_ROOT, "index.html");
                 const file = await readFile(filePath);
-                ctx.setPageSecurityHeaders(response);
-                response.writeHead(200, {
+                ctx.setPageSecurityHeaders(res);
+                res.writeHead(200, {
                     "content-type": "text/html; charset=utf-8",
                     "cache-control": "no-store",
                 });
-                response.end(file);
+                res.end(file);
             } catch {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -137,8 +136,8 @@ export function createProfilePageRoutes(
  *   profile:setRoleByHandle — (handle, role) => void
  *                              Called by user:role route when this adapter is
  *                              present so profile rows stay in sync.
- *   preferences:store       — DbUserPreferenceStore for per-user settings.
- *   social:profileStore     — DbProfileStore for cross-adapter lookup
+ *   preferences:store       — DatabaseUserPreferenceStore for per-user settings.
+ *   social:profileStore     — DatabaseProfileStore for cross-adapter lookup
  *                              (e.g. messages adapter handle resolution).
  *
  * Profile API routes are always registered. Avatar/banner routes return

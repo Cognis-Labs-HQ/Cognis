@@ -6,8 +6,8 @@ import { renderStructuredSummary } from "../../../../tooling/cli/formatters.ts";
 export function registerCommands({ register }) {
     register(
         "invite:token:generate",
-        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
-            if (argumentsList.length)
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
+            if (args.length)
                 throw new Error("Usage: cognisctl invite:token:generate");
             return apiRequest(apiBaseUrl, "/api/v1/registration/tokens", {
                 method: "POST",
@@ -24,12 +24,12 @@ export function registerCommands({ register }) {
     );
     register(
         "invite:email:send",
-        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
-            if (argumentsList.length > 1)
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
+            if (args.length > 1)
                 throw new Error("Usage: cognisctl invite:email:send <email>");
             const email = String(
-                argumentsList.length
-                    ? argumentsList[0]
+                args.length
+                    ? args[0]
                     : ((
                           await collectWizardFields("invite:email:send", [
                               { name: "email", required: true },

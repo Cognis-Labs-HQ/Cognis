@@ -49,8 +49,8 @@ function acceptedEncodingQuality(header: string, encoding: string): number {
 }
 
 export async function serveStaticAsset(
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     filePath: string,
     contentType: string,
     log?: BootstrapLog,
@@ -58,7 +58,7 @@ export async function serveStaticAsset(
     cacheControl = "no-store",
 ): Promise<void> {
     try {
-        const acceptedEncoding = request.headers["accept-encoding"] ?? "";
+        const acceptedEncoding = req.headers["accept-encoding"] ?? "";
         const brotliPath = `${filePath}.br`;
         const gzipPath = `${filePath}.gz`;
         const availableEncodings = [
@@ -80,11 +80,11 @@ export async function serveStaticAsset(
             !encoding &&
             acceptedEncodingQuality(acceptedEncoding, "identity") === 0
         ) {
-            response.writeHead(406, {
+            res.writeHead(406, {
                 "content-type": "application/json",
                 vary: "Accept-Encoding",
             });
-            response.end(
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "not_acceptable",
@@ -112,19 +112,19 @@ export async function serveStaticAsset(
             ...(encoding ? { "content-encoding": encoding } : {}),
         };
         if (
-            request.headers["if-none-match"] === etag ||
-            (!request.headers["if-none-match"] &&
-                request.headers["if-modified-since"] &&
-                Date.parse(request.headers["if-modified-since"]) >=
+            req.headers["if-none-match"] === etag ||
+            (!req.headers["if-none-match"] &&
+                req.headers["if-modified-since"] &&
+                Date.parse(req.headers["if-modified-since"]) >=
                     Math.trunc(metadata.mtimeMs / 1000) * 1000)
         ) {
-            response.writeHead(304, headers);
-            response.end();
+            res.writeHead(304, headers);
+            res.end();
             return;
         }
         const file = await readFile(compressedPath);
-        response.writeHead(200, { ...headers, "content-length": file.length });
-        response.end(file);
+        res.writeHead(200, { ...headers, "content-length": file.length });
+        res.end(file);
     } catch (error) {
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
@@ -132,12 +132,12 @@ export async function serveStaticAsset(
             ...(logMetadata ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
-        response.writeHead(404, {
+        res.writeHead(404, {
             "content-type": "application/json",
             "cache-control": "no-store",
             "x-content-type-options": "nosniff",
         });
-        response.end(
+        res.end(
             JSON.stringify({
                 error: { code: "not_found", message: "Asset not found." },
             }),

@@ -320,7 +320,7 @@ function initLanguagePreferences(
         notifyDirty();
     }
 
-    async function initialize() {
+    async function init() {
         catalog = await loadUiLanguageCatalog().catch(() => {
             const names = new Intl.DisplayNames(
                 [document.documentElement.lang || "en"],
@@ -347,7 +347,7 @@ function initLanguagePreferences(
         signal,
     });
     return {
-        init: initialize,
+        init: init,
         renderTables,
         syncFromBrowser() {
             if (isOffline()) return;
@@ -367,4 +367,4 @@ function initLanguagePreferences(
         discard,
     };
 }
-export { initLanguagePreferences as initLanguagePrefs };
+export { initLanguagePreferences };

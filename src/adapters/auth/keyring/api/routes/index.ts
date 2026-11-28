@@ -46,13 +46,9 @@ export function createKeyringRoutes(input: {
         metadata?: Record<string, unknown>,
     ) => void;
 }): KeyringRouteHandler {
-    return async (request, response, url): Promise<boolean> => {
+    return async (req, res, url): Promise<boolean> => {
         if (url.pathname !== "/api/v1/auth/keyring") return false;
-        const claims = input.routeContext.requireAuth(
-            request,
-            response,
-            "user",
-        );
+        const claims = input.routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub.trim().toLowerCase();
         const maxVaultBytes = boundedVaultBytes(
@@ -69,15 +65,13 @@ export function createKeyringRoutes(input: {
                     maxVaultBytes: maxBytes,
                 },
             );
-            response.writeHead(413, { "content-type": "application/json" });
-            response.end(
-                JSON.stringify({ error: { code: "keyring_too_large" } }),
-            );
+            res.writeHead(413, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: { code: "keyring_too_large" } }));
             return true;
         };
         const accountInstanceId = await input.getAccountInstanceId(accountId);
 
-        if (request.method === "GET") {
+        if (req.method === "GET") {
             const stored = await input.store.get(accountId);
             if (stored && Buffer.byteLength(stored, "utf8") > MAX_VAULT_BYTES)
                 return rejectSize(MAX_VAULT_BYTES);
@@ -104,8 +98,8 @@ export function createKeyringRoutes(input: {
                 }
                 vault = null;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         vault,
@@ -118,10 +112,10 @@ export function createKeyringRoutes(input: {
             return true;
         }
 
-        if (request.method === "PUT") {
+        if (req.method === "PUT") {
             let body: Record<string, unknown>;
             try {
-                body = await readJson(request, {
+                body = await readJson(req, {
                     maxBytes: maxVaultBytes + 1024,
                 });
             } catch (error) {
@@ -136,8 +130,8 @@ export function createKeyringRoutes(input: {
                     accountId,
                     errorName: error instanceof Error ? error.name : "Unknown",
                 });
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "invalid_keyring_vault" },
                     }),
@@ -145,8 +139,8 @@ export function createKeyringRoutes(input: {
                 return true;
             }
             if (!body || !validVault(body.vault)) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "invalid_keyring_vault" },
                     }),
@@ -154,8 +148,8 @@ export function createKeyringRoutes(input: {
                 return true;
             }
             if (body.vault.accountInstanceId !== accountInstanceId) {
-                response.writeHead(409, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "keyring_account_instance_mismatch" },
                     }),
@@ -164,28 +158,28 @@ export function createKeyringRoutes(input: {
             }
             const serialized = JSON.stringify(body.vault);
             if (Buffer.byteLength(serialized, "utf8") > maxVaultBytes) {
-                response.writeHead(413, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(413, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({ error: { code: "keyring_too_large" } }),
                 );
                 return true;
             }
             await input.store.set(accountId, serialized);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
-        if (request.method === "DELETE") {
+        if (req.method === "DELETE") {
             await input.purgeDependentAccountData?.(accountId);
             await input.store.delete(accountId);
-            response.writeHead(204);
-            response.end();
+            res.writeHead(204);
+            res.end();
             return true;
         }
 
-        response.writeHead(405, { allow: "GET, PUT, DELETE" });
-        response.end();
+        res.writeHead(405, { allow: "GET, PUT, DELETE" });
+        res.end();
         return true;
     };
 }

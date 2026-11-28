@@ -81,14 +81,14 @@ export async function mount(root, { signal } = {}) {
         });
     }
 
-    const parameters = new URLSearchParams(window.location.search);
-    const tokenParameter = parameters.get("token");
+    const params = new URLSearchParams(window.location.search);
+    const tokenParameter = params.get("token");
     const token = String(tokenParameter ?? "").trim();
     const hasTokenParameter = tokenParameter !== null;
     const accountCreationAuthorization = readAccountCreationAuthorization(
         await getPendingAccountCreation().catch(() => null),
     );
-    const prefilledEmail = String(parameters.get("email") ?? "")
+    const prefilledEmail = String(params.get("email") ?? "")
         .trim()
         .toLowerCase();
     const knownErrorCodes = REGISTRATION_ERROR_CODES;

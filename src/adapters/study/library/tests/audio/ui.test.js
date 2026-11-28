@@ -1,9 +1,9 @@
 import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import assert from "node:assert/strict";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import test from "node:test";
 
-const context = virtualMachine.createContext({
+const context = vm.createContext({
     escapeHtml: String,
     parseLanguageCode: (value) => value,
     document: { documentElement: { lang: "en" } },
@@ -151,11 +151,11 @@ test("failed audio retrieval logs safely, shows a localized toast, and permits r
         capabilities: {
             get:
                 () =>
-                (...argumentsList) =>
-                    logs.push(argumentsList),
+                (...args) =>
+                    logs.push(args),
         },
     };
-    context.showToast = (...argumentsList) => toasts.push(argumentsList);
+    context.showToast = (...args) => toasts.push(args);
     context.fetchLibraryAudioUrl = async () => {
         throw new Error("network_failed");
     };

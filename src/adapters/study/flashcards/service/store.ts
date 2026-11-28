@@ -281,8 +281,6 @@ export class DeckStore {
     }
 
     async transact<T>(operation: (store: DeckStore) => Promise<T>): Promise<T> {
-        return this.database.transaction((database) =>
-            operation(new DeckStore(database)),
-        );
+        return this.database.transaction((db) => operation(new DeckStore(db)));
     }
 }

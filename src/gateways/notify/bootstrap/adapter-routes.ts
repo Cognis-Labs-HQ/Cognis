@@ -17,14 +17,14 @@ export function createGatewayAdapterRoutes(
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname === base && request.method === "GET") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+        if (url.pathname === base && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: gateway.listSenders().map((sender) => ({
                         ...sender,
@@ -47,14 +47,14 @@ export function createGatewayAdapterRoutes(
         if (configMatch) {
             const adapterId = decodeURIComponent(configMatch[1]);
 
-            if (request.method === "GET") {
-                if (!ctx.requireAuth(request, response, "admin")) return true;
+            if (req.method === "GET") {
+                if (!ctx.requireAuth(req, res, "admin")) return true;
                 const contract = gateway.getSenderAdminContract(adapterId);
                 if (!contract) {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -64,8 +64,8 @@ export function createGatewayAdapterRoutes(
                     );
                     return true;
                 }
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: contract.config,
                         schema: contract.schema,
@@ -80,15 +80,15 @@ export function createGatewayAdapterRoutes(
                 return true;
             }
 
-            if (request.method === "PUT") {
-                if (!ctx.requireAuth(request, response, "admin")) return true;
-                const body = await readJson(request);
+            if (req.method === "PUT") {
+                if (!ctx.requireAuth(req, res, "admin")) return true;
+                const body = await readJson(req);
                 await gateway.saveProviderConfig(
                     adapterId,
                     body as Record<string, unknown>,
                 );
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { saved: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
 
@@ -98,14 +98,14 @@ export function createGatewayAdapterRoutes(
         const toggleMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
-        if (toggleMatch && request.method === "POST") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (toggleMatch && req.method === "POST") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
             const contract = gateway.getSenderAdminContract(adapterId);
             if (!gateway.hasSender(adapterId)) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -118,10 +118,10 @@ export function createGatewayAdapterRoutes(
             if (action === "enable") {
                 const gatewayEntry = gatewayRegistry.get(gatewayId);
                 if (gatewayEntry?.status === "disabled") {
-                    response.writeHead(409, {
+                    res.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "gateway_disabled",
@@ -135,10 +135,10 @@ export function createGatewayAdapterRoutes(
                 await gateway.enableSender(adapterId);
             } else {
                 if (contract?.locked) {
-                    response.writeHead(403, {
+                    res.writeHead(403, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "locked_adapter",
@@ -151,8 +151,8 @@ export function createGatewayAdapterRoutes(
                 }
                 await gateway.disableSender(adapterId);
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: { enabled: action === "enable" },
                 }),

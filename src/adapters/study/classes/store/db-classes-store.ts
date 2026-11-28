@@ -259,4 +259,4 @@ class DatabaseClassesStore {
         await rejectTeacherRequest(this.database, requestId, reviewerAccountId);
     }
 }
-export { DatabaseClassesStore as DbClassesStore };
+export { DatabaseClassesStore };

@@ -47,7 +47,7 @@ import { showToast, configureToastDismissLabel } from "../toast.js";
 import { createFormDraftManager } from "./form-draft.js";
 import { createLayoutPersistence } from "./layout-persistence.js";
 import { createGridOverlayHandlers } from "./grid-overlay.js";
-import { createSubComposerHandlers as createNestedComposerHandlers } from "./sub-composer.js";
+import { createNestedComposerHandlers } from "./sub-composer.js";
 import { uiCtx } from "../ui-ctx.js";
 import { mountComposerFloatingMenu } from "./floating-menu.js";
 import { mountComposerTutorials } from "../tutorials/pages.js";

@@ -64,7 +64,7 @@ function makeRequest(
         },
     } as any;
 }
-export { makeRequest as makeReq };
+export { makeRequest };
 
 export async function setupUser(
     profileStore: VolatileProfileStore,

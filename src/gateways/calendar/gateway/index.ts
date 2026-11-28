@@ -120,11 +120,9 @@ export class CoreCalendarGateway {
         this.adapters,
     );
     readonly saveAdapterConfig = async (
-        ...argumentsList: Parameters<
-            CalendarAdapterRegistry["saveAdapterConfig"]
-        >
+        ...args: Parameters<CalendarAdapterRegistry["saveAdapterConfig"]>
     ) => {
-        this.adapters.saveAdapterConfig(...argumentsList);
+        this.adapters.saveAdapterConfig(...args);
     };
     readonly enableAdapter = async (adapterId: string) => {
         this.adapters.enableAdapter(adapterId);

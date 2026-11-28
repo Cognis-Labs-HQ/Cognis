@@ -58,20 +58,20 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
     const ctx = resolveRouteContext(dependencies.routeContext);
 
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname !== "/api/v1/social/messages/rooms") {
             return false;
         }
 
-        const claims = ctx.requireAuth(request, response, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub;
         const hasBypass = hasAdminBypass(claims.role);
 
-        if (request.method === "GET") {
+        if (req.method === "GET") {
             const rooms = await messagesStore.listRoomsForAccount(accountId);
             const enriched = await Promise.all(
                 rooms.map(async (room) => {
@@ -118,16 +118,16 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
                     };
                 }),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: enriched }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: enriched }));
             return true;
         }
 
-        if (request.method !== "POST") {
+        if (req.method !== "POST") {
             return false;
         }
 
-        const body = (await readJson(request)) as {
+        const body = (await readJson(req)) as {
             handles?: unknown;
             title?: unknown;
             kind?: unknown;
@@ -139,8 +139,8 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
               )
             : [];
         if (handles.length === 0) {
-            response.writeHead(400, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "bad_request",
@@ -180,8 +180,8 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
                 !hasApprovedRequest &&
                 (!canRequestMessage || handles.length > 1)
             ) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -195,8 +195,8 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
         }
 
         if (targets.length === 0) {
-            response.writeHead(400, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "bad_request",
@@ -210,7 +210,7 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
         const isDirectMessage = targets.length === 1 && body.kind !== "group";
         const primaryTarget = targets[0] ?? null;
         if (isDirectMessage && primaryTarget) {
-            const existing = await messagesStore.findDmBetween(
+            const existing = await messagesStore.findDirectMessageBetween(
                 accountId,
                 primaryTarget.accountId,
             );
@@ -223,8 +223,8 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
                         false,
                     ),
                 ]);
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: existing }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: existing }));
                 return true;
             }
 
@@ -261,8 +261,8 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
                         },
                     }).catch(() => undefined);
                 }
-                response.writeHead(202, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(202, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: {
                             requiresApproval: true,
@@ -278,7 +278,7 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
         const createRoomWithMembers = async () => {
             const existingRoom =
                 isDirectMessage && primaryTarget
-                    ? await messagesStore.findDmBetween(
+                    ? await messagesStore.findDirectMessageBetween(
                           accountId,
                           primaryTarget.accountId,
                       )
@@ -287,7 +287,7 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
 
             const room =
                 isDirectMessage && primaryTarget
-                    ? await messagesStore.createDm(
+                    ? await messagesStore.createDirectMessage(
                           accountId,
                           primaryTarget.accountId,
                       )
@@ -329,10 +329,10 @@ export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
                 room.id,
             );
         }
-        response.writeHead(result.created ? 201 : 200, {
+        res.writeHead(result.created ? 201 : 200, {
             "content-type": "application/json",
         });
-        response.end(JSON.stringify({ data: room }));
+        res.end(JSON.stringify({ data: room }));
         return true;
     };
 }

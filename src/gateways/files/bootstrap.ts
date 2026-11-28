@@ -13,7 +13,7 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import { resolveRouteContext } from "../../api/reuse/route-context.js";
 import { NamespaceRegistry } from "./reuse/namespace-registry.js";
-import { DbFileObjectStore as DatabaseFileObjectStore } from "./reuse/file-object-store.js";
+import { DatabaseFileObjectStore } from "./reuse/file-object-store.js";
 import { NamespaceFileService } from "./reuse/namespace-file-service.js";
 import type { FileQuotaStore } from "./reuse/quota-store-contract.js";
 import { createFileRoutes, createQuotaAdminRoutes } from "./routes/index.js";
@@ -67,9 +67,12 @@ async function loadQuotaStore(
     const quotaAdapterModule = await import(
         `${quotaAdapterPath}?t=${Date.now()}`
     );
-    const DatabaseFileQuotaStoreClass = quotaAdapterModule.DbFileQuotaStore as
-        | (new (getDatabase: () => DbExecutor | undefined) => FileQuotaStore)
-        | undefined;
+    const DatabaseFileQuotaStoreClass =
+        quotaAdapterModule.DatabaseFileQuotaStore as
+            | (new (
+                  getDatabase: () => DbExecutor | undefined,
+              ) => FileQuotaStore)
+            | undefined;
     if (!DatabaseFileQuotaStoreClass) {
         throw new Error("file_quota_adapter_missing_store_class");
     }

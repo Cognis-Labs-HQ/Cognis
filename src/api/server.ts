@@ -26,7 +26,7 @@ import {
     ModuleEnableValidationError,
 } from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
-import { createDocsRoutes as createDocumentsRoutes } from "./routes/docs/index.js";
+import { createDocumentsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
 import { createModuleExtensionRoutes } from "./reuse/module-extension-routes.js";
 import { createUserRoutes } from "./routes/users/index.js";

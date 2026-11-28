@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
     MariaDbGateway,
-    createDbExecutor as createDatabaseExecutor,
+    createDatabaseExecutor,
     readMariaDbPoolSettings,
     waitForMariaDb,
     type MariaDbClient,
@@ -182,8 +182,8 @@ test("mariadb adapter executes structured commands", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const gateway = new MariaDbGateway(
         createPool({
-            query: async (sql: string, parameters?: unknown[]) => {
-                calls.push({ sql, params: parameters });
+            query: async (sql: string, params?: unknown[]) => {
+                calls.push({ sql, params: params });
                 return [{ affectedRows: 4 }, {}];
             },
         }),
@@ -388,8 +388,8 @@ test("mariadb formats ISO values for declared timestamp columns", async () => {
     const executor = await createDatabaseExecutor({
         databaseUrl: "mariadb://unused",
         pool: createPool({
-            query: async (sql: string, parameters?: unknown[]) => {
-                calls.push({ sql, params: parameters });
+            query: async (sql: string, params?: unknown[]) => {
+                calls.push({ sql, params: params });
                 return [[], {}];
             },
         }),
@@ -425,11 +425,11 @@ test("mariadb safely parses repeated datetime error text", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const transactionCalls: string[] = [];
     const client = createClient(
-        async (sql: string, parameters?: unknown[]) => {
-            calls.push({ sql, params: parameters });
+        async (sql: string, params?: unknown[]) => {
+            calls.push({ sql, params: params });
             if (
                 sql.startsWith("INSERT INTO") &&
-                parameters?.[1] === "2026-08-29T13:07:49.408Z"
+                params?.[1] === "2026-08-29T13:07:49.408Z"
             ) {
                 throw Object.assign(
                     new Error(

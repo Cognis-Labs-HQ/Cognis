@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import test from "node:test";
 
 import {
-    renderDocumentDiff as renderDocumentDifference,
-    renderMarkdownDocumentDiff as renderMarkdownDocumentDifference,
+    renderDocumentDifference,
+    renderMarkdownDocumentDifference,
 } from "../../document-diff.js";
 
 test("document diff renders additions changes and removals safely", () => {

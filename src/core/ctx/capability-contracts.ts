@@ -142,13 +142,9 @@ export function createCapabilityContracts(ctx: Ctx): CapabilityContracts {
                 )
                     throw new Error("capability_contract_unavailable");
             };
-            const call = (callback: Function, argumentsList: unknown[]) => {
+            const call = (callback: Function, args: unknown[]) => {
                 assertActive();
-                const result = Reflect.apply(
-                    callback,
-                    implementation,
-                    argumentsList,
-                );
+                const result = Reflect.apply(callback, implementation, args);
                 if (result && typeof result.then === "function")
                     return Promise.resolve(result).then((value) => {
                         assertActive();
@@ -158,8 +154,8 @@ export function createCapabilityContracts(ctx: Ctx): CapabilityContracts {
             };
             const target =
                 contract.kind === "function"
-                    ? (...argumentsList: unknown[]) =>
-                          call(implementation as Function, argumentsList)
+                    ? (...args: unknown[]) =>
+                          call(implementation as Function, args)
                     : Object.create(null);
             return new Proxy(target, {
                 get(_target, property) {
@@ -173,12 +169,11 @@ export function createCapabilityContracts(ctx: Ctx): CapabilityContracts {
                         return undefined;
                     const value = Reflect.get(implementation, property);
                     return typeof value === "function"
-                        ? (...argumentsList: unknown[]) =>
-                              call(value, argumentsList)
+                        ? (...args: unknown[]) => call(value, args)
                         : value;
                 },
-                apply(_target, _receiver, argumentsList) {
-                    return call(implementation as Function, argumentsList);
+                apply(_target, _receiver, args) {
+                    return call(implementation as Function, args);
                 },
                 set() {
                     throw new Error("capability_contract_readonly");

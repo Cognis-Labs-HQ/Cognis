@@ -56,33 +56,33 @@ function makeResponse() {
 
 async function dispatchRoute(
     routeRegistry: RouteRegistry,
-    request: import("node:http").IncomingMessage,
+    req: import("node:http").IncomingMessage,
     pathname: string,
 ) {
-    const response = makeResponse();
+    const res = makeResponse();
     let handled = false;
-    Object.assign(request as object, { url: pathname });
+    Object.assign(req as object, { url: pathname });
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            request,
-            response as unknown as import("node:http").ServerResponse,
+            req,
+            res as unknown as import("node:http").ServerResponse,
             new URL(pathname, "http://localhost"),
         );
         if (handled) {
             break;
         }
     }
-    return { handled, res: response };
+    return { handled, res: res };
 }
 
 test("login issues setup-pending token when global TFA setup is required", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = new InMemoryTestExecutor();
+    const db = new InMemoryTestExecutor();
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
-    capabilities.contribute("db:executor", database);
+    capabilities.contribute("db:executor", db);
     capabilities.contribute("auth:keyringVaultStore", {
         async ensureSchema() {},
         async get() {

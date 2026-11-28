@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 import { Pool } from "pg";
-import { createDbExecutor as createDatabaseExecutor } from "../index.js";
+import { createDatabaseExecutor } from "../index.js";
 import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
 
 const databaseUrl = process.env.COGNIS_TEST_POSTGRES_URL;

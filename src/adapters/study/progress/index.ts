@@ -17,7 +17,7 @@ import {
     rebuildProgressProjections,
     type ProgressRecordFlowData,
 } from "./service.js";
-import { DbProgressStore as DatabaseProgressStore } from "./store.js";
+import { DatabaseProgressStore } from "./store.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { LearningEvent } from "../../../gateways/study/reuse/progress.js";
 
@@ -129,14 +129,14 @@ export async function bootstrapStudyAdapter(
     const service = new ProgressService(
         store,
         {
-            canRead: (...argumentsList) =>
+            canRead: (...args) =>
                 ctx.capabilities
                     .get<StudyClassAccessCapability>("study:classes:access")
-                    ?.canRead(...argumentsList) ?? Promise.resolve(false),
-            canWrite: (...argumentsList) =>
+                    ?.canRead(...args) ?? Promise.resolve(false),
+            canWrite: (...args) =>
                 ctx.capabilities
                     .get<StudyClassAccessCapability>("study:classes:access")
-                    ?.canWrite(...argumentsList) ?? Promise.resolve(false),
+                    ?.canWrite(...args) ?? Promise.resolve(false),
         },
         ctx.flow,
         ctx.log,

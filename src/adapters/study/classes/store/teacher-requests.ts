@@ -4,11 +4,11 @@ import { rowToTeacherRequest } from "./rows.js";
 import type { ClassRow, TeacherRequestRow } from "./types.js";
 
 export async function getTeacherRequest(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
     languageCode: string,
 ): Promise<TeacherRequestRow | null> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "teacher_requests",
         columns: [
@@ -33,9 +33,9 @@ export async function getTeacherRequest(
 }
 
 export async function listPendingRequests(
-    database: DbExecutor,
+    db: DbExecutor,
 ): Promise<TeacherRequestRow[]> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "teacher_requests",
         columns: [
@@ -57,14 +57,14 @@ export async function listPendingRequests(
 }
 
 export async function submitTeacherRequest(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
     languageCode: string,
     reason: string | null,
 ): Promise<TeacherRequestRow> {
     const requestId = randomUUID();
     const nowIso = new Date().toISOString();
-    await database.executeCommand({
+    await db.executeCommand({
         option: "INSERT",
         table: "teacher_requests",
         values: {
@@ -90,11 +90,11 @@ export async function submitTeacherRequest(
 }
 
 export async function approveTeacherRequest(
-    database: DbExecutor,
+    db: DbExecutor,
     requestId: string,
     reviewerAccountId: string,
 ): Promise<ClassRow | null> {
-    return database.transaction(async (executor) => {
+    return db.transaction(async (executor) => {
         const requestResult = await executor.executeCommand({
             option: "SELECT",
             table: "teacher_requests",
@@ -162,11 +162,11 @@ export async function approveTeacherRequest(
 }
 
 export async function rejectTeacherRequest(
-    database: DbExecutor,
+    db: DbExecutor,
     requestId: string,
     reviewerAccountId: string,
 ): Promise<void> {
-    await database.executeCommand({
+    await db.executeCommand({
         option: "UPDATE",
         table: "teacher_requests",
         set: {

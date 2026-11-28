@@ -98,7 +98,7 @@ test("missing Kanji are committed once and canonical IDs replace every spelling 
     const lookupSession = session();
     const result = await lookupSession.run(input);
     assert.deepEqual(
-        Array.from(result.references, (reference) => reference.entryId),
+        Array.from(result.references, (ref) => ref.entryId),
         ["kanji-room", "kanji-room"],
     );
     assert.equal(

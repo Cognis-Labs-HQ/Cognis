@@ -46,7 +46,7 @@ function makeInMemoryDatabase(): InMemoryDb {
         ): Promise<T> => callback(makeInMemoryDatabase()),
     };
 }
-export { makeInMemoryDatabase as makeInMemoryDb };
+export { makeInMemoryDatabase };
 
 export function makeJsonRequest(
     method: string,
@@ -65,20 +65,20 @@ export function makeJsonRequest(
 
 export async function dispatchRoute(
     routeRegistry: RouteRegistry,
-    request: HttpIncomingMessage,
+    req: HttpIncomingMessage,
     pathname: string,
 ): Promise<{ handled: boolean; res: TestResponse }> {
-    const response = makeResponse();
+    const res = makeResponse();
     let handled = false;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            request,
-            response as unknown as import("node:http").ServerResponse,
+            req,
+            res as unknown as import("node:http").ServerResponse,
             new URL(pathname, "http://localhost"),
         );
         if (handled) break;
     }
-    return { handled, res: response };
+    return { handled, res: res };
 }
 
 export function makeResponse(): TestResponse {

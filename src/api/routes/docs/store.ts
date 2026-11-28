@@ -3,13 +3,13 @@ import {
     readFile,
     readdir,
     rename,
-    rm as removePath,
+    rm,
     writeFile,
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
 import {
-    discoverDocSources as discoverDocumentSources,
+    discoverDocumentSources,
     optionalText,
     type DocView,
 } from "./sources.js";
@@ -68,7 +68,7 @@ async function publishSnapshot(
         await writeFile(temporaryPath, content);
         await rename(temporaryPath, path);
     } finally {
-        await removePath(temporaryPath, { force: true });
+        await rm(temporaryPath, { force: true });
     }
 }
 
@@ -162,7 +162,7 @@ async function initializeDocumentsStore(
     }
     return stored;
 }
-export { initializeDocumentsStore as initializeDocsStore };
+export { initializeDocumentsStore };
 
 export async function readStoredMarkdown(
     archiveRoot: string,

@@ -41,15 +41,15 @@ export function createLockedAdapterAdminRoutes(
     const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (!url.pathname.startsWith(base)) return false;
-        if (!ctx.requireAuth(request, response, "admin")) return true;
-        if (url.pathname === base && request.method === "GET") {
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+        if (!ctx.requireAuth(req, res, "admin")) return true;
+        if (url.pathname === base && req.method === "GET") {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: adapters.map((adapter) => ({
                         ...adapter,
@@ -73,14 +73,14 @@ export function createLockedAdapterAdminRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch && adapters.some(({ id }) => id === configMatch[1])) {
-            if (request.method === "GET") {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: {}, schema: [] }));
+            if (req.method === "GET") {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: {}, schema: [] }));
                 return true;
             }
-            if (request.method === "PUT") {
-                response.writeHead(204);
-                response.end();
+            if (req.method === "PUT") {
+                res.writeHead(204);
+                res.end();
                 return true;
             }
         }
@@ -89,11 +89,11 @@ export function createLockedAdapterAdminRoutes(
         );
         if (
             toggleMatch &&
-            request.method === "POST" &&
+            req.method === "POST" &&
             adapters.some(({ id }) => id === toggleMatch[1])
         ) {
-            response.writeHead(409, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(409, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "adapter_locked",

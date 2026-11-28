@@ -5,10 +5,10 @@ import {
 } from "../../../gateways/auth/reuse/usernames.js";
 
 export async function readUsername(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
 ): Promise<string | null> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "auth_account_names",
         columns: ["username"],
@@ -20,15 +20,15 @@ export async function readUsername(
 
 /** Reserve before profile/email side effects; unique constraints also serialize racing claims. */
 export async function reserveUsername(
-    database: DbExecutor,
+    db: DbExecutor,
     accountId: string,
     provider: string,
     proposed: string,
 ): Promise<string> {
-    const existing = await readUsername(database, accountId);
+    const existing = await readUsername(db, accountId);
     if (existing) return existing;
     const base = usernameBase(proposed);
-    const duplicate = await database.executeCommand({
+    const duplicate = await db.executeCommand({
         option: "SELECT",
         table: "auth_account_names",
         columns: ["account_id"],
@@ -41,7 +41,7 @@ export async function reserveUsername(
     if (duplicate.rows?.length) throw new Error("provider_username_taken");
     for (let attempt = 0; attempt < 32; attempt++) {
         const username = attempt === 0 ? base : usernameWithSuffix(base);
-        await database.executeCommand({
+        await db.executeCommand({
             option: "INSERT",
             table: "auth_account_names",
             values: {
@@ -52,15 +52,15 @@ export async function reserveUsername(
             },
             conflict: { action: "ignore", target: ["username"] },
         });
-        const reserved = await readUsername(database, accountId);
+        const reserved = await readUsername(db, accountId);
         if (reserved) return reserved;
     }
     throw new Error("username_allocation_failed");
 }
 
 /** Explicitly repair existing provider-prefixed names without changing relationship keys. */
-export async function prepareUsernames(database: DbExecutor): Promise<void> {
-    await database.ensureTable({
+export async function prepareUsernames(db: DbExecutor): Promise<void> {
+    await db.ensureTable({
         name: "auth_account_names",
         columns: [
             {
@@ -79,7 +79,7 @@ export async function prepareUsernames(database: DbExecutor): Promise<void> {
         ],
         uniqueKeys: [["username"], ["provider", "provider_username"]],
     });
-    const accounts = await database.executeCommand({
+    const accounts = await db.executeCommand({
         option: "SELECT",
         table: "accounts",
         columns: ["id", "display_name"],
@@ -90,8 +90,8 @@ export async function prepareUsernames(database: DbExecutor): Promise<void> {
     });
     for (const account of accounts.rows ?? []) {
         const accountId = String(account.id);
-        await database.transaction(async (transaction) => {
-            const identity = await transaction.executeCommand({
+        await db.transaction(async (tx) => {
+            const identity = await tx.executeCommand({
                 option: "SELECT",
                 table: "auth_identities",
                 columns: ["provider"],
@@ -99,13 +99,13 @@ export async function prepareUsernames(database: DbExecutor): Promise<void> {
                 limit: 1,
             });
             const username = await reserveUsername(
-                transaction,
+                tx,
                 accountId,
                 String(identity.rows?.[0]?.provider ?? "local"),
                 accountId,
             );
             if (account.display_name === accountId)
-                await transaction.executeCommand({
+                await tx.executeCommand({
                     option: "UPDATE",
                     table: "accounts",
                     set: { display_name: username },

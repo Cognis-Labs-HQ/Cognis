@@ -90,7 +90,7 @@ export class SmtpSession {
 }
 
 const SMTP_TIMEOUT_MILLISECONDS = 30_000;
-export { SMTP_TIMEOUT_MILLISECONDS as SMTP_TIMEOUT_MS };
+export { SMTP_TIMEOUT_MILLISECONDS };
 
 function awaitConnection<Socket extends network.Socket>(
     socket: Socket,

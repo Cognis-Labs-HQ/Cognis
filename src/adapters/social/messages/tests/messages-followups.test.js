@@ -453,7 +453,7 @@ test("server room key contributions are validated and saved to the keyring", asy
             assert.equal(hex, "generated-room-key");
             return imported;
         },
-        contributeSecret: async (...argumentsList) => saved.push(argumentsList),
+        contributeSecret: async (...args) => saved.push(args),
     });
 
     assert.equal(

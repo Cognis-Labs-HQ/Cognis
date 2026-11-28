@@ -1,7 +1,7 @@
 import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import test from "node:test";
 
 const schema = {
@@ -78,7 +78,7 @@ test("deletion confirmation includes restricted and grouped dependants but leave
             entries: records.slice(0, 3),
         }),
         escapeHtml: (value) => value,
-        showToast: (...argumentsList) => errors.push(argumentsList),
+        showToast: (...args) => errors.push(args),
         openPopup: async (options) => {
             popup = options;
             options.onAction("delete", {

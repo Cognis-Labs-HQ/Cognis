@@ -5,7 +5,7 @@ import test from "node:test";
 import {
     mkdtemp,
     writeFile,
-    rm as removePath,
+    rm,
     mkdir,
     readFile,
     copyFile,
@@ -65,7 +65,7 @@ test("dependency cycles are unavailable instead of recursing indefinitely", () =
 
 test("discovery loads manifest UUID dependencies and bootstrap runs them before consumers", async (context) => {
     const root = await mkdtemp(path.join(tmpdir(), "study-dependencies-"));
-    context.after(() => removePath(root, { recursive: true, force: true }));
+    context.after(() => rm(root, { recursive: true, force: true }));
     const definitions = [
         { id: "a-consumer", uuid: "consumer", requires: ["base"] },
         { id: "z-base", uuid: "base", requires: [] },
@@ -93,23 +93,23 @@ test("discovery loads manifest UUID dependencies and bootstrap runs them before 
             capabilities,
             gatewayRegistry: new GatewayRegistry(),
             flow: systemCtx.flow,
-            registerRoute: (...argumentsList) => {
-                registered.push(argumentsList);
+            registerRoute: (...args) => {
+                registered.push(args);
             },
-            registerStaticDir: (...argumentsList) => {
-                registered.push(argumentsList);
+            registerStaticDir: (...args) => {
+                registered.push(args);
             },
-            registerCapabilityProvider: (...argumentsList) => {
-                registered.push(argumentsList);
+            registerCapabilityProvider: (...args) => {
+                registered.push(args);
             },
-            registerNavbarPlugin: (...argumentsList) => {
-                registered.push(argumentsList);
+            registerNavbarPlugin: (...args) => {
+                registered.push(args);
             },
-            registerPageExtension: (...argumentsList) => {
-                registered.push(argumentsList);
+            registerPageExtension: (...args) => {
+                registered.push(args);
             },
-            log: (...argumentsList) => {
-                registered.push(argumentsList);
+            log: (...args) => {
+                registered.push(args);
             },
         }),
     );

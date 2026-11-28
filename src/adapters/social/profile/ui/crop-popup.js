@@ -1,13 +1,13 @@
 import {
     clampCropSelection,
-    composeCropSourceRect as composeCropSourceRectangle,
+    composeCropSourceRectangle,
     computeContainImageBounds,
-    computeMaxAspectSourceRect as computeMaxAspectSourceRectangle,
+    computeMaxAspectSourceRectangle,
     computeMovedCropSelection,
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
-    panCropSourceRect as panCropSourceRectangle,
+    panCropSourceRectangle,
 } from "./image-crop.js";
 
 const POPUP_VIEWPORT_MAX_WIDTH = "95vw";

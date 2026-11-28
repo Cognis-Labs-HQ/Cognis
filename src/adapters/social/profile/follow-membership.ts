@@ -1,4 +1,4 @@
-import type { DbProfileStore } from "./store.js";
+import type { DatabaseProfileStore } from "./store.js";
 
 export interface FollowerMutation {
     followerAccountId: string;
@@ -11,7 +11,7 @@ export interface FollowersCapability {
 }
 
 export function createFollowersCapability(
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
 ): FollowersCapability {
     return {
         add: ({ followerAccountId, followedAccountId }) =>

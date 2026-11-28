@@ -36,17 +36,17 @@ test("GET /api/v1/gateways returns empty list when no gateways registered", asyn
     const registry = new GatewayRegistry();
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.deepEqual(body.data, []);
 });
 
@@ -60,17 +60,17 @@ test("GET /api/v1/gateways returns registered gateways", async () => {
     });
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.equal(body.data.length, 1);
     assert.equal(body.data[0].id, "notify");
     assert.equal(body.data[0].name, "Notification Gateway");
@@ -80,15 +80,11 @@ test("GET /api/v1/gateways requires admin auth", async () => {
     const registry = new GatewayRegistry();
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET");
-    const response = makeResponse();
-    await handler(
-        request,
-        response,
-        new URL("/api/v1/gateways", "http://localhost"),
-    );
+    const req = makeRequest("GET");
+    const res = makeResponse();
+    await handler(req, res, new URL("/api/v1/gateways", "http://localhost"));
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 test("gateway routes log enable operations", async () => {
@@ -108,20 +104,20 @@ test("gateway routes log enable operations", async () => {
         registry,
         undefined,
         undefined,
-        (level, message, metadata) => {
-            entries.push({ level, message, meta: metadata });
+        (level, message, meta) => {
+            entries.push({ level, message, meta: meta });
         },
     );
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
 
     await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/enable", "http://localhost"),
     );
 
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     assert.deepEqual(entries, [
         {
             level: "info",
@@ -149,17 +145,17 @@ test("GET /api/v1/gateways/:id returns a single gateway manifest", async () => {
     });
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.equal(body.data.id, "notify");
     assert.equal(body.data.description, "Sends notifications.");
 });
@@ -168,17 +164,17 @@ test("GET /api/v1/gateways/:id returns 404 for unknown gateway", async () => {
     const registry = new GatewayRegistry();
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/unknown", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 404);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 404);
+    const body = JSON.parse(res.payload);
     assert.equal(body.error.code, "not_found");
 });
 
@@ -186,11 +182,11 @@ test("non-gateway paths return false", async () => {
     const registry = new GatewayRegistry();
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/modules", "http://localhost"),
     );
 
@@ -203,32 +199,32 @@ test("GET /api/v1/admin/sections returns empty array with no uiRegistry", async 
     const registry = new GatewayRegistry();
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/admin/sections", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.deepEqual(JSON.parse(response.payload).data, []);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, []);
 });
 
 test("GET /api/v1/admin/sections requires admin auth", async () => {
     const registry = new GatewayRegistry();
     const handler = createGatewayRoutes(registry, new UIRegistry());
 
-    const request = makeRequest("GET");
-    const response = makeResponse();
+    const req = makeRequest("GET");
+    const res = makeResponse();
     await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/admin/sections", "http://localhost"),
     );
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 test("GET /api/v1/admin/sections returns registered sections", async () => {
@@ -241,17 +237,17 @@ test("GET /api/v1/admin/sections returns registered sections", async () => {
     });
     const handler = createGatewayRoutes(registry, uiRegistry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/admin/sections", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    const body = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
     assert.equal(body.data.length, 1);
     assert.equal(body.data[0].id, "notifications");
     assert.equal(
@@ -331,15 +327,15 @@ test("GET /api/v1/admin/sections omits disabled sections", async () => {
     });
     const handler = createGatewayRoutes(registry, uiRegistry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
     await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/admin/sections", "http://localhost"),
     );
 
-    const body = JSON.parse(response.payload);
+    const body = JSON.parse(res.payload);
     assert.deepEqual(
         body.data.map((entry: { id: string }) => entry.id),
         ["enabled-section", "default-enabled-section"],
@@ -356,17 +352,17 @@ test("POST /api/v1/gateways/:id/enable sets gateway status to active", async () 
     registry.disable("notify");
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/enable", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.equal(JSON.parse(response.payload).data.status, "active");
+    assert.equal(res.status, 200);
+    assert.equal(JSON.parse(res.payload).data.status, "active");
     assert.equal(registry.get("notify")?.status, "active");
 });
 
@@ -379,17 +375,17 @@ test("POST /api/v1/gateways/:id/disable sets gateway status to disabled", async 
     });
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/disable", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.equal(JSON.parse(response.payload).data.status, "disabled");
+    assert.equal(res.status, 200);
+    assert.equal(JSON.parse(res.payload).data.status, "disabled");
     assert.equal(registry.get("notify")?.status, "disabled");
 });
 
@@ -397,16 +393,16 @@ test("POST /api/v1/gateways/:id/enable returns 404 for unknown gateway", async (
     const registry = new GatewayRegistry();
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/unknown/enable", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 404);
+    assert.equal(res.status, 404);
 });
 
 test("POST /api/v1/gateways/:id/enable requires admin auth", async () => {
@@ -418,15 +414,15 @@ test("POST /api/v1/gateways/:id/enable requires admin auth", async () => {
     });
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("POST");
-    const response = makeResponse();
+    const req = makeRequest("POST");
+    const res = makeResponse();
     await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/enable", "http://localhost"),
     );
 
-    assert.equal(response.status, 401);
+    assert.equal(res.status, 401);
 });
 
 test("GET /api/v1/gateways list includes status field", async () => {
@@ -438,15 +434,11 @@ test("GET /api/v1/gateways list includes status field", async () => {
     });
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("GET", adminToken);
-    const response = makeResponse();
-    await handler(
-        request,
-        response,
-        new URL("/api/v1/gateways", "http://localhost"),
-    );
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
+    await handler(req, res, new URL("/api/v1/gateways", "http://localhost"));
 
-    const body = JSON.parse(response.payload);
+    const body = JSON.parse(res.payload);
     assert.equal(body.data[0].status, "active");
 });
 
@@ -468,15 +460,15 @@ test("POST /api/v1/gateways/:id/enable calls persistGatewayState with true", asy
         },
     );
 
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
     await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/enable", "http://localhost"),
     );
 
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     assert.deepEqual(persisted, { id: "notify", enabled: true });
 });
 
@@ -497,15 +489,15 @@ test("POST /api/v1/gateways/:id/disable calls persistGatewayState with false", a
         },
     );
 
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
     await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/notify/disable", "http://localhost"),
     );
 
-    assert.equal(response.status, 200);
+    assert.equal(res.status, 200);
     assert.deepEqual(persisted, { id: "notify", enabled: false });
 });
 
@@ -520,17 +512,17 @@ test("POST /api/v1/gateways/:id/enable allows re-enabling required gateways", as
     registry.disable("db");
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/db/enable", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 200);
-    assert.equal(JSON.parse(response.payload).data.status, "active");
+    assert.equal(res.status, 200);
+    assert.equal(JSON.parse(res.payload).data.status, "active");
 });
 
 test("POST /api/v1/gateways/:id/disable returns 403 for required gateways", async () => {
@@ -543,15 +535,15 @@ test("POST /api/v1/gateways/:id/disable returns 403 for required gateways", asyn
     });
     const handler = createGatewayRoutes(registry);
 
-    const request = makeRequest("POST", adminToken);
-    const response = makeResponse();
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
     const handled = await handler(
-        request,
-        response,
+        req,
+        res,
         new URL("/api/v1/gateways/db/disable", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(response.status, 403);
-    assert.equal(JSON.parse(response.payload).error.code, "required_gateway");
+    assert.equal(res.status, 403);
+    assert.equal(JSON.parse(res.payload).error.code, "required_gateway");
 });

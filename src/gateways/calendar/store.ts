@@ -511,4 +511,4 @@ class DatabaseCalendarStore implements CalendarStore {
         });
     }
 }
-export { DatabaseCalendarStore as DbCalendarStore };
+export { DatabaseCalendarStore };

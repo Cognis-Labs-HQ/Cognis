@@ -210,30 +210,27 @@ export function createNotificationRoutes(
 ) {
     const ctx = resolveRouteContext(options?.routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/notify/email-delivery" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            if (!ctx.requireAuth(req, res, "user")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: { available: options?.emailAvailable?.() === true },
                 }),
             );
             return true;
         }
-        if (
-            url.pathname === "/api/v1/notify/send" &&
-            request.method === "POST"
-        ) {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (url.pathname === "/api/v1/notify/send" && req.method === "POST") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
 
-            const body = await readJson(request);
+            const body = await readJson(req);
             const category = String(body.category ?? "");
             const recipientUsername = String(body.recipientUsername ?? "");
             const subject = String(body.subject ?? "");
@@ -249,8 +246,8 @@ export function createNotificationRoutes(
                 !subject ||
                 !notificationBody
             ) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "missing_fields",
@@ -271,42 +268,37 @@ export function createNotificationRoutes(
                 metadata: body.metadata as Record<string, unknown> | undefined,
             });
 
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: result }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: result }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/notify/providers" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            if (!ctx.requireAuth(request, response, "user")) return true;
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: gateway.listSenders() }));
+            if (!ctx.requireAuth(req, res, "user")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: gateway.listSenders() }));
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/notify/queue" &&
-            request.method === "GET"
-        ) {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
-                JSON.stringify({ data: gateway.listNotificationQueue() }),
-            );
+        if (url.pathname === "/api/v1/notify/queue" && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: gateway.listNotificationQueue() }));
             return true;
         }
 
         const queueItemMatch = url.pathname.match(
             /^\/api\/v1\/notify\/queue\/([^/]+)$/,
         );
-        if (queueItemMatch && request.method === "GET") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (queueItemMatch && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const notificationId = decodeURIComponent(queueItemMatch[1]);
             if (!isValidNotificationQueueId(notificationId)) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_notification_id",
@@ -318,8 +310,8 @@ export function createNotificationRoutes(
             }
             const queueItem = gateway.getNotificationQueueItem(notificationId);
             if (!queueItem) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -329,19 +321,19 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: queueItem }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: queueItem }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/notify/categories" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.getAuthClaims(request);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -351,36 +343,36 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: gateway.listCategories() }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: gateway.listCategories() }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/notify/broadcasts" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             if (!notificationStore?.listBroadcasts) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: [] }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const broadcasts = await notificationStore.listBroadcasts();
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: broadcasts }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: broadcasts }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/notify/broadcasts" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = ctx.requireAuth(request, response, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             if (!notificationStore?.createBroadcast) {
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_supported",
@@ -390,7 +382,7 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            const body = await readJson(request);
+            const body = await readJson(req);
             const title = String(body.title ?? "").trim();
             const message = String(body.message ?? "").trim();
             // This endpoint existed before the current admin UI rewrite, so we
@@ -425,8 +417,8 @@ export function createNotificationRoutes(
             });
 
             if (validationError !== null) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: validationError,
                     }),
@@ -446,19 +438,19 @@ export function createNotificationRoutes(
                 enabled,
                 createdBy: claims.sub,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: createdBroadcast }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: createdBroadcast }));
             return true;
         }
 
         const setBroadcastEnabledMatch = url.pathname.match(
             /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/(enable|disable)$/,
         );
-        if (setBroadcastEnabledMatch && request.method === "POST") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (setBroadcastEnabledMatch && req.method === "POST") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             if (!notificationStore?.setBroadcastEnabled) {
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_supported",
@@ -474,8 +466,8 @@ export function createNotificationRoutes(
                 broadcastId,
                 action === "enable",
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: {
                         saved: true,
@@ -490,29 +482,29 @@ export function createNotificationRoutes(
         const broadcastStatesMatch = url.pathname.match(
             /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/states$/,
         );
-        if (broadcastStatesMatch && request.method === "GET") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (broadcastStatesMatch && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             if (!notificationStore?.listBroadcastStates) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: [] }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const broadcastStates = await notificationStore.listBroadcastStates(
                 decodeURIComponent(broadcastStatesMatch[1]),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: broadcastStates }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: broadcastStates }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/notify/broadcasts/active" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.getAuthClaims(request);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -523,8 +515,8 @@ export function createNotificationRoutes(
                 return true;
             }
             if (!notificationStore?.getActiveBroadcastsForRole) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: [] }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const activeBroadcasts =
@@ -532,19 +524,19 @@ export function createNotificationRoutes(
                     claims.sub,
                     claims.role as NotificationBroadcastRole,
                 );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: activeBroadcasts }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: activeBroadcasts }));
             return true;
         }
 
         const acknowledgeBroadcastMatch = url.pathname.match(
             /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/acknowledge$/,
         );
-        if (acknowledgeBroadcastMatch && request.method === "POST") {
-            const claims = ctx.getAuthClaims(request);
+        if (acknowledgeBroadcastMatch && req.method === "POST") {
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -555,27 +547,27 @@ export function createNotificationRoutes(
                 return true;
             }
             if (!notificationStore?.markBroadcastAcknowledged) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { saved: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
             await notificationStore.markBroadcastAcknowledged(
                 claims.sub,
                 decodeURIComponent(acknowledgeBroadcastMatch[1]),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
         const dismissBroadcastMatch = url.pathname.match(
             /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/dismiss$/,
         );
-        if (dismissBroadcastMatch && request.method === "POST") {
-            const claims = ctx.getAuthClaims(request);
+        if (dismissBroadcastMatch && req.method === "POST") {
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -586,16 +578,16 @@ export function createNotificationRoutes(
                 return true;
             }
             if (!notificationStore?.markBroadcastDismissed) {
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { saved: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
             await notificationStore.markBroadcastDismissed(
                 claims.sub,
                 decodeURIComponent(dismissBroadcastMatch[1]),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { saved: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
@@ -605,14 +597,14 @@ export function createNotificationRoutes(
         if (providerConfigMatch) {
             const senderId = decodeURIComponent(providerConfigMatch[1]);
 
-            if (request.method === "GET") {
-                if (!ctx.requireAuth(request, response, "admin")) return true;
+            if (req.method === "GET") {
+                if (!ctx.requireAuth(req, res, "admin")) return true;
                 const config = gateway.getProviderConfig(senderId);
                 if (config === null) {
-                    response.writeHead(404, {
+                    res.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -622,8 +614,8 @@ export function createNotificationRoutes(
                     );
                     return true;
                 }
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         data: config,
                         envValues: gateway.getProviderEnvValues(senderId) ?? {},
@@ -634,15 +626,15 @@ export function createNotificationRoutes(
                 return true;
             }
 
-            if (request.method === "PUT") {
-                if (!ctx.requireAuth(request, response, "admin")) return true;
-                const body = await readJson(request);
+            if (req.method === "PUT") {
+                if (!ctx.requireAuth(req, res, "admin")) return true;
+                const body = await readJson(req);
                 await gateway.saveProviderConfig(
                     senderId,
                     body as Record<string, unknown>,
                 );
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { saved: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
 
@@ -652,10 +644,10 @@ export function createNotificationRoutes(
         const providerTestMatch = url.pathname.match(
             /^\/api\/v1\/notify\/providers\/([^/]+)\/test$/,
         );
-        if (providerTestMatch && request.method === "POST") {
-            if (!ctx.requireAuth(request, response, "admin")) return true;
+        if (providerTestMatch && req.method === "POST") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const senderId = decodeURIComponent(providerTestMatch[1]);
-            const body = await readJson(request);
+            const body = await readJson(req);
             const recipient = String(body.to ?? "");
             const overrideConfig =
                 body.config != null &&
@@ -664,8 +656,8 @@ export function createNotificationRoutes(
                     ? (body.config as Record<string, unknown>)
                     : undefined;
             if (!gateway.getSenderAdminContract(senderId)?.supportsTest) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_supported",
@@ -676,8 +668,8 @@ export function createNotificationRoutes(
                 return true;
             }
             await gateway.testSender(senderId, recipient, overrideConfig);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: { sent: true } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { sent: true } }));
             return true;
         }
 
@@ -687,10 +679,10 @@ export function createNotificationRoutes(
         if (userPreferencesMatch) {
             const username = decodeURIComponent(userPreferencesMatch[1]);
 
-            const claims = ctx.getAuthClaims(request);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
-                response.writeHead(401, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -701,8 +693,8 @@ export function createNotificationRoutes(
                 return true;
             }
             if (!ctx.canAccessUserData(claims, username)) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
@@ -710,30 +702,30 @@ export function createNotificationRoutes(
                 return true;
             }
 
-            if (request.method === "GET") {
+            if (req.method === "GET") {
                 if (!notificationStore) {
-                    response.writeHead(200, {
+                    res.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    response.end(JSON.stringify({ data: [] }));
+                    res.end(JSON.stringify({ data: [] }));
                     return true;
                 }
                 const preferences =
                     await notificationStore.getUserNotifPrefs(username);
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: preferences }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: preferences }));
                 return true;
             }
 
-            if (request.method === "PUT") {
+            if (req.method === "PUT") {
                 if (!notificationStore) {
-                    response.writeHead(200, {
+                    res.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    response.end(JSON.stringify({ data: { saved: true } }));
+                    res.end(JSON.stringify({ data: { saved: true } }));
                     return true;
                 }
-                const preferencesArray = await readJson(request, {
+                const preferencesArray = await readJson(req, {
                     shape: "array",
                 });
                 const filtered = (
@@ -750,8 +742,8 @@ export function createNotificationRoutes(
                         ),
                 );
                 await notificationStore.saveUserNotifPrefs(username, filtered);
-                response.writeHead(200, { "content-type": "application/json" });
-                response.end(JSON.stringify({ data: { saved: true } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
 

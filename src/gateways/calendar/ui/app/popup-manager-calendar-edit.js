@@ -251,11 +251,11 @@ export function createCalendarEditPopupHandler({
                         ],
                     });
                     if (confirmed !== "delete") return false;
-                    const response = await apiFetch(
+                    const res = await apiFetch(
                         `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}`,
                         { method: "DELETE" },
                     );
-                    if (!response.ok) {
+                    if (!res.ok) {
                         showToast(
                             i18n.t("gateway.calendar.delete_calendar_failed"),
                             "error",
@@ -311,7 +311,7 @@ export function createCalendarEditPopupHandler({
                           defaultReminderOffsetsMinutes:
                               normalizedCurrentReminderOffsets,
                       };
-                const response = await apiFetch(
+                const res = await apiFetch(
                     `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}`,
                     {
                         method: "PATCH",
@@ -319,7 +319,7 @@ export function createCalendarEditPopupHandler({
                         body: JSON.stringify(updatePayload),
                     },
                 );
-                if (!response.ok) {
+                if (!res.ok) {
                     showToast(
                         i18n.t("gateway.calendar.update_calendar_failed"),
                         "error",

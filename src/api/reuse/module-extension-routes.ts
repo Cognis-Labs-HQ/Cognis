@@ -179,7 +179,7 @@ export function createModuleExtensionRoutes(
             }
             return ((
                 provider: { registerRoutes?: unknown },
-                ...argumentsList: unknown[]
+                ...args: unknown[]
             ) => {
                 if (
                     typeof provider?.registerRoutes === "function" &&
@@ -189,7 +189,7 @@ export function createModuleExtensionRoutes(
                 }
                 return (capability as (...input: unknown[]) => unknown)(
                     provider,
-                    ...argumentsList,
+                    ...args,
                 );
             }) as T;
         }
@@ -309,9 +309,9 @@ export function createModuleExtensionRoutes(
         };
 
         const systemCtx = options.routeContext.getCapability<Ctx>("system:ctx");
-        const moduleLog: BootstrapLog = (level, message, metadata) => {
+        const moduleLog: BootstrapLog = (level, message, meta) => {
             log?.(level, message, {
-                ...metadata,
+                ...meta,
                 component: `module:${moduleId}`,
                 moduleId,
             });
@@ -864,19 +864,19 @@ export function createModuleExtensionRoutes(
     }
 
     async function handle(
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> {
-        const method = (request.method || "GET").toUpperCase();
+        const method = (req.method || "GET").toUpperCase();
         const match = handlers.find(
             (entry) =>
                 entry.method === method && entry.routePath === url.pathname,
         );
         if (!match) return false;
         if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
-            response.writeHead(503, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "module_disabled",
@@ -887,8 +887,8 @@ export function createModuleExtensionRoutes(
             return true;
         }
         if (match.invalidAccessPolicy) {
-            response.writeHead(403, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "forbidden",
@@ -900,11 +900,11 @@ export function createModuleExtensionRoutes(
             return true;
         }
         if (match.access) {
-            const claims = requireRoleAccess(request, response, match.access);
+            const claims = requireRoleAccess(req, res, match.access);
             if (!claims) return true;
         }
         try {
-            await match.handler(request, response);
+            await match.handler(req, res);
         } catch (error) {
             throw attributeComponentFault(error, {
                 type: "module",
@@ -916,9 +916,9 @@ export function createModuleExtensionRoutes(
 
     return {
         uninstall,
-        handle(request, response, url) {
+        handle(req, res, url) {
             return refreshQueue.then(() => {
-                const pending = handle(request, response, url);
+                const pending = handle(req, res, url);
                 activeRequests.add(pending);
                 const remove = () => activeRequests.delete(pending);
                 void pending.then(remove, remove);

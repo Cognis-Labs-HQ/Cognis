@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createChatroomDeletionCapability } from "../chatroom-deletion.js";
-import { DbMessagesStore as DatabaseMessagesStore } from "../store.js";
+import { DatabaseMessagesStore } from "../store.js";
 
 function createHarness() {
     const calls: unknown[] = [];

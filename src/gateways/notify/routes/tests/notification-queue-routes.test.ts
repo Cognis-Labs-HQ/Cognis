@@ -65,7 +65,7 @@ test("GET /api/v1/notify/queue returns queue entries to admin", async () => {
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -73,12 +73,12 @@ test("GET /api/v1/notify/queue returns queue entries to admin", async () => {
             headers: { authorization: "Bearer " + adminToken },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/queue"),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.equal(Array.isArray(data.data), true);
     assert.equal(data.data[0]?.notificationId, "smtp-1");
 });
@@ -89,7 +89,7 @@ test("GET /api/v1/notify/queue returns 403 for non-admin users", async () => {
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -97,11 +97,11 @@ test("GET /api/v1/notify/queue returns 403 for non-admin users", async () => {
             headers: { authorization: "Bearer " + userToken },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/queue"),
     );
 
-    assert.equal(response.status, 403);
+    assert.equal(res.status, 403);
 });
 
 test("GET /api/v1/notify/queue/:id returns queue item details", async () => {
@@ -110,7 +110,7 @@ test("GET /api/v1/notify/queue/:id returns queue item details", async () => {
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -118,12 +118,12 @@ test("GET /api/v1/notify/queue/:id returns queue item details", async () => {
             headers: { authorization: "Bearer " + adminToken },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/queue/smtp-1"),
     );
 
-    assert.equal(response.status, 200);
-    const data = JSON.parse(response.payload);
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
     assert.equal(data.data.notificationId, "smtp-1");
 });
 
@@ -133,7 +133,7 @@ test("GET /api/v1/notify/queue/:id returns 404 for unknown item", async () => {
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -141,12 +141,12 @@ test("GET /api/v1/notify/queue/:id returns 404 for unknown item", async () => {
             headers: { authorization: "Bearer " + adminToken },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/queue/unknown"),
     );
 
-    assert.equal(response.status, 404);
-    assert.match(response.payload, /not_found/);
+    assert.equal(res.status, 404);
+    assert.match(res.payload, /not_found/);
 });
 
 test("GET /api/v1/notify/queue/:id returns 400 for invalid ID", async () => {
@@ -155,7 +155,7 @@ test("GET /api/v1/notify/queue/:id returns 400 for invalid ID", async () => {
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
-    const response = makeResponse();
+    const res = makeResponse();
 
     await route(
         {
@@ -163,10 +163,10 @@ test("GET /api/v1/notify/queue/:id returns 400 for invalid ID", async () => {
             headers: { authorization: "Bearer " + adminToken },
             [Symbol.asyncIterator]: async function* () {},
         } as any,
-        response,
+        res,
         new URL("http://localhost/api/v1/notify/queue/%20"),
     );
 
-    assert.equal(response.status, 400);
-    assert.match(response.payload, /invalid_notification_id/);
+    assert.equal(res.status, 400);
+    assert.match(res.payload, /invalid_notification_id/);
 });

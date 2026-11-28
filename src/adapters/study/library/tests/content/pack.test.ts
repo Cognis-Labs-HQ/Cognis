@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
-import {
-    cp as copyPath,
-    mkdtemp,
-    mkdir,
-    readFile,
-    rm as removePath,
-    writeFile,
-} from "node:fs/promises";
-import operatingSystem from "node:os";
+import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -15,17 +8,11 @@ import { contentEntryId, inspectContentPack } from "../../content-pack.js";
 import { validateLibrarySchema } from "../../layers.js";
 
 test("public content inspection generates flagged variants and rejects authored copies", async (context) => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "generated-transform-"),
-    );
-    context.after(() => removePath(root, { recursive: true, force: true }));
-    await copyPath(
-        new URL("../fixtures/external-pack", import.meta.url),
-        root,
-        {
-            recursive: true,
-        },
-    );
+    const root = await mkdtemp(path.join(os.tmpdir(), "generated-transform-"));
+    context.after(() => rm(root, { recursive: true, force: true }));
+    await cp(new URL("../fixtures/external-pack", import.meta.url), root, {
+        recursive: true,
+    });
     const schemaPath = path.join(root, "schema.json");
     const schema = JSON.parse(await readFile(schemaPath, "utf8"));
     schema.transformSets = [
@@ -118,10 +105,10 @@ test("external packages reject unvalidated field types and invalid metadata", as
         new URL("../fixtures/external-pack", import.meta.url),
     );
     const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-library-contract-"),
+        path.join(os.tmpdir(), "cognis-library-contract-"),
     );
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
-    await copyPath(source, root, { recursive: true });
+    testContext.after(() => rm(root, { recursive: true, force: true }));
+    await cp(source, root, { recursive: true });
     const schemaFile = path.join(root, "schema.json");
     const schema = JSON.parse(await readFile(schemaFile, "utf8"));
     delete schema.layers[0].fields[2].validation;
@@ -147,10 +134,10 @@ test("external packs preserve unknown writing-unit readings without bypassing re
         new URL("../fixtures/external-pack", import.meta.url),
     );
     const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-unknown-reading-"),
+        path.join(os.tmpdir(), "cognis-unknown-reading-"),
     );
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
-    await copyPath(source, root, { recursive: true });
+    testContext.after(() => rm(root, { recursive: true, force: true }));
+    await cp(source, root, { recursive: true });
     const schemaFile = path.join(root, "schema.json");
     const schema = JSON.parse(await readFile(schemaFile, "utf8"));
     const symbols = schema.layers.find(
@@ -183,10 +170,8 @@ test("external packs preserve unknown writing-unit readings without bypassing re
 });
 
 test("declarative language packs are inspected deterministically", async (testContext) => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-library-pack-"),
-    );
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await mkdir(path.join(root, "content", "letters"), { recursive: true });
     await mkdir(path.join(root, "content", "words"), { recursive: true });
     await mkdir(path.join(root, "assets", "strokes"), { recursive: true });
@@ -334,10 +319,8 @@ test("declarative language packs are inspected deterministically", async (testCo
 });
 
 test("content packs accept complete semantic versions", async (testContext) => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-library-pack-"),
-    );
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await mkdir(path.join(root, "content", "units"), { recursive: true });
     await writeJson(path.join(root, "manifest.json"), {
         id: "versioned",
@@ -368,10 +351,8 @@ test("content packs accept complete semantic versions", async (testContext) => {
 });
 
 test("content packs reject dangling relationships", async (testContext) => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-library-pack-"),
-    );
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await mkdir(path.join(root, "content", "units"), { recursive: true });
     await writeJson(path.join(root, "manifest.json"), {
         id: "broken",
@@ -416,10 +397,8 @@ test("content packs reject dangling relationships", async (testContext) => {
 });
 
 test("content packs reject ordered sequences with unlinked text", async (testContext) => {
-    const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-library-pack-"),
-    );
-    testContext.after(() => removePath(root, { recursive: true, force: true }));
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     for (const layer of ["words", "particles", "sentences"])
         await mkdir(path.join(root, "content", layer), { recursive: true });
     await writeJson(path.join(root, "manifest.json"), {
@@ -533,10 +512,10 @@ test("content packs reject ordered sequences with unlinked text", async (testCon
 
 test("reference images are validated, bundled and preserved in content-pack plans", async (context) => {
     const root = await mkdtemp(
-        path.join(operatingSystem.tmpdir(), "cognis-library-images-"),
+        path.join(os.tmpdir(), "cognis-library-images-"),
     );
-    context.after(() => removePath(root, { recursive: true, force: true }));
-    await copyPath(
+    context.after(() => rm(root, { recursive: true, force: true }));
+    await cp(
         fileURLToPath(new URL("../fixtures/external-pack", import.meta.url)),
         root,
         { recursive: true },

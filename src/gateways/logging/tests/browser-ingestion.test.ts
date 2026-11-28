@@ -15,15 +15,11 @@ test("gateway controls browser console output using current role and console thr
     let currentRole: "user" | "admin" | "owner" = "user";
     ctx.capabilities.contribute("auth:routeContext", {
         ...createDefaultRouteContext(),
-        requireAuth(
-            _request: unknown,
-            currentResponse: any,
-            minimumRole: string,
-        ) {
+        requireAuth(_request: unknown, res: any, minimumRole: string) {
             assert.equal(minimumRole, "user");
             if (authenticated) return { sub: "log-user", role: currentRole };
-            currentResponse.writeHead(401);
-            currentResponse.end();
+            res.writeHead(401);
+            res.end();
             return null;
         },
     });
@@ -39,7 +35,7 @@ test("gateway controls browser console output using current role and console thr
     ] as const) {
         logger.configure({ consoleLevel: threshold });
         currentRole = role;
-        const request = new RequestRecorder(
+        const req = new RequestRecorder(
             "POST",
             undefined,
             JSON.stringify({
@@ -50,7 +46,7 @@ test("gateway controls browser console output using current role and console thr
         );
         const response = new ResponseRecorder();
         await handler(
-            request as any,
+            req as any,
             response as any,
             new URL("http://localhost/api/v1/logging/entries"),
         );

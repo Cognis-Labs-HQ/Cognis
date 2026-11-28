@@ -8,19 +8,19 @@ export function createLeaderboardRoutes(
 ) {
     if (!routeContext) throw new Error("route_context_missing");
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
-            request.method !== "GET" ||
+            req.method !== "GET" ||
             ![
                 "/api/v1/study/leaderboard/definitions",
                 "/api/v1/study/leaderboard/standings",
             ].includes(url.pathname)
         )
             return false;
-        const claims = routeContext.requireAuth(request, response, "user");
+        const claims = routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
         const actor = { accountId: claims.sub, role: claims.role };
         if (url.pathname === "/api/v1/study/leaderboard/definitions") {
@@ -37,15 +37,15 @@ export function createLeaderboardRoutes(
                     ),
                 )
             ).filter(Boolean);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: accessible }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: accessible }));
             return true;
         }
         if (url.pathname === "/api/v1/study/leaderboard/standings") {
             const definitionId = url.searchParams.get("definitionId") ?? "";
             if (!definitionId) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({ error: { code: "definition_required" } }),
                 );
                 return true;
@@ -62,8 +62,8 @@ export function createLeaderboardRoutes(
                     cohortId,
                 ))
             ) {
-                response.writeHead(403, { "content-type": "application/json" });
-                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return true;
             }
             const locale =
@@ -78,8 +78,8 @@ export function createLeaderboardRoutes(
                 },
                 locale,
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
             return true;
         }
         return false;

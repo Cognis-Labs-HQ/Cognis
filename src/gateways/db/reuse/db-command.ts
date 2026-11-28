@@ -160,16 +160,16 @@ function createPlaceholderFactory(
     dialect: StructuredDbDialect,
 ): (parameters: unknown[], value: unknown) => string {
     let index = 1;
-    return (parameters: unknown[], value: unknown): string => {
-        parameters.push(value);
+    return (params: unknown[], value: unknown): string => {
+        params.push(value);
         return dialect.createPlaceholder(index++);
     };
 }
 
 function buildWhereClause(
     clauses: StructuredDbWhereClause[] | undefined,
-    parameters: unknown[],
-    placeholder: (parameters: unknown[], value: unknown) => string,
+    params: unknown[],
+    placeholder: (params: unknown[], value: unknown) => string,
 ): string {
     if (!clauses || clauses.length === 0) {
         return "";
@@ -193,20 +193,20 @@ function buildWhereClause(
                 );
             }
             const placeholders = clause.value.map((value) =>
-                placeholder(parameters, value),
+                placeholder(params, value),
             );
             return `${column} IN (${placeholders.join(", ")})`;
         }
 
         if (operator === "LIKE") {
-            const valuePlaceholder = placeholder(parameters, clause.value);
+            const valuePlaceholder = placeholder(params, clause.value);
             const escape = clause.escapeChar
                 ? ` ESCAPE '${clause.escapeChar}'`
                 : "";
             return `${column} LIKE ${valuePlaceholder}${escape}`;
         }
 
-        return `${column} ${operator} ${placeholder(parameters, clause.value)}`;
+        return `${column} ${operator} ${placeholder(params, clause.value)}`;
     });
 
     return ` WHERE ${sqlClauses.join(" AND ")}`;
@@ -214,8 +214,8 @@ function buildWhereClause(
 
 function buildSelectStatement(
     command: StructuredDbSelectCommand,
-    parameters: unknown[],
-    placeholder: (parameters: unknown[], value: unknown) => string,
+    params: unknown[],
+    placeholder: (params: unknown[], value: unknown) => string,
 ): StructuredDbCommandStatement {
     const columns = command.count
         ? ["COUNT(*) AS cnt"]
@@ -258,11 +258,7 @@ function buildSelectStatement(
         })
         .join("");
 
-    const whereClause = buildWhereClause(
-        command.where,
-        parameters,
-        placeholder,
-    );
+    const whereClause = buildWhereClause(command.where, params, placeholder);
     const orderByClause =
         command.orderBy && command.orderBy.length > 0
             ? ` ORDER BY ${command.orderBy
@@ -305,7 +301,7 @@ function buildSelectStatement(
             whereClause +
             orderByClause +
             limitClause,
-        params: parameters,
+        params: params,
         returnsRows: true,
     };
 }
@@ -313,8 +309,8 @@ function buildSelectStatement(
 function buildInsertStatement(
     command: StructuredDbInsertCommand,
     dialect: StructuredDbDialect,
-    parameters: unknown[],
-    placeholder: (parameters: unknown[], value: unknown) => string,
+    params: unknown[],
+    placeholder: (params: unknown[], value: unknown) => string,
 ): StructuredDbCommandStatement {
     const table = assertIdentifier(command.table, "table");
     const entries = Object.entries(command.values);
@@ -327,7 +323,7 @@ function buildInsertStatement(
     );
     const values = entries.map(([, value]) => value);
     const insertPlaceholders = values.map((value) =>
-        placeholder(parameters, value),
+        placeholder(params, value),
     );
 
     const prefix = dialect.buildInsertPrefix(command.conflict);
@@ -335,7 +331,7 @@ function buildInsertStatement(
     const conflict = command.conflict;
 
     if (!conflict) {
-        return { sql, params: parameters, returnsRows: false };
+        return { sql, params: params, returnsRows: false };
     }
 
     if (conflict.action === "ignore") {
@@ -346,10 +342,10 @@ function buildInsertStatement(
             conflict,
             conflictTarget,
             updateEntries: [],
-            addParameter: (value: unknown) => placeholder(parameters, value),
+            addParameter: (value: unknown) => placeholder(params, value),
             hasExplicitUpdate: false,
         });
-        return { sql, params: parameters, returnsRows: false };
+        return { sql, params: params, returnsRows: false };
     }
 
     if (!conflict.target || conflict.target.length === 0) {
@@ -379,17 +375,17 @@ function buildInsertStatement(
             assertIdentifier(column, "upsert update column"),
             value,
         ]),
-        addParameter: (value: unknown) => placeholder(parameters, value),
+        addParameter: (value: unknown) => placeholder(params, value),
         hasExplicitUpdate: Boolean(conflict.update),
     });
 
-    return { sql, params: parameters, returnsRows: false };
+    return { sql, params: params, returnsRows: false };
 }
 
 function buildUpdateStatement(
     command: StructuredDbUpdateCommand,
-    parameters: unknown[],
-    placeholder: (parameters: unknown[], value: unknown) => string,
+    params: unknown[],
+    placeholder: (params: unknown[], value: unknown) => string,
 ): StructuredDbCommandStatement {
     const table = assertIdentifier(command.table, "table");
     const entries = Object.entries(command.set);
@@ -400,38 +396,30 @@ function buildUpdateStatement(
     const setClause = entries
         .map(([column, value]) => {
             const validatedColumn = assertIdentifier(column, "update column");
-            return `${validatedColumn} = ${placeholder(parameters, value)}`;
+            return `${validatedColumn} = ${placeholder(params, value)}`;
         })
         .join(", ");
 
-    const whereClause = buildWhereClause(
-        command.where,
-        parameters,
-        placeholder,
-    );
+    const whereClause = buildWhereClause(command.where, params, placeholder);
 
     return {
         sql: `UPDATE ${table} SET ${setClause}${whereClause}`,
-        params: parameters,
+        params: params,
         returnsRows: false,
     };
 }
 
 function buildDeleteStatement(
     command: StructuredDbDeleteCommand,
-    parameters: unknown[],
-    placeholder: (parameters: unknown[], value: unknown) => string,
+    params: unknown[],
+    placeholder: (params: unknown[], value: unknown) => string,
 ): StructuredDbCommandStatement {
     const table = assertIdentifier(command.table, "table");
-    const whereClause = buildWhereClause(
-        command.where,
-        parameters,
-        placeholder,
-    );
+    const whereClause = buildWhereClause(command.where, params, placeholder);
 
     return {
         sql: `DELETE FROM ${table}${whereClause}`,
-        params: parameters,
+        params: params,
         returnsRows: false,
     };
 }
@@ -440,18 +428,18 @@ function buildStructuredDatabaseCommandStatement(
     command: StructuredDbCommand,
     dialect: StructuredDbDialect,
 ): StructuredDbCommandStatement {
-    const parameters: unknown[] = [];
+    const params: unknown[] = [];
     const placeholder = createPlaceholderFactory(dialect);
 
     if (command.option === "SELECT") {
-        return buildSelectStatement(command, parameters, placeholder);
+        return buildSelectStatement(command, params, placeholder);
     }
     if (command.option === "INSERT") {
-        return buildInsertStatement(command, dialect, parameters, placeholder);
+        return buildInsertStatement(command, dialect, params, placeholder);
     }
     if (command.option === "UPDATE") {
-        return buildUpdateStatement(command, parameters, placeholder);
+        return buildUpdateStatement(command, params, placeholder);
     }
-    return buildDeleteStatement(command, parameters, placeholder);
+    return buildDeleteStatement(command, params, placeholder);
 }
-export { buildStructuredDatabaseCommandStatement as buildStructuredDbCommandStatement };
+export { buildStructuredDatabaseCommandStatement };

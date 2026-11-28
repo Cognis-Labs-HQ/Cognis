@@ -65,7 +65,7 @@ export interface DbDialectHelper {
 | Path                           | Tujuan                                   |
 | ------------------------------ | ---------------------------------------- |
 | `src/gateways/db/gateway.ts`   | Antarmuka `DatabaseGateway`              |
-| `src/gateways/db/executor.ts`  | `createDbExecutor`                       |
+| `src/gateways/db/executor.ts`  | `createDatabaseExecutor`                 |
 | `src/gateways/db/init.ts`      | `initializeDatabaseSchema`               |
 | `src/gateways/db/bootstrap.ts` | Titik masuk bootstrap; `DbDialectHelper` |
 

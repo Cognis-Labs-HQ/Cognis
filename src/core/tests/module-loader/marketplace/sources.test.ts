@@ -1,12 +1,6 @@
 import test, { type TestContext } from "node:test";
 import assert from "node:assert/strict";
-import {
-    mkdtemp,
-    readFile,
-    rm as removePath,
-    stat,
-    writeFile,
-} from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -29,9 +23,7 @@ async function fixture(context: TestContext) {
     const directory = await mkdtemp(
         path.join(tmpdir(), "cognis-source-secrets-"),
     );
-    context.after(() =>
-        removePath(directory, { recursive: true, force: true }),
-    );
+    context.after(() => rm(directory, { recursive: true, force: true }));
     const encryption = createSecretContext();
     const validations: Array<{ source: ModuleSource; token: string }> = [];
     const validate = async (input: ModuleSource, token: string) => {

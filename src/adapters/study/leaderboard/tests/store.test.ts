@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { structuredStore } from "../../../../gateways/reuse/tests/structured-store.js";
-import {
-    DbLeaderboardStore as DatabaseLeaderboardStore,
-    type LeaderboardState,
-} from "../store.js";
+import { DatabaseLeaderboardStore, type LeaderboardState } from "../store.js";
 
 test("large leaderboard snapshots round-trip in bounded rows and failed replacements preserve the saved state", async () => {
     const fixture = structuredStore();

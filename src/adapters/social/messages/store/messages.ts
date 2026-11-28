@@ -5,7 +5,7 @@ import { getMember } from "./rooms.js";
 import type { MessageRow } from "./types.js";
 
 export async function appendMessage(
-    database: DbExecutor,
+    db: DbExecutor,
     input: {
         roomId: string;
         senderId: string;
@@ -16,11 +16,11 @@ export async function appendMessage(
         operationId?: string;
     },
 ): Promise<MessageRow> {
-    return database.transaction((executor) => insertMessage(executor, input));
+    return db.transaction((executor) => insertMessage(executor, input));
 }
 
 async function insertMessage(
-    database: DbExecutor,
+    db: DbExecutor,
     input: {
         roomId: string;
         senderId: string;
@@ -33,7 +33,7 @@ async function insertMessage(
 ): Promise<MessageRow> {
     const id = input.operationId ?? randomUUID();
     const nowIso = new Date().toISOString();
-    const inserted = await database.executeCommand({
+    const inserted = await db.executeCommand({
         option: "INSERT",
         table: "chat_messages",
         conflict: { action: "ignore", target: ["id"] },
@@ -48,7 +48,7 @@ async function insertMessage(
             created_at: nowIso,
         },
     });
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "chat_messages",
         where: [{ column: "id", value: id }],
@@ -64,7 +64,7 @@ async function insertMessage(
     )
         throw Object.assign(new Error("delivery_conflict"), { status: 409 });
     if (inserted.rowCount === 0) return { ...message, replayed: true };
-    await database.executeCommand({
+    await db.executeCommand({
         option: "UPDATE",
         table: "chatrooms",
         set: { updated_at: nowIso },
@@ -74,7 +74,7 @@ async function insertMessage(
 }
 
 export async function appendRoomEvent(
-    database: DbExecutor,
+    db: DbExecutor,
     input: {
         roomId: string;
         actorId: string;
@@ -85,11 +85,11 @@ export async function appendRoomEvent(
         details?: Record<string, unknown>;
     },
 ): Promise<MessageRow> {
-    return database.transaction((executor) => insertRoomEvent(executor, input));
+    return db.transaction((executor) => insertRoomEvent(executor, input));
 }
 
 export async function insertRoomEvent(
-    database: DbExecutor,
+    db: DbExecutor,
     input: {
         roomId: string;
         actorId: string;
@@ -107,7 +107,7 @@ export async function insertRoomEvent(
         subjectDisplayName: input.subjectDisplayName ?? null,
         ...(input.details ?? {}),
     });
-    return insertMessage(database, {
+    return insertMessage(db, {
         roomId: input.roomId,
         senderId: input.actorId,
         ciphertext: payload,
@@ -118,12 +118,12 @@ export async function insertRoomEvent(
 }
 
 export async function listMessages(
-    database: DbExecutor,
+    db: DbExecutor,
     roomId: string,
     limit: number,
     before?: string,
 ): Promise<MessageRow[]> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "chat_messages",
         where: [
@@ -145,10 +145,10 @@ export async function listMessages(
 }
 
 export async function getMessage(
-    database: DbExecutor,
+    db: DbExecutor,
     messageId: string,
 ): Promise<MessageRow | null> {
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "chat_messages",
         where: [{ column: "id", value: messageId }],
@@ -158,12 +158,12 @@ export async function getMessage(
 }
 
 export async function markRead(
-    database: DbExecutor,
+    db: DbExecutor,
     roomId: string,
     accountId: string,
     readAt = new Date().toISOString(),
 ): Promise<void> {
-    await database.transaction(async (executor) => {
+    await db.transaction(async (executor) => {
         const member = await getMember(executor, roomId, accountId);
         if (
             !member ||
@@ -184,15 +184,15 @@ export async function markRead(
 }
 
 export async function unreadCount(
-    database: DbExecutor,
+    db: DbExecutor,
     roomId: string,
     accountId: string,
 ): Promise<number> {
-    const member = await getMember(database, roomId, accountId);
+    const member = await getMember(db, roomId, accountId);
     if (!member) {
         return 0;
     }
-    const result = await database.executeCommand({
+    const result = await db.executeCommand({
         option: "SELECT",
         table: "chat_messages",
         count: true,
@@ -218,12 +218,12 @@ export async function unreadCount(
 }
 
 export async function setMuted(
-    database: DbExecutor,
+    db: DbExecutor,
     roomId: string,
     accountId: string,
     muted: boolean,
 ): Promise<void> {
-    await database.executeCommand({
+    await db.executeCommand({
         option: "UPDATE",
         table: "chatroom_members",
         set: { muted: muted ? 1 : 0 },
@@ -235,12 +235,12 @@ export async function setMuted(
 }
 
 export async function setArchived(
-    database: DbExecutor,
+    db: DbExecutor,
     roomId: string,
     accountId: string,
     archived: boolean,
 ): Promise<void> {
-    await database.executeCommand({
+    await db.executeCommand({
         option: "UPDATE",
         table: "chatroom_members",
         set: { archived: archived ? 1 : 0 },

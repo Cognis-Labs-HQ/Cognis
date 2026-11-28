@@ -495,8 +495,8 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function handleRequestLinkClick() {
-        const response = await fetch("/api/v1/auth/login-link-status");
-        const body = await response.json().catch(() => null);
+        const res = await fetch("/api/v1/auth/login-link-status");
+        const body = await res.json().catch(() => null);
         if (body?.data?.available === true) {
             switchToLoginLinkEmailForm();
         } else {
@@ -660,9 +660,9 @@ export async function mount(root, { signal } = {}) {
 
     async function consumePasswordResetToken() {
         if (passwordResetTokenHandled) return;
-        const parameters = new URL(window.location.href).searchParams;
+        const params = new URL(window.location.href).searchParams;
         const loginToken = String(
-            parameters.get("passwordResetToken") ?? "",
+            params.get("passwordResetToken") ?? "",
         ).trim();
         if (!loginToken) return;
         try {

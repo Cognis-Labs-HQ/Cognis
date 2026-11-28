@@ -14,22 +14,22 @@ import type {
 export const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 // Pending TFA login attempts expire after 5 minutes to limit replay windows.
 const TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS = 5 * 60 * 1000;
-export { TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS as TFA_LOGIN_ATTEMPT_TTL_MS };
+export { TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS };
 const ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS = 10 * 60 * 1000;
-export { ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS as ACCOUNT_CREATION_ATTEMPT_TTL_MS };
+export { ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS };
 const ACCOUNT_CREATION_COOKIE = "cognis_account_creation";
 export const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
 const PASSWORD_RESET_RATE_LIMIT_MILLISECONDS = 60_000;
-export { PASSWORD_RESET_RATE_LIMIT_MILLISECONDS as PASSWORD_RESET_RATE_LIMIT_MS };
+export { PASSWORD_RESET_RATE_LIMIT_MILLISECONDS };
 const PASSWORD_RESET_MIN_RESPONSE_MILLISECONDS = 350;
-export { PASSWORD_RESET_MIN_RESPONSE_MILLISECONDS as PASSWORD_RESET_MIN_RESPONSE_MS };
+export { PASSWORD_RESET_MIN_RESPONSE_MILLISECONDS };
 const PASSWORD_RESET_RESPONSE_JITTER_MILLISECONDS = 120;
-export { PASSWORD_RESET_RESPONSE_JITTER_MILLISECONDS as PASSWORD_RESET_RESPONSE_JITTER_MS };
+export { PASSWORD_RESET_RESPONSE_JITTER_MILLISECONDS };
 const PASSWORD_RESET_LOOKUP_JITTER_MILLISECONDS = 40;
-export { PASSWORD_RESET_LOOKUP_JITTER_MILLISECONDS as PASSWORD_RESET_LOOKUP_JITTER_MS };
+export { PASSWORD_RESET_LOOKUP_JITTER_MILLISECONDS };
 
-export function sleep(milliseconds: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+export function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function waitForPasswordResetResponseFloor(
@@ -74,22 +74,20 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
 
     return {
         buildPendingAccountCreationCookie(
-            request: IncomingMessage,
+            req: IncomingMessage,
             attemptId: string,
         ): string {
-            const securePart = shouldSetSecureCookie(request) ? "; Secure" : "";
+            const securePart = shouldSetSecureCookie(req) ? "; Secure" : "";
             return `${ACCOUNT_CREATION_COOKIE}=${encodeURIComponent(attemptId)}; Path=/api/v1/auth; HttpOnly; SameSite=Lax; Max-Age=${ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS / 1000}${securePart}`;
         },
-        clearPendingAccountCreationCookie(request: IncomingMessage): string {
-            const securePart = shouldSetSecureCookie(request) ? "; Secure" : "";
+        clearPendingAccountCreationCookie(req: IncomingMessage): string {
+            const securePart = shouldSetSecureCookie(req) ? "; Secure" : "";
             return `${ACCOUNT_CREATION_COOKIE}=; Path=/api/v1/auth; HttpOnly; SameSite=Lax; Max-Age=0${securePart}`;
         },
         extractPendingAccountCreationAttemptId(
-            request: IncomingMessage,
+            req: IncomingMessage,
         ): string | null {
-            for (const cookie of String(request.headers.cookie ?? "").split(
-                ";",
-            )) {
+            for (const cookie of String(req.headers.cookie ?? "").split(";")) {
                 const [name, ...valueParts] = cookie.trim().split("=");
                 if (name !== ACCOUNT_CREATION_COOKIE) continue;
                 const attemptId = valueParts.join("=");
@@ -100,14 +98,14 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
             return null;
         },
         buildAccessTokenCookie(
-            request: IncomingMessage,
+            req: IncomingMessage,
             rawToken: string,
             ttlSeconds: number | null,
         ): string {
             return buildAccessTokenCookie(
                 rawToken,
                 ttlSeconds,
-                shouldSetSecureCookie(request),
+                shouldSetSecureCookie(req),
             );
         },
         clearPendingTfaLoginAttempt(loginAttemptId: string): void {

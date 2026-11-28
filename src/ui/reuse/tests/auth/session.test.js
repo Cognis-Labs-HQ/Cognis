@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
@@ -29,7 +29,7 @@ function loadAuthSessionForTests({
     const redirects = [];
     const cookieWrites = [];
     const store = new Map();
-    const context = virtualMachine.createContext({
+    const context = vm.createContext({
         uiCtx: {
             runFlow: runFlowImpl,
             flowExists: () => true,
@@ -61,7 +61,7 @@ function loadAuthSessionForTests({
         console,
         __testExports: {},
     });
-    virtualMachine.runInContext(
+    vm.runInContext(
         testableSource +
             "\nglobalThis.__testExports = { redirectToDashboardIfAuthenticated, checkIsAuthenticated, ensureFullAccountSession, getShareContext, clearStoredAuthSession };\n",
         context,

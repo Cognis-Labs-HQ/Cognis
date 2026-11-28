@@ -616,9 +616,9 @@ export class CoreStudyGateway {
                 isAdapterEnabled: (adapterId = entry) =>
                     this.isAdapterEnabled(adapterId),
                 registerRoute: (handler, gatewayId) => {
-                    baseCtx.registerRoute(async (request, response, url) => {
+                    baseCtx.registerRoute(async (req, res, url) => {
                         if (!this.isAdapterEnabled(entry)) return false;
-                        return handler(request, response, url);
+                        return handler(req, res, url);
                     }, gatewayId);
                 },
             };

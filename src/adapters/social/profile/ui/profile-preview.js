@@ -26,9 +26,9 @@ async function loadProfilePreview(handle) {
     const promise = apiFetch(
         `/api/v1/social/users/${encodeURIComponent(handle)}/profile`,
     )
-        .then(async (response) => {
-            if (!response.ok) return null;
-            return (await response.json()).data ?? null;
+        .then(async (res) => {
+            if (!res.ok) return null;
+            return (await res.json()).data ?? null;
         })
         .catch(() => null);
     profileCache.set(handle, promise);

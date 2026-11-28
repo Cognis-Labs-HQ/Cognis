@@ -48,4 +48,4 @@ function initCheckboxPreferences(
         },
     };
 }
-export { initCheckboxPreferences as initCheckboxPrefs };
+export { initCheckboxPreferences };

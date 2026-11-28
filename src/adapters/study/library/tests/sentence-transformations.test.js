@@ -5,7 +5,7 @@ import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { orderedReadingReferences } from "../ui/app/reference-readings.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import * as links from "../ui/app/composition-links.js";
 import { referencedTransformation } from "../ui/reuse/transformations.js";
 import {

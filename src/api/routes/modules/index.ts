@@ -84,9 +84,9 @@ function publicInstallErrorCode(error: unknown): string | undefined {
     return PUBLIC_INSTALL_ERROR_CODES.has(message) ? message : undefined;
 }
 
-function sendRestartRequired(response: ServerResponse): void {
-    response.writeHead(409, { "content-type": "application/json" });
-    response.end(
+function sendRestartRequired(res: ServerResponse): void {
+    res.writeHead(409, { "content-type": "application/json" });
+    res.end(
         JSON.stringify({
             error: {
                 code: "module_restart_required",
@@ -125,29 +125,27 @@ export function createModuleRoutes(
           })
         : undefined;
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const logMetadata = {
             component: "api-modules",
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
         };
-        if (sourceRoutes && (await sourceRoutes(request, response, url)))
-            return true;
-        if (stateRoute && (await stateRoute(request, response, url)))
-            return true;
+        if (sourceRoutes && (await sourceRoutes(req, res, url))) return true;
+        if (stateRoute && (await stateRoute(req, res, url))) return true;
         const channelMatch = url.pathname.match(
             /^\/api\/v1\/modules\/catalog\/([^/]+)\/channel$/,
         );
-        if (marketplace && channelMatch && request.method === "PUT") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (marketplace && channelMatch && req.method === "PUT") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             if (typeof body.branch !== "string" || !body.branch.trim()) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_module_branch",
@@ -161,8 +159,8 @@ export function createModuleRoutes(
                 decodeURIComponent(channelMatch[1]),
                 body.branch,
             );
-            response.writeHead(204);
-            response.end();
+            res.writeHead(204);
+            res.end();
             return true;
         }
         const assetMatch = url.pathname.match(
@@ -171,8 +169,8 @@ export function createModuleRoutes(
         const stringsMatch = url.pathname.match(
             /^\/api\/v1\/modules\/catalog\/strings\/([^/]+)\/([a-z]{2})\/strings\.xml$/,
         );
-        if (marketplace && stringsMatch && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (marketplace && stringsMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const moduleUuid = decodeURIComponent(stringsMatch[1]);
             const module = (await marketplace.listCachedModules()).find(
@@ -189,8 +187,8 @@ export function createModuleRoutes(
                 asset = await marketplace.getAsset(strings.en);
             }
             if (!asset) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "module_strings_not_found",
@@ -200,22 +198,22 @@ export function createModuleRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, {
+            res.writeHead(200, {
                 "content-type": asset.contentType,
                 "content-language": locale,
                 "cache-control": "private, max-age=3600",
                 "x-content-type-options": "nosniff",
             });
-            response.end(asset.body);
+            res.end(asset.body);
             return true;
         }
-        if (marketplace && assetMatch && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (marketplace && assetMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const asset = await marketplace.getAsset(assetMatch[1]);
             if (!asset) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "module_asset_not_found",
@@ -225,24 +223,24 @@ export function createModuleRoutes(
                 );
                 return true;
             }
-            response.writeHead(200, {
+            res.writeHead(200, {
                 "content-type": asset.contentType,
                 "cache-control": "private, max-age=3600",
                 "x-content-type-options": "nosniff",
             });
-            response.end(asset.body);
+            res.end(asset.body);
             return true;
         }
         const installJobMatch = url.pathname.match(
             /^\/api\/v1\/modules\/install\/([a-f0-9-]+)$/,
         );
-        if (marketplace && installJobMatch && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (marketplace && installJobMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const job = installJobs.get(installJobMatch[1]);
             if (!job) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "module_install_job_not_found",
@@ -254,8 +252,8 @@ export function createModuleRoutes(
             }
             if (job.status === "failed") {
                 installJobs.delete(installJobMatch[1]);
-                response.writeHead(422, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(422, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: job.code ?? "module_install_failed",
@@ -267,19 +265,18 @@ export function createModuleRoutes(
             }
             if (job.status === "succeeded")
                 installJobs.delete(installJobMatch[1]);
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: job }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: job }));
             return true;
         }
         if (
             marketplace &&
             url.pathname === "/api/v1/modules/catalog" &&
-            (request.method === "GET" || request.method === "POST")
+            (req.method === "GET" || req.method === "POST")
         ) {
-            const claims = ctx.requireAuth(request, response, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body =
-                request.method === "POST" ? await readJson(request) : {};
+            const body = req.method === "POST" ? await readJson(req) : {};
             const sourceUuids = Array.isArray(body.sourceUuids)
                 ? body.sourceUuids.filter(
                       (value): value is string => typeof value === "string",
@@ -291,7 +288,7 @@ export function createModuleRoutes(
                 ),
             );
             const discovery =
-                request.method === "POST"
+                req.method === "POST"
                     ? await marketplace.discoverWithReport(
                           sourceUuids,
                           body.forceRefresh === true,
@@ -303,7 +300,7 @@ export function createModuleRoutes(
             const { modules, sourceFailures } = discovery;
             hooks?.log?.(
                 "info",
-                request.method === "POST"
+                req.method === "POST"
                     ? "Module source scan completed."
                     : "Listed cached module discoveries.",
                 {
@@ -328,24 +325,24 @@ export function createModuleRoutes(
                     ),
                 ),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data, meta: { sourceFailures } }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data, meta: { sourceFailures } }));
             return true;
         }
         if (
             marketplace &&
             url.pathname === "/api/v1/modules/install" &&
-            request.method === "POST"
+            req.method === "POST"
         ) {
-            const claims = ctx.requireAuth(request, response, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const requestedModule = body.module as { uuid?: string };
             if (
                 requestedModule.uuid &&
                 restartRequiredModules.has(requestedModule.uuid)
             ) {
-                sendRestartRequired(response);
+                sendRestartRequired(res);
                 return true;
             }
             const installedModules = await moduleService.list();
@@ -373,8 +370,8 @@ export function createModuleRoutes(
                         ...conflict,
                     },
                 );
-                response.writeHead(409, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "module_id_conflict",
@@ -390,8 +387,8 @@ export function createModuleRoutes(
                 installedModule &&
                 hooks?.getStatus?.(installedModule.id) === "enabled"
             ) {
-                response.writeHead(409, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "module_enabled",
@@ -452,29 +449,27 @@ export function createModuleRoutes(
                         },
                     );
                 });
-            response.writeHead(202, { "content-type": "application/json" });
-            response.end(
-                JSON.stringify({ data: { jobId, status: "pending" } }),
-            );
+            res.writeHead(202, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { jobId, status: "pending" } }));
             return true;
         }
         const uninstallMatch = url.pathname.match(
             /^\/api\/v1\/modules\/([^/]+)\/uninstall$/,
         );
-        if (marketplace && uninstallMatch && request.method === "DELETE") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (marketplace && uninstallMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const moduleUuid = decodeURIComponent(uninstallMatch[1]);
             if (restartRequiredModules.has(moduleUuid)) {
-                sendRestartRequired(response);
+                sendRestartRequired(res);
                 return true;
             }
             const manifest = (await moduleService.list()).find(
                 (entry) => entry.uuid === moduleUuid,
             );
             if (manifest && hooks?.getStatus?.(manifest.id) === "enabled") {
-                response.writeHead(409, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "module_enabled",
@@ -485,7 +480,7 @@ export function createModuleRoutes(
                 );
                 return true;
             }
-            const body = await readJson(request).catch(() => ({}));
+            const body = await readJson(req).catch(() => ({}));
             const deleteContent = body?.deleteContent === true;
             if (manifest) {
                 const cleanupSupported = await hooks?.beforeUninstall?.(
@@ -495,10 +490,10 @@ export function createModuleRoutes(
                     },
                 );
                 if (deleteContent && cleanupSupported === false) {
-                    response.writeHead(409, {
+                    res.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    response.end(
+                    res.end(
                         JSON.stringify({
                             error: {
                                 code: "module_content_cleanup_unavailable",
@@ -519,12 +514,12 @@ export function createModuleRoutes(
                 moduleUuid,
                 deleteContent,
             });
-            response.writeHead(204);
-            response.end();
+            res.writeHead(204);
+            res.end();
             return true;
         }
-        if (url.pathname === "/api/v1/modules" && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "admin");
+        if (url.pathname === "/api/v1/modules" && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const manifests = (await moduleService.list()).filter(
                 (manifest) => manifest.class !== "core",
@@ -539,15 +534,15 @@ export function createModuleRoutes(
                 accountId: claims.sub,
                 count: data.length,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
             return true;
         }
         if (
             url.pathname === "/api/v1/modules/integrity" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(request, response, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const data = (await hooks?.getIntegrityReport?.()) ?? [];
             hooks?.log?.("debug", "Generated module integrity report.", {
@@ -555,20 +550,20 @@ export function createModuleRoutes(
                 accountId: claims.sub,
                 count: data.length,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
             return true;
         }
         if (url.pathname === "/api/v1/modules/import/github") {
-            if (request.method !== "POST") return false;
-            const claims = ctx.requireAuth(request, response, "admin");
+            if (req.method !== "POST") return false;
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body = await readJson(request);
+            const body = await readJson(req);
             const repositoryUrl = String(body.repositoryUrl ?? "").trim();
             const versionTag = String(body.versionTag ?? "").trim();
             if (!repositoryUrl || !versionTag) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_body",
@@ -591,27 +586,26 @@ export function createModuleRoutes(
                 repositoryUrl,
                 versionTag,
             });
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: manifest }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: manifest }));
             return true;
         }
 
         const match = url.pathname.match(
             /^\/api\/v1\/modules\/([^/]+)\/(enable|disable)$/,
         );
-        if (!match || request.method !== "POST") return false;
+        if (!match || req.method !== "POST") return false;
 
-        const claims = ctx.requireAuth(request, response, "admin");
+        const claims = ctx.requireAuth(req, res, "admin");
         if (!claims) return true;
 
         const moduleId = decodeURIComponent(match[1]);
         const action = match[2];
         const acknowledged =
-            request.headers["x-cognis-external-module-disclaimer"] ===
-                "accepted" ||
+            req.headers["x-cognis-external-module-disclaimer"] === "accepted" ||
             url.searchParams.get("acknowledgeExternalDisclaimer") === "true";
         const integrityAcknowledgement = String(
-            request.headers["x-cognis-module-integrity-risk"] ?? "",
+            req.headers["x-cognis-module-integrity-risk"] ?? "",
         );
 
         const lifecycleManifest = (await moduleService.list()).find(
@@ -621,7 +615,7 @@ export function createModuleRoutes(
             lifecycleManifest &&
             restartRequiredModules.has(lifecycleManifest.uuid)
         ) {
-            sendRestartRequired(response);
+            sendRestartRequired(res);
             return true;
         }
 
@@ -638,8 +632,8 @@ export function createModuleRoutes(
                 integrityFailures.length &&
                 integrityAcknowledgement !== `accepted:${integrityToken}`
             ) {
-                response.writeHead(409, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "module_integrity_acknowledgement_required",
@@ -670,8 +664,8 @@ export function createModuleRoutes(
                     moduleId,
                 ))
             ) {
-                response.writeHead(400, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "external_module_acknowledgement_required",
@@ -699,10 +693,10 @@ export function createModuleRoutes(
                               "module_validation_failed",
                               "Module validation failed.",
                           );
-                response.writeHead(409, {
+                res.writeHead(409, {
                     "content-type": "application/json",
                 });
-                response.end(
+                res.end(
                     JSON.stringify({
                         error: {
                             code: validationError.code,
@@ -736,7 +730,7 @@ export function createModuleRoutes(
         if (action === "disable") {
             await hooks?.onDisabled?.(moduleId, {
                 preserveEnabledState:
-                    request.headers["x-cognis-module-lifecycle"] ===
+                    req.headers["x-cognis-module-lifecycle"] ===
                     "temporary-update",
             });
         }
@@ -751,8 +745,8 @@ export function createModuleRoutes(
             },
         );
 
-        response.writeHead(200, { "content-type": "application/json" });
-        response.end(JSON.stringify({ data: result }));
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ data: result }));
         return true;
     };
 }

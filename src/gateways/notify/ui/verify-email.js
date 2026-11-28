@@ -51,12 +51,12 @@ try {
         showResult(false);
     } else {
         try {
-            const response = await fetch("/api/v1/notify/verify-email", {
+            const res = await fetch("/api/v1/notify/verify-email", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ token }),
             });
-            showResult(response.ok);
+            showResult(res.ok);
         } catch {
             // Use the invalid-result fallback on the next line.
             showResult(false);

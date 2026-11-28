@@ -8,7 +8,7 @@ Ein nicht persistenter Datenbank-Testersatz, der Aufrufe ohne SQL-Ausführung er
 
 ## Konfiguration
 
-Erzeuge die Klasse im Test. Sie exportiert weder canHandleDbProvider noch createDbExecutor; DB_TYPE=memory bindet sie nicht an den Standardloader.
+Erzeuge die Klasse im Test. Sie exportiert weder canHandleDatabaseProvider noch createDatabaseExecutor; DB_TYPE=memory bindet sie nicht an den Standardloader.
 
 ## Verhalten
 

@@ -1,15 +1,15 @@
 import {
-    initializeDocsStore as initializeDocumentsStore,
+    initializeDocumentsStore,
     readStoredMarkdown,
 } from "../../routes/docs/store.js";
-import { discoverDocSources as discoverDocumentSources } from "../../routes/docs/sources.js";
+import { discoverDocumentSources } from "../../routes/docs/sources.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
     mkdtemp,
     mkdir,
     readdir,
-    rm as removePath,
+    rm,
     stat,
     writeFile,
     rename,
@@ -17,8 +17,8 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
-    createDocsRoutes as createDocumentsRoutes,
-    resolveDocsArchiveRoot as resolveDocumentsArchiveRoot,
+    createDocumentsRoutes,
+    resolveDocumentsArchiveRoot,
 } from "../../routes/docs/index.js";
 
 test("docs archive defaults to a writable user path outside containers", () => {
@@ -125,7 +125,7 @@ test("docs snapshots manifest versions across software starts", async () => {
     assert.match(latest.body.data.markdown, /Second/);
     assert.match(historical.body.data.markdown, /First/);
 
-    await removePath(componentRoot, { recursive: true, force: true });
+    await rm(componentRoot, { recursive: true, force: true });
     const routeAfterRemoval = createDocumentsRoutes({
         sourceRoot,
         archiveRoot,
@@ -141,7 +141,7 @@ test("docs snapshots manifest versions across software starts", async () => {
     );
     assert.equal(removedHistorical.status, 200);
     assert.match(removedHistorical.body.data.markdown, /First/);
-    await removePath(fixtureRoot, { recursive: true, force: true });
+    await rm(fixtureRoot, { recursive: true, force: true });
 });
 
 test("docs refresh archived content for the installed version", async () => {
@@ -174,7 +174,7 @@ test("docs refresh archived content for the installed version", async () => {
 
     assert.match(refreshed.body.data.markdown, /Corrected link/);
     assert.doesNotMatch(refreshed.body.data.markdown, /Old link/);
-    await removePath(fixtureRoot, { recursive: true, force: true });
+    await rm(fixtureRoot, { recursive: true, force: true });
 });
 
 test("docs route handles docs index with markdown slugs", async () => {
@@ -238,7 +238,7 @@ test("docs route discovers external module docs and changelogs", async () => {
         );
         assert.equal(moduleChangelog.sourceName, "Weather Module");
     } finally {
-        await removePath(fixtureRoot, { recursive: true, force: true });
+        await rm(fixtureRoot, { recursive: true, force: true });
     }
 });
 
@@ -451,9 +451,7 @@ test("docs route returns 404 for unknown slug", async () => {
 
 test("all document views retain their component version across publication and restart", async (context) => {
     const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-doc-bundle-"));
-    context.after(() =>
-        removePath(fixtureRoot, { recursive: true, force: true }),
-    );
+    context.after(() => rm(fixtureRoot, { recursive: true, force: true }));
     const sourceRoot = join(fixtureRoot, "src");
     const componentRoot = join(sourceRoot, "gateways", "example");
     const documentsRoot = join(componentRoot, "docs");
@@ -515,9 +513,7 @@ test("all document views retain their component version across publication and r
 
 test("incomplete document sources cannot publish a partial version", async (context) => {
     const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-doc-atomic-"));
-    context.after(() =>
-        removePath(fixtureRoot, { recursive: true, force: true }),
-    );
+    context.after(() => rm(fixtureRoot, { recursive: true, force: true }));
     const sourceRoot = join(fixtureRoot, "src");
     const componentRoot = join(sourceRoot, "gateways", "example");
     const documentsRoot = join(componentRoot, "docs");
@@ -527,7 +523,7 @@ test("incomplete document sources cannot publish a partial version", async (cont
     const route = createDocumentsRoutes({ sourceRoot, archiveRoot });
     await request(route, "/api/v1/docs");
     await writeFile(join(componentRoot, "manifest.json"), manifest("2.0.0"));
-    await removePath(join(documentsRoot, "USAGE.en.md"));
+    await rm(join(documentsRoot, "USAGE.en.md"));
     await assert.rejects(
         () => request(route, "/api/v1/docs"),
         /docs_english_source_missing/,
@@ -545,9 +541,7 @@ test("incomplete document sources cannot publish a partial version", async (cont
 
 test("core topic discovery reads a directory bundle and ignores unrelated filenames", async (context) => {
     const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-core-doc-"));
-    context.after(() =>
-        removePath(fixtureRoot, { recursive: true, force: true }),
-    );
+    context.after(() => rm(fixtureRoot, { recursive: true, force: true }));
     const sourceRoot = join(fixtureRoot, "src");
     const documentsRoot = join(sourceRoot, "docs", "example");
     const archiveRoot = join(fixtureRoot, "archive");
@@ -581,9 +575,7 @@ test("core topic discovery reads a directory bundle and ignores unrelated filena
 
 test("published documentation links resolve to a complete declared or discovered bundle", async (context) => {
     const archiveRoot = await mkdtemp(join(tmpdir(), "cognis-doc-links-"));
-    context.after(() =>
-        removePath(archiveRoot, { recursive: true, force: true }),
-    );
+    context.after(() => rm(archiveRoot, { recursive: true, force: true }));
     const index = await initializeDocumentsStore(
         join(process.cwd(), "src"),
         archiveRoot,
@@ -619,7 +611,7 @@ test("published documentation links resolve to a complete declared or discovered
 
 test("localized changelog branch metadata is preserved without adding a second label", async (context) => {
     const root = await mkdtemp(join(tmpdir(), "cognis-changelog-language-"));
-    context.after(() => removePath(root, { recursive: true, force: true }));
+    context.after(() => rm(root, { recursive: true, force: true }));
     const sourceRoot = join(root, "src");
     const folder = join(sourceRoot, "docs/changelog");
     await mkdir(folder, { recursive: true });
@@ -660,7 +652,7 @@ test("localized changelog branch metadata is preserved without adding a second l
 for (const core of [false, true]) {
     test(`${core ? "discovered core" : "manifest component"} titles and all views use one language policy across versions`, async (context) => {
         const root = await mkdtemp(join(tmpdir(), "cognis-doc-locales-"));
-        context.after(() => removePath(root, { recursive: true, force: true }));
+        context.after(() => rm(root, { recursive: true, force: true }));
         const sourceRoot = join(root, "src");
         const component = join(
             sourceRoot,
@@ -739,7 +731,7 @@ for (const core of [false, true]) {
             `/api/v1/docs/1.0.0/${slug}/technical?langs=ja`,
         );
         assert.match(archived.body.data.markdown, /1.0.0 ja$/);
-        await removePath(component, { recursive: true, force: true });
+        await rm(component, { recursive: true, force: true });
         const afterRemoval = await request(route, "/api/v1/docs?langs=ja");
         assert.equal(afterRemoval.body.data[0].title, titles.ja);
     });
@@ -747,7 +739,7 @@ for (const core of [false, true]) {
 
 test("generated changelog navigation and heading use the localized index title", async (context) => {
     const root = await mkdtemp(join(tmpdir(), "cognis-doc-changelog-title-"));
-    context.after(() => removePath(root, { recursive: true, force: true }));
+    context.after(() => rm(root, { recursive: true, force: true }));
     const sourceRoot = join(root, "src");
     const folder = join(sourceRoot, "docs/changelog");
     await mkdir(folder, { recursive: true });
@@ -777,7 +769,7 @@ test("generated changelog navigation and heading use the localized index title",
 
 test("core discovery reads uppercase entry bundles without case aliases", async (context) => {
     const root = await mkdtemp(join(tmpdir(), "cognis-core-doc-case-"));
-    context.after(() => removePath(root, { recursive: true, force: true }));
+    context.after(() => rm(root, { recursive: true, force: true }));
     const sourceRoot = join(root, "src");
     const documentsRoot = join(sourceRoot, "docs/example");
     await writeBundle(documentsRoot, "# Example\n\nPublic guidance.", true);

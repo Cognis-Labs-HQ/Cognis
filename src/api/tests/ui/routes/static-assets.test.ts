@@ -3,13 +3,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { brotliCompressSync, gzipSync } from "node:zlib";
-import {
-    mkdtemp,
-    mkdir,
-    readFile,
-    rm as removePath,
-    writeFile,
-} from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createUiRoutes } from "../../../routes/ui/index.js";
 import { UIRegistry } from "../../../reuse/ui-registry.js";
 import { createResponseRecorder } from "../ui-routes-test-helpers.js";
@@ -82,7 +76,7 @@ test("versioned text assets negotiate Brotli with MIME and immutable caching", a
             "public, max-age=31536000, immutable",
         );
     } finally {
-        await removePath(compressedPath, { force: true });
+        await rm(compressedPath, { force: true });
     }
 });
 
@@ -110,8 +104,8 @@ test("precompressed assets exclude encodings with a zero quality value", async (
         assert.equal(recorder.headers["content-encoding"], "gzip");
     } finally {
         await Promise.all([
-            removePath(brotliPath, { force: true }),
-            removePath(gzipPath, { force: true }),
+            rm(brotliPath, { force: true }),
+            rm(gzipPath, { force: true }),
         ]);
     }
 });
@@ -404,7 +398,7 @@ test("enabled module assets remain available while UI contributions refresh", as
         assert.equal(recorder.status, 200);
         assert.match(recorder.body, /ready = true/);
     } finally {
-        await removePath(moduleRoot, { recursive: true, force: true });
+        await rm(moduleRoot, { recursive: true, force: true });
     }
 });
 
@@ -445,7 +439,7 @@ test("installed module string bundles are served before module bootstrap", async
         assert.equal(recorder.status, 200);
         assert.match(recorder.body, /module\.title/);
     } finally {
-        await removePath(moduleRoot, { recursive: true, force: true });
+        await rm(moduleRoot, { recursive: true, force: true });
     }
 });
 
@@ -483,7 +477,7 @@ test("installed modules use their conventional language bundle when undeclared",
         assert.equal(recorder.status, 200);
         assert.match(recorder.body, /module\.example\.name/);
     } finally {
-        await removePath(moduleRoot, { recursive: true, force: true });
+        await rm(moduleRoot, { recursive: true, force: true });
     }
 });
 
@@ -511,6 +505,6 @@ test("module scripts revalidate despite the unchanged host asset version", async
         );
         assert.match(recorder.body, /current/);
     } finally {
-        await removePath(moduleRoot, { recursive: true, force: true });
+        await rm(moduleRoot, { recursive: true, force: true });
     }
 });
