@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
     findGridSwap,
+    previewGridSwap,
     applyGridSwap,
 } from "../../reuse/page-composer/swap-model.js";
 
@@ -29,8 +30,13 @@ for (const fixture of cases) {
             before,
             "Previewing never mutates placements",
         );
-        assert.equal(applyGridSwap(state, "source", "target"), fixture.valid);
-        if (!fixture.valid) {
+        const preview = previewGridSwap(state, ...fixture.drop, "source");
+        assert.equal(preview?.valid ?? false, fixture.valid);
+        assert.equal(
+            applyGridSwap(state, "source", "target"),
+            fixture.commitValid ?? fixture.valid,
+        );
+        if (!(fixture.commitValid ?? fixture.valid)) {
             assert.deepEqual(
                 state.layout,
                 before,
@@ -46,13 +52,13 @@ for (const fixture of cases) {
         );
         assert.deepEqual(source, {
             ...before.placements[0],
-            col: before.placements[1].col,
-            row: before.placements[1].row,
+            col: fixture.expected.source[0],
+            row: fixture.expected.source[1],
         });
         assert.deepEqual(target, {
             ...before.placements[1],
-            col: before.placements[0].col,
-            row: before.placements[0].row,
+            col: fixture.expected.target[0],
+            row: fixture.expected.target[1],
         });
     });
 }
@@ -64,7 +70,7 @@ test("commit rejects a destination occupied after its preview", () => {
     const state = stateFor(fixture);
     const target = findGridSwap(state, ...fixture.drop, "source");
     assert.ok(target);
-    state.layout.placements.push({ id: "blocker", col: 8, row: 0, w: 2, h: 2 });
+    state.layout.placements.push({ id: "blocker", col: 4, row: 0, w: 1, h: 2 });
     const before = structuredClone(state.layout);
     assert.equal(applyGridSwap(state, "source", target.id), false);
     assert.deepEqual(state.layout, before);
@@ -97,7 +103,7 @@ test("commit uses the grid bounds current at release", () => {
     const state = stateFor(fixture);
     const target = findGridSwap(state, ...fixture.drop, "source");
     assert.ok(target);
-    state.gridCols = 8;
+    state.gridCols = 7;
     const before = structuredClone(state);
     assert.equal(applyGridSwap(state, "source", target.id), false);
     assert.deepEqual(state, before);

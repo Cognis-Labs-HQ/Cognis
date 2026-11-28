@@ -10,7 +10,7 @@ Seiten liefern Inhalte; der gemeinsame Composer steuert Layout und Seitenleisten
 
 Eine gelbe Vorschau zeigt das Einrastziel beim Ablegen eines Widgets; die Bewegung wird im geöffneten Editor übernommen. Orange kennzeichnet einen versuchten Mindest-, Höchst- oder Rasterrandwert auf den aktiven Größenachsen. Fertig erhält die angezeigten Positionen und Größen einschließlich freier Flächen.
 
-Tausche Widgets nur, wenn beide Größen an den getauschten Positionen Platz haben. Ein blockierter Tausch zeigt eine ungültige Vorschau und lässt die Anordnung unverändert.
+Ziehe ein Element nach links oder rechts über ein anderes, um beide ohne Größenänderung zu tauschen. Gleiche Höhen funktionieren auch bei unterschiedlichen Breiten. Unterschiedliche Höhen sind möglich, wenn beide neuen Positionen einschließlich des Raums darüber und darunter frei sind. Eine grüne Linie markiert einen zulässigen Tausch. Bei einer Blockade wird dieselbe Linie rot; beim Loslassen bleibt die Anordnung unverändert.
 
 Der Größenänderungszeiger zeigt, ob eine Kante vergrößert, verkleinert oder in beide Richtungen bewegt werden kann. Blockiert ein anderes Element das Vergrößern, bleibt Verkleinern möglich. Ohne zulässige Größenänderung verschwindet der Regler.
 

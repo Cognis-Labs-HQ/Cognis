@@ -2,6 +2,7 @@
  * Resolves and commits collision-safe exchanges between composer placements.
  *
  * Public exports:
+ *   previewGridSwap(state, col, row, w, h, sourceId) — describes a hovered exchange and its validity for feedback.
  *   findGridSwap(state, col, row, w, h, sourceId) — finds the sole hovered tile when both exchanged destinations fit.
  *   applyGridSwap(state, sourceId, targetId) — revalidates current geometry and commits both positions atomically.
  *
@@ -9,11 +10,14 @@
  *   const target = findGridSwap(state, 4, 0, 4, 2, "source");
  *   if (target && applyGridSwap(state, "source", target.id)) renderGrid();
  */
-import {
-    buildOccupiedSet,
-    checkPlacement,
-    registerOccupiedPlacement,
-} from "./grid-math.js";
+function overlaps(left, right) {
+    return (
+        left.col < right.col + right.w &&
+        left.col + left.w > right.col &&
+        left.row < right.row + right.h &&
+        left.row + left.h > right.row
+    );
+}
 
 function fitsGrid({ col: column, row, w: width, h: height }, columns) {
     return (
@@ -28,67 +32,99 @@ function fitsGrid({ col: column, row, w: width, h: height }, columns) {
 
 function resolveSwap(state, sourceId, targetId) {
     if (sourceId === targetId) return null;
-    const { placements, hidden } = state.layout;
+    const { placements } = state.layout;
+    const hidden = new Set(state.layout.hidden);
     const source = placements.find((entry) => entry.id === sourceId);
     const target = placements.find((entry) => entry.id === targetId);
-    if (
-        !source ||
-        !target ||
-        hidden.includes(sourceId) ||
-        hidden.includes(targetId)
-    )
+    if (!source || !target || hidden.has(sourceId) || hidden.has(targetId))
         return null;
     const nextSource = { ...source, col: target.col, row: target.row };
     const nextTarget = { ...target, col: source.col, row: source.row };
-    const occupied = buildOccupiedSet(
-        placements.filter(
-            (entry) => entry.id !== sourceId && entry.id !== targetId,
-        ),
-        hidden,
-        null,
-    );
-    for (const placement of [nextSource, nextTarget]) {
+    // Horizontal exchanges preserve the pair's outside edges and intervening gap.
+    if (source.col + source.w <= target.col) {
+        nextSource.col = target.col + target.w - source.w;
+    } else if (target.col + target.w <= source.col) {
+        nextTarget.col = source.col + source.w - target.w;
+    }
+    if (
+        !fitsGrid(nextSource, state.gridCols) ||
+        !fitsGrid(nextTarget, state.gridCols) ||
+        overlaps(nextSource, nextTarget)
+    )
+        return null;
+    // Scan rectangles, not every half-grid cell: cost depends on tile count, not area.
+    for (const placement of placements) {
         if (
-            !fitsGrid(placement, state.gridCols) ||
-            !checkPlacement(
-                occupied,
-                placement.col,
-                placement.row,
-                placement.w,
-                placement.h,
-            )
+            placement.id === sourceId ||
+            placement.id === targetId ||
+            hidden.has(placement.id)
         )
+            continue;
+        if (overlaps(placement, nextSource) || overlaps(placement, nextTarget))
             return null;
-        registerOccupiedPlacement(occupied, placement);
     }
     return { source, target, nextSource, nextTarget };
 }
 
 /**
- * Preview lookup does not mutate placements. The snapped target origin is checked
- * independently of the pointer's hovered rectangle, including all other visible tiles.
+ * Preview lookup never mutates placements. Horizontal exchanges retain outer edges,
+ * sizes and gaps; both resulting rectangles must clear every other visible tile.
+ * Vertically stacked exchanges retain their destination origins.
  * @param {{gridCols:number, layout:{placements:object[],hidden:string[]}}} state Current editor geometry.
  * @param {number} column Proposed pointer-aligned column.
  * @param {number} row Proposed pointer-aligned row.
  * @param {number} width Dragged width in grid units.
  * @param {number} height Dragged height in grid units.
  * @param {string} sourceId Dragged element identity.
- * @returns {object|null} Current target placement when both destinations fit, otherwise null.
+ * @returns {{target:object,valid:boolean}|null} Hovered target and validity, or null outside any tile.
  */
-export function findGridSwap(state, column, row, width, height, sourceId) {
+export function previewGridSwap(state, column, row, width, height, sourceId) {
     if (!fitsGrid({ col: column, row, w: width, h: height }, state.gridCols))
         return null;
-    const displaced = state.layout.placements.filter(
-        (entry) =>
-            entry.id !== sourceId &&
-            !state.layout.hidden.includes(entry.id) &&
-            column < entry.col + entry.w &&
-            column + width > entry.col &&
-            row < entry.row + entry.h &&
-            row + height > entry.row,
+    const hidden = new Set(state.layout.hidden);
+    const proposed = { col: column, row, w: width, h: height };
+    let target = null;
+    let ambiguous = false;
+    for (const placement of state.layout.placements) {
+        if (
+            placement.id === sourceId ||
+            hidden.has(placement.id) ||
+            !overlaps(proposed, placement)
+        )
+            continue;
+        if (target) ambiguous = true;
+        else target = placement;
+    }
+    return target
+        ? {
+              target,
+              valid:
+                  !ambiguous &&
+                  Boolean(resolveSwap(state, sourceId, target.id)),
+          }
+        : null;
+}
+
+/**
+ * Supplies keyboard movement with an admissible target, excluding blocked previews.
+ * @param {object} state Current editor geometry.
+ * @param {number} column Proposed column.
+ * @param {number} row Proposed row.
+ * @param {number} width Dragged width.
+ * @param {number} height Dragged height.
+ * @param {string} sourceId Dragged element identity.
+ * @returns {object|null} Legal hovered target, or null.
+ */
+export function findGridSwap(state, column, row, width, height, sourceId) {
+    const preview = previewGridSwap(
+        state,
+        column,
+        row,
+        width,
+        height,
+        sourceId,
     );
-    if (displaced.length !== 1) return null;
-    return resolveSwap(state, sourceId, displaced[0].id)?.target ?? null;
+    return preview?.valid ? preview.target : null;
 }
 
 /**

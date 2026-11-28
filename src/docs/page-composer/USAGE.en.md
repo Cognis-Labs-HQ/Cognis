@@ -10,7 +10,7 @@ Each page supplies its content; the shared composer controls layout and sidebar 
 
 A yellow preview marks the snapped destination reached when you drop a widget; it moves while the editor remains open. Orange marks an attempted minimum, maximum or grid-edge limit on the active resize axes. Done preserves the displayed positions and sizes, including unused space.
 
-Swap a widget with another only when both sizes fit their exchanged positions. A blocked exchange shows an invalid preview and leaves the layout unchanged.
+Drag an element left or right over another to exchange them without changing their sizes. Equal heights work even with different widths. Different heights also work when both new positions are clear, including the space above and below. A green line marks a valid leapfrog; the same line turns red when blocked, and releasing leaves the layout unchanged.
 
 Resize cursors indicate whether an edge can grow, shrink or move in both directions. A handle remains available for shrinking when another element blocks expansion; handles disappear when no legal resize remains.
 

@@ -107,14 +107,19 @@ html:has(.app-shell:not(.app-shell--frameless)) {
     z-index: 110;
     pointer-events: none;
     border-radius: 2px;
+    --composer-dropzone-color: var(--accent-2);
+}
+
+.composer-dropzone-line--invalid {
+    --composer-dropzone-color: var(--color-danger-outline-text);
 }
 
 .composer-dropzone-line--v {
     width: 4px;
     background-image: repeating-linear-gradient(
         to bottom,
-        var(--accent-2) 0,
-        var(--accent-2) 6px,
+        var(--composer-dropzone-color) 0,
+        var(--composer-dropzone-color) 6px,
         transparent 6px,
         transparent 12px
     );
@@ -126,8 +131,8 @@ html:has(.app-shell:not(.app-shell--frameless)) {
     height: 4px;
     background-image: repeating-linear-gradient(
         to right,
-        var(--accent-2) 0,
-        var(--accent-2) 6px,
+        var(--composer-dropzone-color) 0,
+        var(--composer-dropzone-color) 6px,
         transparent 6px,
         transparent 12px
     );

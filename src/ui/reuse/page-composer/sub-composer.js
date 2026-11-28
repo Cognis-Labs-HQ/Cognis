@@ -15,7 +15,7 @@
  */
 import { applyGridMetrics, applyGridPlacement } from "./view-geometry.js";
 import { snapDragPlacement } from "./drag-placement.js";
-import { findGridSwap, applyGridSwap } from "./swap-model.js";
+import { findGridSwap, previewGridSwap, applyGridSwap } from "./swap-model.js";
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 import {
@@ -360,7 +360,7 @@ function createNestedComposerHandlers({
                             elementDefinition.id,
                         )
                     ) {
-                        const candidate = findGridSwap(
+                        const preview = previewGridSwap(
                             state,
                             column,
                             currentRow,
@@ -368,14 +368,23 @@ function createNestedComposerHandlers({
                             placement.h,
                             elementDefinition.id,
                         );
-                        if (candidate) {
-                            swapTarget = candidate;
+                        if (preview) {
+                            const { target: candidate, valid } = preview;
+                            swapTarget = valid ? candidate : null;
+                            shade.classList.toggle(
+                                "composer-shade--invalid",
+                                !valid,
+                            );
                             dropZoneLine = buildDropZoneLine(
                                 placement.col,
                                 placement.row,
                                 candidate,
                                 column,
                                 currentRow,
+                            );
+                            dropZoneLine.classList.toggle(
+                                "composer-dropzone-line--invalid",
+                                !valid,
                             );
                             state.container.appendChild(dropZoneLine);
                         } else {

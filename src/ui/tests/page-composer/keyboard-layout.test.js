@@ -108,13 +108,14 @@ test("keyboard resize honors bounds and browser shortcut modifiers", (context) =
 test("keyboard leap-frogging revalidates the complete snapped destination", (context) => {
     const fixture = setup(context);
     fixture.placement.w = 4;
+    fixture.placement.h = 3;
     fixture.state.gridCols = 8;
     fixture.setAllowed(false);
     fixture.setSwap({ id: "other", col: 4, row: 0, w: 2, h: 2 });
     fixture.state.layout.placements.push({
         id: "blocker",
-        col: 6,
-        row: 0,
+        col: 4,
+        row: 2,
         w: 2,
         h: 2,
     });

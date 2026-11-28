@@ -15,7 +15,7 @@
  * @returns {object} Grid measurement, placement, cell/panel creation and destroy operations.
  */
 import { snapDragPlacement } from "./drag-placement.js";
-import { findGridSwap, applyGridSwap } from "./swap-model.js";
+import { findGridSwap, previewGridSwap, applyGridSwap } from "./swap-model.js";
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 
@@ -376,7 +376,7 @@ export function createGridOverlayHandlers({
                             elementDefinition.id,
                         )
                     ) {
-                        const candidate = findGridSwap(
+                        const preview = previewGridSwap(
                             state,
                             column,
                             currentRow,
@@ -384,14 +384,23 @@ export function createGridOverlayHandlers({
                             placement.h,
                             elementDefinition.id,
                         );
-                        if (candidate) {
-                            swapTarget = candidate;
+                        if (preview) {
+                            const { target: candidate, valid } = preview;
+                            swapTarget = valid ? candidate : null;
+                            shade.classList.toggle(
+                                "composer-shade--invalid",
+                                !valid,
+                            );
                             dropZoneLine = buildDropZoneLine(
                                 placement.col,
                                 placement.row,
                                 candidate,
                                 column,
                                 currentRow,
+                            );
+                            dropZoneLine.classList.toggle(
+                                "composer-dropzone-line--invalid",
+                                !valid,
                             );
                             state.gridSection.appendChild(dropZoneLine);
                         } else {

@@ -1,6 +1,6 @@
 [
     {
-        "name": "wider source hits a tile beyond the target",
+        "name": "wider source stays inside the pair beside a right neighbour",
         "columns": 12,
         "placements": [
             {
@@ -27,7 +27,11 @@
         ],
         "hidden": [],
         "drop": [4, 0, 4, 2],
-        "valid": false
+        "valid": true,
+        "expected": {
+            "source": [4, 0],
+            "target": [0, 0]
+        }
     },
     {
         "name": "taller source hits a tile below the target",
@@ -90,7 +94,7 @@
         "valid": false
     },
     {
-        "name": "source would cross the right boundary",
+        "name": "horizontal exchange preserves the right grid edge",
         "columns": 12,
         "placements": [
             {
@@ -110,10 +114,14 @@
         ],
         "hidden": [],
         "drop": [8, 0, 4, 2],
-        "valid": false
+        "valid": true,
+        "expected": {
+            "source": [8, 0],
+            "target": [0, 0]
+        }
     },
     {
-        "name": "displaced target would cross the right boundary",
+        "name": "leftward exchange preserves the right grid edge",
         "columns": 8,
         "placements": [
             {
@@ -133,7 +141,11 @@
         ],
         "hidden": [],
         "drop": [1, 0, 2, 2],
-        "valid": false
+        "valid": true,
+        "expected": {
+            "source": [0, 0],
+            "target": [4, 0]
+        }
     },
     {
         "name": "displaced target would hit another tile",
@@ -166,7 +178,7 @@
         "valid": false
     },
     {
-        "name": "the exchanged rectangles would overlap each other",
+        "name": "adjacent unequal widths exchange without overlap",
         "columns": 12,
         "placements": [
             {
@@ -186,7 +198,11 @@
         ],
         "hidden": [],
         "drop": [1, 0, 2, 2],
-        "valid": false
+        "valid": true,
+        "expected": {
+            "source": [4, 0],
+            "target": [0, 0]
+        }
     },
     {
         "name": "pointer intersects multiple tiles",
@@ -216,7 +232,12 @@
         ],
         "hidden": [],
         "drop": [5, 0, 4, 2],
-        "valid": false
+        "valid": false,
+        "commitValid": true,
+        "expected": {
+            "source": [4, 0],
+            "target": [0, 0]
+        }
     },
     {
         "name": "different-sized tiles swap into clear space",
@@ -239,7 +260,11 @@
         ],
         "hidden": [],
         "drop": [4, 0, 4, 2],
-        "valid": true
+        "valid": true,
+        "expected": {
+            "source": [4, 0],
+            "target": [0, 0]
+        }
     },
     {
         "name": "equal-sized tiles retain leap-frogging",
@@ -262,7 +287,11 @@
         ],
         "hidden": [],
         "drop": [1, 0, 2, 2],
-        "valid": true
+        "valid": true,
+        "expected": {
+            "source": [2, 0],
+            "target": [0, 0]
+        }
     },
     {
         "name": "hidden tiles do not block an exchange",
@@ -292,7 +321,11 @@
         ],
         "hidden": ["blocker"],
         "drop": [4, 0, 4, 2],
-        "valid": true
+        "valid": true,
+        "expected": {
+            "source": [4, 0],
+            "target": [0, 0]
+        }
     },
     {
         "name": "fractional placements retain exact dimensions",
@@ -315,6 +348,273 @@
         ],
         "hidden": [],
         "drop": [2.5, 0, 2.5, 1.5],
-        "valid": true
+        "valid": true,
+        "expected": {
+            "source": [3.5, 0],
+            "target": [0, 0]
+        }
+    },
+    {
+        "name": "rightward unequal widths equal heights",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 1,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 1,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [0.5, 0, 1, 2],
+        "valid": true,
+        "browser": true,
+        "expected": {
+            "source": [2, 0],
+            "target": [0, 0]
+        }
+    },
+    {
+        "name": "rightward unequal widths different heights",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 1,
+                "h": 3
+            },
+            {
+                "id": "target",
+                "col": 1,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [0.5, 0, 1, 3],
+        "valid": true,
+        "browser": true,
+        "expected": {
+            "source": [2, 0],
+            "target": [0, 0]
+        }
+    },
+    {
+        "name": "rightward unequal widths blocked dragged destination",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 1,
+                "h": 3
+            },
+            {
+                "id": "target",
+                "col": 1,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 2,
+                "row": 2,
+                "w": 1,
+                "h": 1
+            }
+        ],
+        "hidden": [],
+        "drop": [0.5, 0, 1, 3],
+        "valid": false,
+        "browser": true
+    },
+    {
+        "name": "rightward unequal widths blocked displaced destination",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 1,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 1,
+                "row": 0,
+                "w": 2,
+                "h": 3
+            },
+            {
+                "id": "blocker",
+                "col": 0,
+                "row": 2,
+                "w": 1,
+                "h": 1
+            }
+        ],
+        "hidden": [],
+        "drop": [0.5, 0, 1, 2],
+        "valid": false,
+        "browser": true
+    },
+    {
+        "name": "leftward unequal widths equal heights",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 2,
+                "row": 0,
+                "w": 1,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [1.5, 0, 1, 2],
+        "valid": true,
+        "browser": true,
+        "expected": {
+            "source": [0, 0],
+            "target": [1, 0]
+        }
+    },
+    {
+        "name": "leftward unequal widths different heights",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 2,
+                "row": 0,
+                "w": 1,
+                "h": 3
+            },
+            {
+                "id": "target",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [1.5, 0, 1, 3],
+        "valid": true,
+        "browser": true,
+        "expected": {
+            "source": [0, 0],
+            "target": [1, 0]
+        }
+    },
+    {
+        "name": "leftward unequal widths blocked dragged destination",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 2,
+                "row": 0,
+                "w": 1,
+                "h": 3
+            },
+            {
+                "id": "target",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 0,
+                "row": 2,
+                "w": 1,
+                "h": 1
+            }
+        ],
+        "hidden": [],
+        "drop": [1.5, 0, 1, 3],
+        "valid": false,
+        "browser": true
+    },
+    {
+        "name": "leftward unequal widths blocked displaced destination",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 2,
+                "row": 0,
+                "w": 1,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 3
+            },
+            {
+                "id": "blocker",
+                "col": 2,
+                "row": 2,
+                "w": 1,
+                "h": 1
+            }
+        ],
+        "hidden": [],
+        "drop": [1.5, 0, 1, 2],
+        "valid": false,
+        "browser": true
+    },
+    {
+        "name": "very tall clear rectangles avoid area-sized occupancy grids",
+        "columns": 4,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 1,
+                "h": 1000000
+            },
+            {
+                "id": "target",
+                "col": 1,
+                "row": 0,
+                "w": 2,
+                "h": 1000000
+            }
+        ],
+        "hidden": [],
+        "drop": [0.5, 0, 1, 1000000],
+        "valid": true,
+        "expected": {
+            "source": [2, 0],
+            "target": [0, 0]
+        }
     }
 ]

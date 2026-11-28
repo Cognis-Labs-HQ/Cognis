@@ -132,7 +132,7 @@ export async function launchChromium(executable) {
         function command(method, params = {}) {
             return new Promise((resolve, reject) => {
                 const id = ++sequence;
-                const timeout = setTimeout(() => {
+                const timeout = globalThis.setTimeout(() => {
                     pending.delete(id);
                     reject(new Error(`Chromium command timed out: ${method}`));
                 }, 10000);
