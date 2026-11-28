@@ -36,7 +36,7 @@ Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßu
 
 ## Kollisionsfreier Widget-Tausch
 
-Haupt- und verschachtelte Editoren prüfen vor dem Widget-Tausch beide vollständigen Zielflächen einschließlich unterschiedlicher Größen, anderer sichtbarer Elemente und Rastergrenzen. Maus, Touch und Tastatur verwenden dieselben Prüfungen; beim Ablegen wird das aktuelle Layout erneut geprüft, bevor eine Position geändert wird. Beim Scrollen am Rand bleibt die vorläufige Rasterhöhe erhalten; verändert die Erweiterung den Scrollversatz übergeordneter Elemente, wird die Vorschau neu vermessen.
+Die Haupt- und die verschachtelte Bearbeitung erhalten beim Tauschen beide Widgetgrößen. Horizontale Tauschvorgänge behalten die äußeren Kanten des Paars und den Abstand dazwischen bei. So können benachbarte Elemente gleicher Höhe bei unterschiedlichen Breiten in beide Richtungen tauschen. Unterschiedliche Höhen sind zulässig, wenn beide vollständigen Zielrechtecke alle anderen sichtbaren Elemente einschließlich vertikaler Nachbarn freihalten. Rechteckprüfungen hängen von der Anzahl der Platzierungen statt von der belegten Rasterfläche ab. Beide Ziele werden auf gegenseitige Überlappung und Rastergrenzen geprüft; beim Loslassen wird die aktuelle Geometrie erneut validiert, bevor sich eine Position ändert. Dieselbe themengerechte Ziellinie ist bei zulässigem Tausch grün und bei Blockaden rot. Maus, Touch und Tastatur nutzen das gemeinsame Modell. Verschachteltes Randschrollen erhält die vorläufige Rasterhöhe und misst Vorschauen nach Änderungen des Vorfahrenscrollens erneut.
 
 ## Aussagekräftige Laufzeitbindungen
 
@@ -59,3 +59,4 @@ Die Syntaxbaumprüfung untersucht Deklarationen, Exporte, Destrukturierungen, La
 - [6769fc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6769fc72c6ee94e2aa5d7972e755499abde402ed)
 - [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)
 - [310f0eb](https://github.com/Cognis-Labs-HQ/Cognis/commit/310f0eb513d74910fbb076d37b1aa8e2dbe12f3c)
+- [0afbb90](https://github.com/Cognis-Labs-HQ/Cognis/commit/0afbb90055f7b2c8d2689fb3d6b0664e92e6fb91)

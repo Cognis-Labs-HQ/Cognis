@@ -36,7 +36,7 @@ Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan 
 
 ## Pertukaran Widget Tanpa Tabrakan
 
-Editor utama dan bertingkat memvalidasi kedua area tujuan widget secara penuh sebelum pertukaran, termasuk ukuran berbeda, elemen terlihat lainnya, dan batas kisi. Gerakan tetikus, sentuh, dan papan ketik memakai pemeriksaan yang sama; saat dilepas, tata letak terkini divalidasi ulang sebelum posisi mana pun diubah. Pengguliran tepi bertingkat mempertahankan tinggi kisi sementara dan mengukur ulang pratinjau setelah perluasan mengubah posisi gulir elemen induk.
+Editor utama dan bersarang mempertahankan ukuran kedua widget saat bertukar. Pertukaran horizontal mempertahankan tepi luar pasangan dan jarak di antaranya sehingga elemen bersebelahan dengan tinggi sama dan lebar berbeda dapat bertukar ke kedua arah. Tinggi berbeda diperbolehkan jika kedua tujuan utuh bebas dari elemen terlihat lainnya, termasuk tetangga vertikal. Pemeriksaan persegi panjang bergantung pada jumlah penempatan, bukan luas grid yang terisi. Kedua tujuan diperiksa terhadap tumpang tindih satu sama lain dan batas grid; pelepasan memvalidasi ulang geometri terkini sebelum mengubah posisi mana pun. Garis tujuan bertema yang sama berwarna hijau untuk pertukaran sah dan merah jika terhalang. Mouse, sentuhan, dan papan ketik memakai model bersama. Pengguliran tepi bersarang mempertahankan tinggi grid sementara dan mengukur ulang pratinjau setelah pertumbuhan mengubah guliran leluhur.
 
 ## Binding Waktu Jalan Deskriptif
 
@@ -59,3 +59,4 @@ Validasi nama berbasis pohon sintaks memeriksa deklarasi, ekspor, destrukturisas
 - [6769fc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6769fc72c6ee94e2aa5d7972e755499abde402ed)
 - [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)
 - [310f0eb](https://github.com/Cognis-Labs-HQ/Cognis/commit/310f0eb513d74910fbb076d37b1aa8e2dbe12f3c)
+- [0afbb90](https://github.com/Cognis-Labs-HQ/Cognis/commit/0afbb90055f7b2c8d2689fb3d6b0664e92e6fb91)

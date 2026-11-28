@@ -36,7 +36,7 @@ Dashboard branding has room for its icon and full title, welcome and login cards
 
 ## Collision-Safe Widget Exchanges
 
-Main and nested editors validate both full destination rectangles before exchanging widgets, including unequal sizes, other visible elements and grid boundaries. Mouse, touch and keyboard moves share the same checks; release revalidates the live layout before changing either position. Nested edge scrolling retains provisional grid height and remeasures previews after growth changes ancestor scrolling.
+Main and nested editors preserve both widget sizes when exchanging them. Horizontal leapfrogs retain the pair’s outer edges and intervening gap, allowing adjacent equal-height elements with different widths to exchange in either direction. Different heights are allowed when both complete destinations clear every other visible element, including vertical neighbours. Rectangle intersection checks depend on placement count rather than occupied grid area. Both destinations are checked for mutual overlap and grid bounds; release revalidates live geometry before changing either position. The same themed dropzone line is green for a valid exchange and red when blocked. Mouse, touch and keyboard use the shared model. Nested edge scrolling retains provisional grid height and remeasures previews after growth changes ancestor scrolling.
 
 ## Descriptive Runtime Bindings
 
@@ -59,3 +59,4 @@ Syntax-tree naming validation checks declarations, exports, destructuring, runti
 - [6769fc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6769fc72c6ee94e2aa5d7972e755499abde402ed)
 - [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)
 - [310f0eb](https://github.com/Cognis-Labs-HQ/Cognis/commit/310f0eb513d74910fbb076d37b1aa8e2dbe12f3c)
+- [0afbb90](https://github.com/Cognis-Labs-HQ/Cognis/commit/0afbb90055f7b2c8d2689fb3d6b0664e92e6fb91)
