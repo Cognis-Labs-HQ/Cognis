@@ -24,7 +24,7 @@ Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbre
 
 ## Alle Kanten und Speicherbestätigung
 
-Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten und Ecken skalieren. Links und oben bleibt die gegenüberliegende Kante fest; Größen- und Kollisionsgrenzen gelten weiter, und Touch-Vorschauen bleiben am Griffpunkt. Fertig, das Layout-Kürzel und Zurücksetzen melden Erfolg oder Fehler über einen gemeinsamen Speicherablauf. Fehlgeschlagene Schreibvorgänge erhalten ausstehende Änderungen; gleichzeitige Speicheraufrufe teilen eine Anfrage, und Seitenabbruch verhindert spätere Meldungen. Fehler beim Speichern werden knapp und lokalisiert gemeldet.
+Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten und Ecken skalieren. Links und oben bleibt die gegenüberliegende Kante fest; Größen- und Kollisionsgrenzen gelten weiter, und Touch-Vorschauen bleiben am Griffpunkt. Fertig und das Layout-Kürzel melden Erfolg oder Fehler über einen gemeinsamen Speicherablauf. Layout zurücksetzen stellt nur Standardpositionen und Sichtbarkeit im offenen Editor bereit. Fertig speichert sie; Verwerfen stellt die Anordnung vor der Bearbeitung wieder her. Zurücksetzen schreibt keine Einstellungen und verändert den Schnappschuss zum Verwerfen nicht. Fehlgeschlagene Schreibvorgänge erhalten ausstehende Änderungen; gleichzeitige Speicheraufrufe teilen eine Anfrage, und Seitenabbruch verhindert spätere Meldungen. Fehler beim Speichern werden knapp und lokalisiert gemeldet.
 
 ## Verträge der Editor-Helfer
 
@@ -60,3 +60,4 @@ Die Syntaxbaumprüfung untersucht Deklarationen, Exporte, Destrukturierungen, La
 - [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)
 - [310f0eb](https://github.com/Cognis-Labs-HQ/Cognis/commit/310f0eb513d74910fbb076d37b1aa8e2dbe12f3c)
 - [0afbb90](https://github.com/Cognis-Labs-HQ/Cognis/commit/0afbb90055f7b2c8d2689fb3d6b0664e92e6fb91)
+- [e176689](https://github.com/Cognis-Labs-HQ/Cognis/commit/e176689a44f4c88df0e7347a08b21e64265fdc72)

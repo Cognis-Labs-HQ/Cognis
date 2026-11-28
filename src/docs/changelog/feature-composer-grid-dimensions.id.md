@@ -24,7 +24,7 @@ Penghapusan elemen kini menggunakan tampilan tombol batal bersama. Pegangan ukur
 
 ## Semua Tepi dan Konfirmasi Simpan
 
-Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama maupun bersarang. Pengubahan dari kiri dan atas mempertahankan tepi yang berlawanan, mengikuti batas ukuran dan tabrakan, serta menjaga pratinjau sentuh pada titik pegangan. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal melalui satu alur penyimpanan bersama. Kegagalan mempertahankan perubahan untuk dicoba kembali; penyimpanan bersamaan berbagi satu permintaan dan pembatalan halaman mencegah notifikasi terlambat. Kegagalan penyimpanan ditampilkan melalui notifikasi ringkas dalam bahasa antarmuka.
+Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama maupun bersarang. Pengubahan dari kiri dan atas mempertahankan tepi yang berlawanan, mengikuti batas ukuran dan tabrakan, serta menjaga pratinjau sentuh pada titik pegangan. Selesai dan pintasan tata letak menampilkan notifikasi sukses atau gagal melalui satu alur penyimpanan bersama. Atur Ulang Tata Letak hanya menyiapkan posisi dan visibilitas bawaan di editor yang terbuka; Selesai menyimpannya dan Batalkan memulihkan tata letak sebelum pengeditan. Atur Ulang tidak menulis preferensi atau memperbarui snapshot pembatalan. Kegagalan mempertahankan perubahan untuk dicoba kembali; penyimpanan bersamaan berbagi satu permintaan dan pembatalan halaman mencegah notifikasi terlambat. Kegagalan penyimpanan ditampilkan melalui notifikasi ringkas dalam bahasa antarmuka.
 
 ## Kontrak Helper Editor
 
@@ -60,3 +60,4 @@ Validasi nama berbasis pohon sintaks memeriksa deklarasi, ekspor, destrukturisas
 - [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)
 - [310f0eb](https://github.com/Cognis-Labs-HQ/Cognis/commit/310f0eb513d74910fbb076d37b1aa8e2dbe12f3c)
 - [0afbb90](https://github.com/Cognis-Labs-HQ/Cognis/commit/0afbb90055f7b2c8d2689fb3d6b0664e92e6fb91)
+- [e176689](https://github.com/Cognis-Labs-HQ/Cognis/commit/e176689a44f4c88df0e7347a08b21e64265fdc72)

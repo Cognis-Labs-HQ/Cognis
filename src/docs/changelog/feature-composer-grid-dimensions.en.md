@@ -24,7 +24,7 @@ Element removal now uses the shared cancel-button appearance. Resize handles che
 
 ## Resize from Every Edge and Confirm Saves
 
-Widgets can now resize from all eight edges and corners in main and nested editors. Left and top resizing retain the opposite edge, respect size and collision limits, and keep touch previews aligned with the grabbed point. Done, the layout shortcut and Reset show localized success or failure notifications through one shared save flow. Failed writes preserve pending edits for retry; repeated saves share a request and page cancellation prevents late feedback. Save failures use concise localized notices.
+Widgets can now resize from all eight edges and corners in main and nested editors. Left and top resizing retain the opposite edge, respect size and collision limits, and keep touch previews aligned with the grabbed point. Done and the layout shortcut show localized success or failure notifications through one shared save flow. Reset Layout only stages default placements and visibility in the open editor; Done commits them and Discard restores the pre-edit layout. Reset does not write preferences or advance the discard snapshot. Failed writes preserve pending edits for retry; repeated saves share a request and page cancellation prevents late feedback. Save failures use concise localized notices.
 
 ## Editor Helper Contracts
 
@@ -60,3 +60,4 @@ Syntax-tree naming validation checks declarations, exports, destructuring, runti
 - [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)
 - [310f0eb](https://github.com/Cognis-Labs-HQ/Cognis/commit/310f0eb513d74910fbb076d37b1aa8e2dbe12f3c)
 - [0afbb90](https://github.com/Cognis-Labs-HQ/Cognis/commit/0afbb90055f7b2c8d2689fb3d6b0664e92e6fb91)
+- [e176689](https://github.com/Cognis-Labs-HQ/Cognis/commit/e176689a44f4c88df0e7347a08b21e64265fdc72)
